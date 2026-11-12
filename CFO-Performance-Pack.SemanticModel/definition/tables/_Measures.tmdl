@@ -377,7 +377,7 @@ table _Measures
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: 9d1f31ad-79c2-5669-a2c4-e30f1c6a1730
 
-	measure 'Revenue vs Budget Text' = VAR v = [Revenue Var % vs Budget] VAR g = [Revenue Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs Bud  \u00b7  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs PY"
+	measure 'Revenue vs Budget Text' = VAR v = [Revenue Var % vs Budget] VAR g = [Revenue Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: 11006cfa-5fc5-5858-b02a-96cc6f1f3625
 
@@ -430,7 +430,7 @@ table _Measures
 		displayFolder: 3 KPIs\Cost of Sales
 		lineageTag: c309aa25-a932-5bdc-896a-4de7de0a527f
 
-	measure 'Cost of Sales vs Budget Text' = VAR v = [Cost of Sales Var % vs Budget] VAR g = [Cost of Sales Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs Bud  \u00b7  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs PY"
+	measure 'Cost of Sales vs Budget Text' = VAR v = [Cost of Sales Var % vs Budget] VAR g = [Cost of Sales Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
 		displayFolder: 3 KPIs\Cost of Sales
 		lineageTag: 98c60acc-a7b7-5f84-aac7-e4e19f0088eb
 
@@ -483,7 +483,7 @@ table _Measures
 		displayFolder: 3 KPIs\Gross Profit
 		lineageTag: 6c530667-3a37-5468-979e-4a902e2e900e
 
-	measure 'Gross Profit vs Budget Text' = VAR v = [Gross Profit Var % vs Budget] VAR g = [Gross Profit Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs Bud  \u00b7  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs PY"
+	measure 'Gross Profit vs Budget Text' = VAR v = [Gross Profit Var % vs Budget] VAR g = [Gross Profit Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
 		displayFolder: 3 KPIs\Gross Profit
 		lineageTag: 4b864759-b52e-5fb4-82ce-3d225e9ad195
 
@@ -536,7 +536,7 @@ table _Measures
 		displayFolder: 3 KPIs\Operating Expenses
 		lineageTag: 7530c406-d91e-59bc-94c3-ea5aba423924
 
-	measure 'Operating Expenses vs Budget Text' = VAR v = [Operating Expenses Var % vs Budget] VAR g = [Operating Expenses Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs Bud  \u00b7  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs PY"
+	measure 'Operating Expenses vs Budget Text' = VAR v = [Operating Expenses Var % vs Budget] VAR g = [Operating Expenses Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
 		displayFolder: 3 KPIs\Operating Expenses
 		lineageTag: 60e85f87-9cc9-5c97-9ff8-b19ab4909521
 
@@ -589,7 +589,7 @@ table _Measures
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: 2ec15e87-01d7-5c8b-9256-30a54e97e417
 
-	measure 'EBITDA vs Budget Text' = VAR v = [EBITDA Var % vs Budget] VAR g = [EBITDA Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs Bud  \u00b7  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs PY"
+	measure 'EBITDA vs Budget Text' = VAR v = [EBITDA Var % vs Budget] VAR g = [EBITDA Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: 114e2319-4c5a-568a-9b8b-812d959eb892
 
@@ -642,7 +642,7 @@ table _Measures
 		displayFolder: 3 KPIs\EBIT
 		lineageTag: 37b8f569-e303-5fb9-ad5c-e5b65275ea7c
 
-	measure 'EBIT vs Budget Text' = VAR v = [EBIT Var % vs Budget] VAR g = [EBIT Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs Bud  \u00b7  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs PY"
+	measure 'EBIT vs Budget Text' = VAR v = [EBIT Var % vs Budget] VAR g = [EBIT Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
 		displayFolder: 3 KPIs\EBIT
 		lineageTag: adb67f2a-6f90-5879-8927-6e0e9c949d9d
 
@@ -695,7 +695,7 @@ table _Measures
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: 3683b0fc-0a52-5bd2-8d23-085307c33da3
 
-	measure 'Net Income vs Budget Text' = VAR v = [Net Income Var % vs Budget] VAR g = [Net Income Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs Bud  \u00b7  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "\u25b2 0.0%;\u25bc 0.0%;0.0%" ) ) & " vs PY"
+	measure 'Net Income vs Budget Text' = VAR v = [Net Income Var % vs Budget] VAR g = [Net Income Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: e24eccbc-2438-561d-a2ef-6a13b7ac7f4e
 
@@ -1070,10 +1070,10 @@ table _Measures
 	/// Executive headline: total result, then the core region on its own, so newer, unbudgeted entities cannot masquerade as outperformance.
 	measure Headline =
 			VAR core = [Core Region] VAR rv = [Revenue Var vs Budget] VAR rc = [Revenue Var Core] VAR share = DIVIDE ( rv - rc, rv ) VAR ec = [EBITDA Var Core]
-			RETURN [Currency Label] & " " & FORMAT ( [Revenue] / 1e6, "#,0.0" ) & "M" & " revenue, " & FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget. "
+			RETURN [Currency Label] & " " & FORMAT ( ( [Revenue] ) / 1e6, "#,0.0" ) & "M" & " revenue, " & FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget. "
 			    & IF ( ISBLANK ( rc ), "",
 			        "Core " & core & " " & FORMAT ( [Revenue Var % Core], "+0.0%;-0.0%" ) & IF ( rv > 0 && share > 0.5, "; newer regions deliver " & FORMAT ( share, "0%" ) & " of the beat", "" ) & ". " )
-			    & "EBITDA " & FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" & IF ( ISBLANK ( ec ), ".", ", " & core & " " & FORMAT ( ec / 1e6, "+#,0.0;-#,0.0" ) & "M" & "." )
+			    & "EBITDA " & FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" & IF ( ISBLANK ( ec ), ".", ", " & core & " " & FORMAT ( ( ec ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & "." )
 		displayFolder: 6 Narrative
 		lineageTag: f25fa65d-ea2e-538e-810f-79f356ba544a
 
@@ -1505,7 +1505,7 @@ table _Measures
 	measure 'Insight People Cost' =
 			VAR sv = [Salaries Var vs Budget] VAR ov = [Operating Expenses Var vs Budget] VAR hc = [Headcount] VAR hp = [Headcount PY]
 			VAR c = [Salary Cost per Head] VAR cp = [Salary Cost per Head PY]
-			RETURN "Salaries & benefits ran " & FORMAT ( ABS ( sv ) / 1e6, "#,0.0" ) & "M" & IF ( sv < 0, " over", " under" ) & " budget" & IF ( ov < 0 && sv < 0, ", " & FORMAT ( DIVIDE ( sv, ov ), "0%" ) & " of the opex overrun", "" ) & ". Headcount "
+			RETURN "Salaries & benefits ran " & FORMAT ( ( ABS ( sv ) ) / 1e6, "#,0.0" ) & "M" & IF ( sv < 0, " over", " under" ) & " budget" & IF ( ov < 0 && sv < 0, ", " & FORMAT ( DIVIDE ( sv, ov ), "0%" ) & " of the opex overrun", "" ) & ". Headcount "
 			    & FORMAT ( hc, "#,0" ) & " (" & FORMAT ( DIVIDE ( hc, hp ) - 1, "+0%;-0%" ) & " vs PY); salary cost per head " & FORMAT ( DIVIDE ( c, cp ) - 1, "+0.0%;-0.0%" ) & " vs PY."
 		displayFolder: 6 Narrative
 		lineageTag: 5eefb7ae-5e8a-56d1-b9cb-6b069b88dce5
@@ -1605,14 +1605,14 @@ table _Measures
 			VAR r = [Revenue Var vs Budget] VAR c = [Cost of Sales Var vs Budget] VAR o = [Operating Expenses Var vs Budget]
 			VAR worst = MIN ( r, MIN ( c, o ) )
 			VAR nm = IF ( worst = o, "Operating expenses", IF ( worst = c, "Cost of sales", "Revenue" ) )
-			RETURN IF ( worst < 0, nm & " are the largest drag (" & FORMAT ( worst / 1e6, "+#,0.0;-#,0.0" ) & "M" & ")" & IF ( worst = o, "; salaries are " & FORMAT ( DIVIDE ( [Salaries Var vs Budget], o ), "0%" ) & " of it.", "." ), "Every driver is favourable to budget." )
+			RETURN IF ( worst < 0, nm & " are the largest drag (" & FORMAT ( ( worst ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & ")" & IF ( worst = o, "; salaries are " & FORMAT ( DIVIDE ( [Salaries Var vs Budget], o ), "0%" ) & " of it.", "." ), "Every driver is favourable to budget." )
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: 40910aaa-4560-5750-8433-e8ab9e50cf3a
 
 	measure 'Sub Exceptions' =
 			VAR t = FILTER ( ADDCOLUMNS ( CROSSJOIN ( VALUES ( Entity[EntityName] ), CALCULATETABLE ( VALUES ( 'Report Line'[LineKey] ), REMOVEFILTERS ( 'Report Line' ), 'Report Line'[LineType] = "Detail", 'Report Line'[Statement] = "Income Statement" ) ), "@v", [Line Var vs Budget] ), NOT ISBLANK ( [@v] ) )
 			VAR top5 = TOPN ( 5, t, ABS ( [@v] ), DESC )
-			RETURN COUNTROWS ( FILTER ( top5, [@v] < 0 ) ) & " of the 5 largest variances are unfavourable; together they total " & FORMAT ( SUMX ( top5, [@v] ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & "."
+			RETURN COUNTROWS ( FILTER ( top5, [@v] < 0 ) ) & " of the 5 largest variances are unfavourable; together they total " & FORMAT ( ( SUMX ( top5, [@v] ) ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & "."
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: 7da41253-7aa1-517d-8b3b-1db199d8e40e
 
@@ -1638,20 +1638,20 @@ table _Measures
 			VAR t = ADDCOLUMNS ( ms, "@d", VAR m = [@m] RETURN CALCULATE ( [Metric Actual (in context)] - [Metric Budget (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m ) )
 			VAR beat = COUNTROWS ( FILTER ( t, [@d] > 0 ) ) + 0
 			VAR best = TOPN ( 1, t, [@d], DESC )
-			RETURN [Metric Name] & " beat budget in " & beat & " of " & COUNTROWS ( t ) & " closed months; strongest " & FORMAT ( MAXX ( best, [@m] ), "mmm yyyy" ) & " (" & FORMAT ( MAXX ( best, [@d] ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & ")."
+			RETURN [Metric Name] & " beat budget in " & beat & " of " & COUNTROWS ( t ) & " closed months; strongest " & FORMAT ( MAXX ( best, [@m] ), "mmm yyyy" ) & " (" & FORMAT ( ( MAXX ( best, [@d] ) ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & ")."
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: f997fc4e-d079-5c83-91d4-270aa7c18c04
 
 	measure 'Sub Cumulative' =
 			VAR g = [Metric Outlook Gap] VAR rr = [Metric Outlook Run-Rate]
-			RETURN "Budget-based outlook " & FORMAT ( g / 1e6, "+#,0.0;-#,0.0" ) & "M" & " vs full-year budget (" & FORMAT ( DIVIDE ( g, ABS ( [Metric Budget FY] ) ), "+0.0%;-0.0%" ) & "). At the year-to-date run rate it would land at " & FORMAT ( rr / 1e6, "#,0.0" ) & "M" & "."
+			RETURN "Budget-based outlook " & FORMAT ( ( g ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & " vs full-year budget (" & FORMAT ( DIVIDE ( g, ABS ( [Metric Budget FY] ) ), "+0.0%;-0.0%" ) & "). At the year-to-date run rate it would land at " & FORMAT ( ( rr ) / 1e6, "#,0.0" ) & "M" & "."
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: f62b7458-62bc-57de-a653-8f4abbd3e1d6
 
 	measure 'Sub Entity Variance' =
 			VAR t = FILTER ( ADDCOLUMNS ( VALUES ( Entity[EntityName] ), "@s", [Entity Budget Status] ), [@s] IN { "Not budgeted", "Under-budgeted" } )
 			RETURN IF ( COUNTROWS ( t ) > 0,
-			    CONCATENATEX ( t, Entity[EntityName], ", " ) & " have no or a non-credible budget, so their green is a budgeting gap, not outperformance. Entities with credible budgets: " & FORMAT ( [Revenue Var Credible] / 1e6, "+#,0.0;-#,0.0" ) & "M" & ".",
+			    CONCATENATEX ( t, Entity[EntityName], ", " ) & " have no or a non-credible budget, so their green is a budgeting gap, not outperformance. Entities with credible budgets: " & FORMAT ( ( [Revenue Var Credible] ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & ".",
 			    "All entities have credible budgets." )
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: 76ecee31-c137-5b50-923b-8f39d94ce881
@@ -1668,7 +1668,7 @@ table _Measures
 			VAR t = ADDCOLUMNS ( CALCULATETABLE ( VALUES ( 'Report Line'[LineKey] ), REMOVEFILTERS ( 'Report Line' ), 'Report Line'[LineType] = "Detail", 'Report Line'[Statement] = "Income Statement" ),
 			    "@v", [Line Var vs Budget], "@n", LOOKUPVALUE ( 'Report Line'[LineName], 'Report Line'[LineKey], 'Report Line'[LineKey] ) )
 			VAR b = TOPN ( 1, t, [@v], DESC ) VAR w = TOPN ( 1, t, [@v], ASC )
-			RETURN "Largest favourable line: " & MAXX ( b, [@n] ) & " (" & FORMAT ( MAXX ( b, [@v] ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & "); largest unfavourable: " & MAXX ( w, [@n] ) & " (" & FORMAT ( MAXX ( w, [@v] ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & ")."
+			RETURN "Largest favourable line: " & MAXX ( b, [@n] ) & " (" & FORMAT ( ( MAXX ( b, [@v] ) ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & "); largest unfavourable: " & MAXX ( w, [@n] ) & " (" & FORMAT ( ( MAXX ( w, [@v] ) ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & ")."
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: 35979732-3956-5858-aec2-c18c0af17c4d
 
@@ -1676,13 +1676,13 @@ table _Measures
 			VAR t = ADDCOLUMNS ( CALCULATETABLE ( VALUES ( 'Report Line'[LineKey] ), REMOVEFILTERS ( 'Report Line' ), 'Report Line'[LineType] = "Detail", 'Report Line'[Statement] = "Balance Sheet" ),
 			    "@v", [Line Balance Change], "@n", LOOKUPVALUE ( 'Report Line'[LineName], 'Report Line'[LineKey], 'Report Line'[LineKey] ) )
 			VAR top3 = TOPN ( 3, t, ABS ( [@v] ), DESC )
-			RETURN "Largest moves since year end: " & CONCATENATEX ( top3, [@n] & " " & FORMAT ( [@v] / 1e6, "+#,0.0;-#,0.0" ) & "M", ", ", ABS ( [@v] ), DESC ) & "."
+			RETURN "Largest moves since year end: " & CONCATENATEX ( top3, [@n] & " " & FORMAT ( ( [@v] ) / 1e6, "+#,0.0;-#,0.0" ) & "M", ", ", ABS ( [@v] ), DESC ) & "."
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: 792a143d-e026-572a-8db6-62269c315094
 
 	measure 'Sub Cash' =
 			VAR c = CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ) VAR r = CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 102 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 102 ), Account[AccountKey] ) )
-			RETURN "Since the March year end, cash " & FORMAT ( c / 1e6, "+#,0.0;-#,0.0" ) & "M" & " and receivables " & FORMAT ( r / 1e6, "+#,0.0;-#,0.0" ) & "M" & IF ( c < 0 && r > 0, ": growth is being financed through customer credit.", "." )
+			RETURN "Since the March year end, cash " & FORMAT ( ( c ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & " and receivables " & FORMAT ( ( r ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & IF ( c < 0 && r > 0, ": growth is being financed through customer credit.", "." )
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: f5caa0f5-2252-5cd0-9fdb-d589dc98c2e2
 
@@ -1705,7 +1705,7 @@ table _Measures
 		displayFolder: 6 Narrative\Page headers
 		lineageTag: 377abf3f-178c-551a-8fc5-e17a4f5c62bf
 
-	measure 'PS Overview' = [Entities Reporting] & " entities, " & COUNTROWS ( FILTER ( VALUES ( Entity[Region] ), NOT ISBLANK ( [Revenue] ) ) ) & " regions · revenue " & FORMAT ( [Revenue] / 1e6, "#,0.0" ) & "M" & " " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & " vs PY (organic " & FORMAT ( [Organic Growth %], "+0.0%;-0.0%" ) & ")"
+	measure 'PS Overview' = [Entities Reporting] & " entities, " & COUNTROWS ( FILTER ( VALUES ( Entity[Region] ), NOT ISBLANK ( [Revenue] ) ) ) & " regions · revenue " & FORMAT ( ( [Revenue] ) / 1e6, "#,0.0" ) & "M" & " " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & " vs PY (organic " & FORMAT ( [Organic Growth %], "+0.0%;-0.0%" ) & ")"
 		displayFolder: 6 Narrative\Page headers
 		lineageTag: 56922022-8b61-588a-9434-a27b902984f0
 
@@ -1737,7 +1737,7 @@ table _Measures
 		displayFolder: 6 Narrative\Page headers
 		lineageTag: 8a9a3799-ce47-554d-a2b3-a43ed169302c
 
-	measure 'PS Executive' = "Revenue " & FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget · EBITDA " & FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " · net income outlook " & FORMAT ( [Net Income Outlook FY] - [Net Income Budget FY] / 1e6, "+#,0.0;-#,0.0" ) & "M" & " vs FY budget"
+	measure 'PS Executive' = "Revenue " & FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget · EBITDA " & FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " · net income outlook " & FORMAT ( ( [Net Income Outlook FY] - [Net Income Budget FY] ) / 1e6, "+#,0.0;-#,0.0" ) & "M" & " vs FY budget"
 		displayFolder: 6 Narrative\Page headers
 		lineageTag: d5f50349-82ea-5ad0-a2b7-0ab13ed0e3cb
 
@@ -1745,7 +1745,7 @@ table _Measures
 			VAR ms = FILTER ( ALL ( 'Date'[Month] ), 'Date'[Month] <= [As Of Month] )
 			VAR t = ADDCOLUMNS ( ms, "@c", VAR m = 'Date'[Month] RETURN CALCULATE ( [Cash Balance (month)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m ) )
 			VAR hi = TOPN ( 1, FILTER ( t, NOT ISBLANK ( [@c] ) ), [@c], DESC ) VAR lo = TOPN ( 1, FILTER ( t, NOT ISBLANK ( [@c] ) ), [@c], ASC )
-			RETURN "Month-end cash ranged " & FORMAT ( MAXX ( lo, [@c] ) / 1e6, "#,0.0" ) & "M" & " (" & FORMAT ( MAXX ( lo, 'Date'[Month] ), "mmm yy" ) & ") to " & FORMAT ( MAXX ( hi, [@c] ) / 1e6, "#,0.0" ) & "M" & " (" & FORMAT ( MAXX ( hi, 'Date'[Month] ), "mmm yy" ) & "); it moves with working capital, not profit." 
+			RETURN "Month-end cash ranged " & FORMAT ( ( MAXX ( lo, [@c] ) ) / 1e6, "#,0.0" ) & "M" & " (" & FORMAT ( MAXX ( lo, 'Date'[Month] ), "mmm yy" ) & ") to " & FORMAT ( ( MAXX ( hi, [@c] ) ) / 1e6, "#,0.0" ) & "M" & " (" & FORMAT ( MAXX ( hi, 'Date'[Month] ), "mmm yy" ) & "); it moves with working capital, not profit." 
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: a87ab307-2f34-57e2-be4d-52b7398eb2cb
 
@@ -1781,7 +1781,7 @@ table _Measures
 		displayFolder: 10 Layout
 		lineageTag: 03c0a743-47bc-5417-b07a-6c793012e39d
 
-	measure Tagline = "Every number traces back to the ledger."
+	measure Tagline = "Every number traces to the ledger."
 		displayFolder: 10 Layout
 		lineageTag: 5aef569d-83e4-54a5-9a1d-9da7e09e5f84
 
@@ -1954,7 +1954,7 @@ table _Measures
 		displayFolder: 11 KPI Cards
 		lineageTag: 5a4d4fbb-79dc-54c2-ad25-c221cc97f0bf
 
-	measure 'Cash Progress Text' = "Year end " & FORMAT ( CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ) / 1e6, "#,0.0" ) & "M" & " · " & [DSO (days)] & "d DSO"
+	measure 'Cash Progress Text' = "Year end " & FORMAT ( ( CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ) ) / 1e6, "#,0.0" ) & "M" & " · DSO " & FORMAT ( [DSO (days)], "0" ) & " days"
 		displayFolder: 11 KPI Cards
 		lineageTag: 4c7bb99f-0da3-5798-a25f-bbbcca6d46f2
 
@@ -2002,13 +2002,207 @@ table _Measures
 		displayFolder: 11 KPI Cards
 		lineageTag: 59675677-fe2c-514e-8cc1-a4295b8b0fdc
 
-	measure 'Metric Budget FY Text' = "FY budget " & FORMAT ( [Metric Budget FY] / 1e6, "#,0.0" ) & "M"
+	measure 'Metric Budget FY Text' = "FY budget " & FORMAT ( ( [Metric Budget FY] ) / 1e6, "#,0.0" ) & "M"
 		displayFolder: 11 KPI Cards
 		lineageTag: bb136ec4-67b1-5672-a05e-a14734057934
 
 	measure 'Revenue Growth Short' = "Total growth " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & " vs PY"
 		displayFolder: 11 KPI Cards
 		lineageTag: 29fe8f84-f7e8-514f-8da7-0ad7317e3659
+
+	/// SVG sparkline: fiscal months of the selected year (dot = latest month).
+	measure 'SVG Spark Revenue' =
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )
+			VAR t2 = FILTER ( ADDCOLUMNS ( t, "@v", VAR d = [@d] RETURN CALCULATE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) ), [@d] <= sel && NOT ISBLANK ( [@v] ) )
+			VAR mn = MINX ( t2, [@v] ) VAR mx = MAXX ( t2, [@v] ) VAR rng = IF ( mx = mn, 1, mx - mn )
+			VAR pts = CONCATENATEX ( t2, FORMAT ( ( [Value] - 1 ) * 10 + 5, "0.0" ) & "," & FORMAT ( 35 - ( [@v] - mn ) / rng * 30, "0.0" ), " ", [Value], ASC )
+			VAR lst = TOPN ( 1, t2, [Value], DESC )
+			VAR lx = FORMAT ( ( MAXX ( lst, [Value] ) - 1 ) * 10 + 5, "0.0" ) VAR ly = FORMAT ( 35 - ( MAXX ( lst, [@v] ) - mn ) / rng * 30, "0.0" )
+			RETURN IF ( COUNTROWS ( t2 ) > 1, SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'>"
+			    & "<polyline points='" & pts & "' fill='none' stroke='" & [Col Accent] & "' stroke-width='2' stroke-linejoin='round' stroke-linecap='round' vector-effect='non-scaling-stroke'/>"
+			    & "<circle cx='" & lx & "' cy='" & ly & "' r='2.5' fill='" & [Col Accent] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 8a12c6bd-4056-552a-a05c-9c6bf3488270
+
+	/// SVG sparkline: fiscal months of the selected year (dot = latest month).
+	measure 'SVG Spark Gross Margin' =
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )
+			VAR t2 = FILTER ( ADDCOLUMNS ( t, "@v", VAR d = [@d] RETURN CALCULATE ( DIVIDE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) ), CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) ), [@d] <= sel && NOT ISBLANK ( [@v] ) )
+			VAR mn = MINX ( t2, [@v] ) VAR mx = MAXX ( t2, [@v] ) VAR rng = IF ( mx = mn, 1, mx - mn )
+			VAR pts = CONCATENATEX ( t2, FORMAT ( ( [Value] - 1 ) * 10 + 5, "0.0" ) & "," & FORMAT ( 35 - ( [@v] - mn ) / rng * 30, "0.0" ), " ", [Value], ASC )
+			VAR lst = TOPN ( 1, t2, [Value], DESC )
+			VAR lx = FORMAT ( ( MAXX ( lst, [Value] ) - 1 ) * 10 + 5, "0.0" ) VAR ly = FORMAT ( 35 - ( MAXX ( lst, [@v] ) - mn ) / rng * 30, "0.0" )
+			RETURN IF ( COUNTROWS ( t2 ) > 1, SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'>"
+			    & "<polyline points='" & pts & "' fill='none' stroke='" & [Col Accent] & "' stroke-width='2' stroke-linejoin='round' stroke-linecap='round' vector-effect='non-scaling-stroke'/>"
+			    & "<circle cx='" & lx & "' cy='" & ly & "' r='2.5' fill='" & [Col Accent] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: c6eed4fe-440a-58e0-a489-5fd0d0461473
+
+	/// SVG sparkline: fiscal months of the selected year (dot = latest month).
+	measure 'SVG Spark EBITDA' =
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )
+			VAR t2 = FILTER ( ADDCOLUMNS ( t, "@v", VAR d = [@d] RETURN CALCULATE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) ), [@d] <= sel && NOT ISBLANK ( [@v] ) )
+			VAR mn = MINX ( t2, [@v] ) VAR mx = MAXX ( t2, [@v] ) VAR rng = IF ( mx = mn, 1, mx - mn )
+			VAR pts = CONCATENATEX ( t2, FORMAT ( ( [Value] - 1 ) * 10 + 5, "0.0" ) & "," & FORMAT ( 35 - ( [@v] - mn ) / rng * 30, "0.0" ), " ", [Value], ASC )
+			VAR lst = TOPN ( 1, t2, [Value], DESC )
+			VAR lx = FORMAT ( ( MAXX ( lst, [Value] ) - 1 ) * 10 + 5, "0.0" ) VAR ly = FORMAT ( 35 - ( MAXX ( lst, [@v] ) - mn ) / rng * 30, "0.0" )
+			RETURN IF ( COUNTROWS ( t2 ) > 1, SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'>"
+			    & "<polyline points='" & pts & "' fill='none' stroke='" & [Col Accent] & "' stroke-width='2' stroke-linejoin='round' stroke-linecap='round' vector-effect='non-scaling-stroke'/>"
+			    & "<circle cx='" & lx & "' cy='" & ly & "' r='2.5' fill='" & [Col Accent] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: c200f0f3-ba23-5e60-b0ca-d067807c0d9c
+
+	/// SVG sparkline: fiscal months of the selected year (dot = latest month).
+	measure 'SVG Spark Net Income' =
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )
+			VAR t2 = FILTER ( ADDCOLUMNS ( t, "@v", VAR d = [@d] RETURN CALCULATE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) ), [@d] <= sel && NOT ISBLANK ( [@v] ) )
+			VAR mn = MINX ( t2, [@v] ) VAR mx = MAXX ( t2, [@v] ) VAR rng = IF ( mx = mn, 1, mx - mn )
+			VAR pts = CONCATENATEX ( t2, FORMAT ( ( [Value] - 1 ) * 10 + 5, "0.0" ) & "," & FORMAT ( 35 - ( [@v] - mn ) / rng * 30, "0.0" ), " ", [Value], ASC )
+			VAR lst = TOPN ( 1, t2, [Value], DESC )
+			VAR lx = FORMAT ( ( MAXX ( lst, [Value] ) - 1 ) * 10 + 5, "0.0" ) VAR ly = FORMAT ( 35 - ( MAXX ( lst, [@v] ) - mn ) / rng * 30, "0.0" )
+			RETURN IF ( COUNTROWS ( t2 ) > 1, SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'>"
+			    & "<polyline points='" & pts & "' fill='none' stroke='" & [Col Accent] & "' stroke-width='2' stroke-linejoin='round' stroke-linecap='round' vector-effect='non-scaling-stroke'/>"
+			    & "<circle cx='" & lx & "' cy='" & ly & "' r='2.5' fill='" & [Col Accent] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 9897ddc0-36b5-58f4-8797-c3c981054966
+
+	/// SVG sparkline: fiscal months of the selected year (dot = latest month).
+	measure 'SVG Spark Cash' =
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )
+			VAR t2 = FILTER ( ADDCOLUMNS ( t, "@v", VAR d = [@d] RETURN CALCULATE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) ), [@d] <= sel && NOT ISBLANK ( [@v] ) )
+			VAR mn = MINX ( t2, [@v] ) VAR mx = MAXX ( t2, [@v] ) VAR rng = IF ( mx = mn, 1, mx - mn )
+			VAR pts = CONCATENATEX ( t2, FORMAT ( ( [Value] - 1 ) * 10 + 5, "0.0" ) & "," & FORMAT ( 35 - ( [@v] - mn ) / rng * 30, "0.0" ), " ", [Value], ASC )
+			VAR lst = TOPN ( 1, t2, [Value], DESC )
+			VAR lx = FORMAT ( ( MAXX ( lst, [Value] ) - 1 ) * 10 + 5, "0.0" ) VAR ly = FORMAT ( 35 - ( MAXX ( lst, [@v] ) - mn ) / rng * 30, "0.0" )
+			RETURN IF ( COUNTROWS ( t2 ) > 1, SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'>"
+			    & "<polyline points='" & pts & "' fill='none' stroke='" & [Col Accent] & "' stroke-width='2' stroke-linejoin='round' stroke-linecap='round' vector-effect='non-scaling-stroke'/>"
+			    & "<circle cx='" & lx & "' cy='" & ly & "' r='2.5' fill='" & [Col Accent] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 4f757e14-e98a-5387-99f4-c7ec8ae7f517
+
+	/// SVG sparkline: fiscal months of the selected year (dot = latest month).
+	measure 'SVG Spark Metric' =
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )
+			VAR t2 = FILTER ( ADDCOLUMNS ( t, "@v", VAR d = [@d] RETURN CALCULATE ( [Metric Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) ), [@d] <= sel && NOT ISBLANK ( [@v] ) )
+			VAR mn = MINX ( t2, [@v] ) VAR mx = MAXX ( t2, [@v] ) VAR rng = IF ( mx = mn, 1, mx - mn )
+			VAR pts = CONCATENATEX ( t2, FORMAT ( ( [Value] - 1 ) * 10 + 5, "0.0" ) & "," & FORMAT ( 35 - ( [@v] - mn ) / rng * 30, "0.0" ), " ", [Value], ASC )
+			VAR lst = TOPN ( 1, t2, [Value], DESC )
+			VAR lx = FORMAT ( ( MAXX ( lst, [Value] ) - 1 ) * 10 + 5, "0.0" ) VAR ly = FORMAT ( 35 - ( MAXX ( lst, [@v] ) - mn ) / rng * 30, "0.0" )
+			RETURN IF ( COUNTROWS ( t2 ) > 1, SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'>"
+			    & "<polyline points='" & pts & "' fill='none' stroke='" & [Col Accent] & "' stroke-width='2' stroke-linejoin='round' stroke-linecap='round' vector-effect='non-scaling-stroke'/>"
+			    & "<circle cx='" & lx & "' cy='" & ly & "' r='2.5' fill='" & [Col Accent] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 45b7fd9d-76e9-575f-8bbf-23c8b9c9fc98
+
+	/// SVG sparkline: fiscal months of the selected year (dot = latest month).
+	measure 'SVG Spark Metric Budget' =
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )
+			VAR t2 = FILTER ( ADDCOLUMNS ( t, "@v", VAR d = [@d] RETURN CALCULATE ( [Metric Budget (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) ), TRUE () && NOT ISBLANK ( [@v] ) )
+			VAR mn = MINX ( t2, [@v] ) VAR mx = MAXX ( t2, [@v] ) VAR rng = IF ( mx = mn, 1, mx - mn )
+			VAR pts = CONCATENATEX ( t2, FORMAT ( ( [Value] - 1 ) * 10 + 5, "0.0" ) & "," & FORMAT ( 35 - ( [@v] - mn ) / rng * 30, "0.0" ), " ", [Value], ASC )
+			VAR lst = TOPN ( 1, t2, [Value], DESC )
+			VAR lx = FORMAT ( ( MAXX ( lst, [Value] ) - 1 ) * 10 + 5, "0.0" ) VAR ly = FORMAT ( 35 - ( MAXX ( lst, [@v] ) - mn ) / rng * 30, "0.0" )
+			RETURN IF ( COUNTROWS ( t2 ) > 1, SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'>"
+			    & "<polyline points='" & pts & "' fill='none' stroke='" & [Col Accent] & "' stroke-width='2' stroke-linejoin='round' stroke-linecap='round' vector-effect='non-scaling-stroke'/>"
+			    & "<circle cx='" & lx & "' cy='" & ly & "' r='2.5' fill='" & [Col Accent] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 15f7c999-aeee-51dd-a0b7-0c50a11b4ee3
+
+	/// SVG sparkline: fiscal months of the selected year (dot = latest month).
+	measure 'SVG Spark Metric PY' =
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )
+			VAR t2 = FILTER ( ADDCOLUMNS ( t, "@v", VAR d = [@d] RETURN CALCULATE ( [Metric Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) ) ), TRUE () && NOT ISBLANK ( [@v] ) )
+			VAR mn = MINX ( t2, [@v] ) VAR mx = MAXX ( t2, [@v] ) VAR rng = IF ( mx = mn, 1, mx - mn )
+			VAR pts = CONCATENATEX ( t2, FORMAT ( ( [Value] - 1 ) * 10 + 5, "0.0" ) & "," & FORMAT ( 35 - ( [@v] - mn ) / rng * 30, "0.0" ), " ", [Value], ASC )
+			VAR lst = TOPN ( 1, t2, [Value], DESC )
+			VAR lx = FORMAT ( ( MAXX ( lst, [Value] ) - 1 ) * 10 + 5, "0.0" ) VAR ly = FORMAT ( 35 - ( MAXX ( lst, [@v] ) - mn ) / rng * 30, "0.0" )
+			RETURN IF ( COUNTROWS ( t2 ) > 1, SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 40' preserveAspectRatio='none'>"
+			    & "<polyline points='" & pts & "' fill='none' stroke='" & [Col Accent] & "' stroke-width='2' stroke-linejoin='round' stroke-linecap='round' vector-effect='non-scaling-stroke'/>"
+			    & "<circle cx='" & lx & "' cy='" & ly & "' r='2.5' fill='" & [Col Accent] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: f09aa58e-4f90-552b-924d-fff3f6dcb321
+
+	/// SVG pacing bar: progress to the full-year budget; the tick marks how much of the year has elapsed.
+	measure 'SVG Bar Revenue' =
+			VAR p = [Revenue FY Progress] VAR e = [Year Elapsed %]
+			RETURN IF ( NOT ISBLANK ( p ), SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'>"
+			    & "<rect x='0' y='3' width='300' height='6' rx='3' fill='" & [Col Track] & "'/>"
+			    & "<rect x='0' y='3' width='" & FORMAT ( MIN ( MAX ( p, 0 ), 1 ) * 300, "0" ) & "' height='6' rx='3' fill='" & [Col Accent] & "'/>"
+			    & "<rect x='" & FORMAT ( MIN ( e, 1 ) * 300 - 1, "0" ) & "' y='0' width='2' height='12' fill='" & [Col Muted] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 00d9d871-7b62-5950-aae8-2997350a1384
+
+	/// SVG pacing bar: progress to the full-year budget; the tick marks how much of the year has elapsed.
+	measure 'SVG Bar EBITDA' =
+			VAR p = [EBITDA FY Progress] VAR e = [Year Elapsed %]
+			RETURN IF ( NOT ISBLANK ( p ), SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'>"
+			    & "<rect x='0' y='3' width='300' height='6' rx='3' fill='" & [Col Track] & "'/>"
+			    & "<rect x='0' y='3' width='" & FORMAT ( MIN ( MAX ( p, 0 ), 1 ) * 300, "0" ) & "' height='6' rx='3' fill='" & [Col Accent] & "'/>"
+			    & "<rect x='" & FORMAT ( MIN ( e, 1 ) * 300 - 1, "0" ) & "' y='0' width='2' height='12' fill='" & [Col Muted] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 5f2aedea-6686-5a25-b2a7-11624d9c2b4b
+
+	/// SVG pacing bar: progress to the full-year budget; the tick marks how much of the year has elapsed.
+	measure 'SVG Bar Net Income' =
+			VAR p = [Net Income FY Progress] VAR e = [Year Elapsed %]
+			RETURN IF ( NOT ISBLANK ( p ), SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'>"
+			    & "<rect x='0' y='3' width='300' height='6' rx='3' fill='" & [Col Track] & "'/>"
+			    & "<rect x='0' y='3' width='" & FORMAT ( MIN ( MAX ( p, 0 ), 1 ) * 300, "0" ) & "' height='6' rx='3' fill='" & [Col Accent] & "'/>"
+			    & "<rect x='" & FORMAT ( MIN ( e, 1 ) * 300 - 1, "0" ) & "' y='0' width='2' height='12' fill='" & [Col Muted] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 2e438274-3e99-585a-ada1-fea806796175
+
+	/// SVG pacing bar: progress to the full-year budget; the tick marks how much of the year has elapsed.
+	measure 'SVG Bar Metric' =
+			VAR p = [Metric FY Progress] VAR e = [Year Elapsed %]
+			RETURN IF ( NOT ISBLANK ( p ), SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'>"
+			    & "<rect x='0' y='3' width='300' height='6' rx='3' fill='" & [Col Track] & "'/>"
+			    & "<rect x='0' y='3' width='" & FORMAT ( MIN ( MAX ( p, 0 ), 1 ) * 300, "0" ) & "' height='6' rx='3' fill='" & [Col Accent] & "'/>"
+			    & "<rect x='" & FORMAT ( MIN ( e, 1 ) * 300 - 1, "0" ) & "' y='0' width='2' height='12' fill='" & [Col Muted] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 0d63fef1-4394-5077-a28c-8aeb67135b81
+
+	/// SVG pacing bar: progress to the full-year budget; the tick marks how much of the year has elapsed.
+	measure 'SVG Bar Net Income Outlook' =
+			VAR p = [Net Income Outlook Progress] VAR e = [Year Elapsed %]
+			RETURN IF ( NOT ISBLANK ( p ), SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'>"
+			    & "<rect x='0' y='3' width='300' height='6' rx='3' fill='" & [Col Track] & "'/>"
+			    & "<rect x='0' y='3' width='" & FORMAT ( MIN ( MAX ( p, 0 ), 1 ) * 300, "0" ) & "' height='6' rx='3' fill='" & [Col Accent] & "'/>"
+			    & "<rect x='" & FORMAT ( MIN ( e, 1 ) * 300 - 1, "0" ) & "' y='0' width='2' height='12' fill='" & [Col Muted] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 2df588f2-1344-5ac1-a85e-3d77793b26b4
+
+	/// SVG pacing bar: progress to the full-year budget; the tick marks how much of the year has elapsed.
+	measure 'SVG Bar Metric Outlook' =
+			VAR p = [Metric Outlook Progress] VAR e = [Year Elapsed %]
+			RETURN IF ( NOT ISBLANK ( p ), SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'>"
+			    & "<rect x='0' y='3' width='300' height='6' rx='3' fill='" & [Col Track] & "'/>"
+			    & "<rect x='0' y='3' width='" & FORMAT ( MIN ( MAX ( p, 0 ), 1 ) * 300, "0" ) & "' height='6' rx='3' fill='" & [Col Accent] & "'/>"
+			    & "<rect x='" & FORMAT ( MIN ( e, 1 ) * 300 - 1, "0" ) & "' y='0' width='2' height='12' fill='" & [Col Muted] & "'/></svg>", "#", "%23" ) )
+		dataCategory: ImageUrl
+		displayFolder: 11 KPI Cards
+		lineageTag: 8c512b31-4285-5c00-a4bc-669aba2462bb
 
 	column Placeholder
 		dataType: string
