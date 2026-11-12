@@ -22,7 +22,8 @@ table Insight
 				    Source = #table(type table [Key = Int64.Type, Topic = text], {
 				        {1, "Growth quality"},
 				        {2, "Cost absorption"},
-				        {3, "Full-year outlook"}
+				        {3, "Full-year outlook"},
+				        {4, "People cost"}
 				    })
 				in
 				    Source

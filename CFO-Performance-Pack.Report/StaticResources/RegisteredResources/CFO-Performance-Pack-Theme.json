@@ -1,13 +1,13 @@
 {
   "name": "CFO Performance Pack",
   "dataColors": [
-    "#1F3A5F",
-    "#2A7F8E",
-    "#D98E04",
+    "#3E5C8A",
+    "#2A9DB0",
+    "#E0A33A",
     "#8DB3D9",
     "#9AA5B4",
     "#5B6676",
-    "#C9D0D9",
+    "#B8C2CF",
     "#2E7D32",
     "#C0392B"
   ],
@@ -20,40 +20,34 @@
   "neutral": "#9AA5B4",
   "textClasses": {
     "callout": {
-      "fontSize": 20,
-      "fontFace": "Segoe UI Semibold",
+      "fontSize": 19,
+      "fontFace": "DIN",
       "color": "#1F2A37"
     },
     "title": {
-      "fontSize": 11,
-      "fontFace": "Segoe UI Semibold",
+      "fontSize": 10.5,
+      "fontFace": "DIN",
       "color": "#1F2A37"
     },
     "header": {
-      "fontSize": 11,
-      "fontFace": "Segoe UI Semibold",
+      "fontSize": 10.5,
+      "fontFace": "DIN",
       "color": "#1F2A37"
     },
     "label": {
       "fontSize": 9,
-      "fontFace": "Segoe UI",
+      "fontFace": "DIN",
+      "color": "#5B6676"
+    },
+    "smallLabel": {
+      "fontSize": 8,
+      "fontFace": "DIN",
       "color": "#5B6676"
     }
   },
   "visualStyles": {
     "*": {
       "*": {
-        "background": [
-          {
-            "show": true,
-            "color": {
-              "solid": {
-                "color": "#FFFFFF"
-              }
-            },
-            "transparency": 0
-          }
-        ],
         "border": [
           {
             "show": false
@@ -66,13 +60,8 @@
         ],
         "title": [
           {
-            "fontSize": 10,
-            "fontColor": {
-              "solid": {
-                "color": "#1F2A37"
-              }
-            },
-            "fontFamily": "Segoe UI Semibold"
+            "fontSize": 10.5,
+            "fontFamily": "DIN"
           }
         ],
         "padding": [
@@ -87,21 +76,11 @@
     },
     "page": {
       "*": {
-        "background": [
-          {
-            "color": {
-              "solid": {
-                "color": "#F4F6F9"
-              }
-            },
-            "transparency": 0
-          }
-        ],
         "outspace": [
           {
             "color": {
               "solid": {
-                "color": "#F4F6F9"
+                "color": "#5B6676"
               }
             },
             "transparency": 0
