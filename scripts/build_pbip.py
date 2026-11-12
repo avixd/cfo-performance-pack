@@ -405,7 +405,7 @@ class Page:
                 ('s_r', 'Entity[Region]', 'Region', 'Dropdown', False, 'Region'),
                 ('s_e', 'Entity[EntityName]', 'Entity', 'Dropdown', False, 'Entity'),
                 ('s_d', 'Department[DepartmentName]', 'Department', 'Dropdown', False, 'Department')]:
-            hh = 54   # title row + one control row
+            hh = 54 if mode == 'Basic' else 59   # title row + one control row (dropdown boxes are taller than tiles)
             self.slicer(k, 6, y, PANEL_W - 12, hh, spec, ttl, mode=mode, single=single, horizontal=(mode == 'Basic'), sync=sync)
             y += hh + 1
         self.button('reset', 10, y + 4, PANEL_W - 20, 26, '\u21ba  Reset all filters', 'ClearAllSlicers', tooltip='Clear every slicer on every page',
