@@ -472,8 +472,8 @@ def redefine(name, expr=None, fmt=None, desc=None, folder=None):
     raise KeyError(name)
 
 FK = '#,0,;(#,0,);-'          # thousands: board packs read K, not 8-digit units
-MT = lambda x: 'FORMAT ( ' + x + ' / 1e6, "+#,0.0;-#,0.0" ) & "M"'      # signed millions text
-MU = lambda x: 'FORMAT ( ' + x + ' / 1e6, "#,0.0" ) & "M"'              # unsigned millions text
+MT = lambda x: 'FORMAT ( ( ' + x + ' ) / 1e6, "+#,0.0;-#,0.0" ) & "M"'      # signed millions text
+MU = lambda x: 'FORMAT ( ( ' + x + ' ) / 1e6, "#,0.0" ) & "M"'              # unsigned millions text
 
 # ---- new tables: theme selector, narrative text, extra insight topics
 M_THEME = m_table([('Mode', 'text'), ('Sort', 'Int64.Type')], [('Light', 1), ('Dark', 2)])
@@ -546,7 +546,7 @@ for pg, extra in [('Overview', ' · Group % = effective ownership'), ('Executive
 for n in KPI:
     redefine(f'{n} Var % vs Budget', f'IF ( [{n}] * [{n} Budget] > 0, DIVIDE ( [{n}] - [{n} Budget], ABS ( [{n} Budget] ) ) )')
     redefine(f'{n} Growth %', f'IF ( [{n}] * [{n} PY] > 0, DIVIDE ( [{n}] - [{n} PY], ABS ( [{n} PY] ) ) )')
-    redefine(f'{n} vs Budget Text', f'VAR v = [{n} Var % vs Budget] VAR g = [{n} Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "\\u25b2 0.0%;\\u25bc 0.0%;0.0%" ) ) & " vs Bud  \\u00b7  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "\\u25b2 0.0%;\\u25bc 0.0%;0.0%" ) ) & " vs PY"')
+    redefine(f'{n} vs Budget Text', f'VAR v = [{n} Var % vs Budget] VAR g = [{n} Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"')
 redefine('Line Var % vs Budget', 'IF ( [Line Actual] * [Line Budget] > 0, DIVIDE ( [Line Actual] - [Line Budget], ABS ( [Line Budget] ) ) )')
 redefine('Line Growth %', 'IF ( [Line Actual] * [Line Prior Year] > 0, DIVIDE ( [Line Actual] - [Line Prior Year], ABS ( [Line Prior Year] ) ) )')
 redefine('Metric Var % vs Budget', 'IF ( [Metric Actual] * [Metric Budget] > 0, DIVIDE ( [Metric Actual] - [Metric Budget], ABS ( [Metric Budget] ) ) )')
@@ -713,7 +713,7 @@ TABLES.insert(len(TABLES) - 1, dict(name='Refresh Info', hidden=1, desc='One row
                                     dax='ROW ( "Refreshed At", UTCNOW () )', cols=[('Refreshed At', 'dateTime', {})]))
 add('Last Refreshed', '"Refreshed " & FORMAT ( MAX ( \'Refresh Info\'[Refreshed At] ), "dd mmm yyyy hh:nn" ) & " UTC · books closed " & FORMAT ( [As Of Month], "mmm yyyy" )', '10 Layout')
 add('Brand Sub', '"Adventure Works Group"', '10 Layout')
-add('Tagline', '"Every number traces back to the ledger."', '10 Layout')
+add('Tagline', '"Every number traces to the ledger."', '10 Layout')
 add('Lbl Filters', '"FILTERS"', '10 Layout')
 add('Year Elapsed %', 'DIVIDE ( [Fiscal Month Of Selection], 12 )', '1 Period (fiscal)', '0%', 'Share of the fiscal year closed at the selected month.')
 add('Footer Note 1', '"1  One definition per metric: hover a KPI label for its definition; click it for the DAX."', '10 Layout')
@@ -750,7 +750,7 @@ add('Metric Progress Text', 'FORMAT ( [Metric FY Progress], "0%" ) & " of FY bud
 add('Metric Outlook Progress', 'DIVIDE ( [Metric Outlook FY], [Metric Budget FY] )', '11 KPI Cards', '0%')
 add('Metric Outlook Progress Text', 'FORMAT ( [Metric Outlook Progress], "0%" ) & " of FY budget (outlook)"', '11 KPI Cards')
 add('Gross Margin Progress Text', '"Budget " & FORMAT ( [Gross Profit Margin % Budget], "0.0%" ) & " · PY " & FORMAT ( DIVIDE ( [Gross Profit PY], [Revenue PY] ), "0.0%" )', '11 KPI Cards')
-add('Cash Progress Text', '"Year end " & ' + MU(LINE(101, '[Prior Year-End Balance]')) + ' & " · " & [DSO (days)] & "d DSO"', '11 KPI Cards')
+add('Cash Progress Text', '"Year end " & ' + MU(LINE(101, '[Prior Year-End Balance]')) + ' & " · DSO " & FORMAT ( [DSO (days)], "0" ) & " days"', '11 KPI Cards')
 for n in ('Revenue', 'EBITDA', 'Net Income', 'Net Income Outlook', 'Metric', 'Metric Outlook'):
     src = f'{n} FY Progress' if n in ('Revenue', 'EBITDA', 'Net Income', 'Metric') else f'{n} Progress'
     add(f'{n} Progress Bar', f'MIN ( MAX ( [{src}], 0 ), 1 )', '11 KPI Cards', '0%', 'Progress capped to 0-100% for the bar.')
@@ -760,3 +760,42 @@ add('Entity Budget Status Summary', 'VAR t = FILTER ( ADDCOLUMNS ( VALUES ( Enti
 add('Sub Entities Short', 'VAR t = FILTER ( ADDCOLUMNS ( VALUES ( Entity[EntityName] ), "@s", [Entity Budget Status] ), NOT ISBLANK ( [@s] ) ) RETURN COUNTROWS ( FILTER ( t, [@s] <> "Budgeted" ) ) + 0 & " without a credible budget"', '11 KPI Cards')
 add('Metric Budget FY Text', '"FY budget " & ' + MU('[Metric Budget FY]'), '11 KPI Cards')
 add('Revenue Growth Short', '"Total growth " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & " vs PY"', '11 KPI Cards')
+
+
+# ---- SVG sparklines and pacing bars (Image visual; scale cleanly at any size)
+SVG_HEAD = '"data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 120 40\' preserveAspectRatio=\'none\'>"'
+def svg_spark(name, base, full_year=False, py=False):
+    d_filter = "'Date'[Month] = EDATE ( d, -12 )" if py else "'Date'[Month] = d"
+    keep = 'TRUE ()' if full_year else '[@d] <= sel'
+    expr = f"""VAR sel = [Selected Month] VAR fy = {FYS}
+VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )
+VAR t2 = FILTER ( ADDCOLUMNS ( t, "@v", VAR d = [@d] RETURN CALCULATE ( {base}, REMOVEFILTERS ( 'Date' ), {d_filter} ) ), {keep} && NOT ISBLANK ( [@v] ) )
+VAR mn = MINX ( t2, [@v] ) VAR mx = MAXX ( t2, [@v] ) VAR rng = IF ( mx = mn, 1, mx - mn )
+VAR pts = CONCATENATEX ( t2, FORMAT ( ( [Value] - 1 ) * 10 + 5, "0.0" ) & "," & FORMAT ( 35 - ( [@v] - mn ) / rng * 30, "0.0" ), " ", [Value], ASC )
+VAR lst = TOPN ( 1, t2, [Value], DESC )
+VAR lx = FORMAT ( ( MAXX ( lst, [Value] ) - 1 ) * 10 + 5, "0.0" ) VAR ly = FORMAT ( 35 - ( MAXX ( lst, [@v] ) - mn ) / rng * 30, "0.0" )
+RETURN IF ( COUNTROWS ( t2 ) > 1, SUBSTITUTE ( {SVG_HEAD}
+    & "<polyline points='" & pts & "' fill='none' stroke='" & [Col Accent] & "' stroke-width='2' stroke-linejoin='round' stroke-linecap='round' vector-effect='non-scaling-stroke'/>"
+    & "<circle cx='" & lx & "' cy='" & ly & "' r='2.5' fill='" & [Col Accent] & "'/></svg>", "#", "%23" ) )"""
+    add(name, expr, '11 KPI Cards', None, 'SVG sparkline: fiscal months of the selected year (dot = latest month).')
+    MEAS[-1]['cat'] = 'ImageUrl'
+def svg_bar(name, progress):
+    expr = f"""VAR p = {progress} VAR e = [Year Elapsed %]
+RETURN IF ( NOT ISBLANK ( p ), SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'>"
+    & "<rect x='0' y='3' width='300' height='6' rx='3' fill='" & [Col Track] & "'/>"
+    & "<rect x='0' y='3' width='" & FORMAT ( MIN ( MAX ( p, 0 ), 1 ) * 300, "0" ) & "' height='6' rx='3' fill='" & [Col Accent] & "'/>"
+    & "<rect x='" & FORMAT ( MIN ( e, 1 ) * 300 - 1, "0" ) & "' y='0' width='2' height='12' fill='" & [Col Muted] & "'/></svg>", "#", "%23" ) )"""
+    add(name, expr, '11 KPI Cards', None, 'SVG pacing bar: progress to the full-year budget; the tick marks how much of the year has elapsed.')
+    MEAS[-1]['cat'] = 'ImageUrl'
+svg_spark('SVG Spark Revenue', LINE(3, '[Actual]'))
+svg_spark('SVG Spark Gross Margin', 'DIVIDE ( ' + LINE(5, '[Actual]') + ', ' + LINE(3, '[Actual]') + ' )')
+svg_spark('SVG Spark EBITDA', LINE(13, '[Actual]'))
+svg_spark('SVG Spark Net Income', LINE(20, '[Actual]'))
+svg_spark('SVG Spark Cash', LINE(101, '[Actual]'))
+svg_spark('SVG Spark Metric', '[Metric Actual (in context)]')
+svg_spark('SVG Spark Metric Budget', '[Metric Budget (in context)]', full_year=True)
+svg_spark('SVG Spark Metric PY', '[Metric Actual (in context)]', full_year=True, py=True)
+for n in ('Revenue', 'EBITDA', 'Net Income', 'Metric'):
+    svg_bar(f'SVG Bar {n}', f'[{n} FY Progress]')
+svg_bar('SVG Bar Net Income Outlook', '[Net Income Outlook Progress]')
+svg_bar('SVG Bar Metric Outlook', '[Metric Outlook Progress]')

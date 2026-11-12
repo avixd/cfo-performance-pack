@@ -32,10 +32,21 @@ def hexid(*parts):
     return uuid.uuid5(NS, '/'.join(parts)).hex[:20]
 
 
+WRITES = {'written': 0, 'unchanged': 0}
+
+
 def write(path, text):
+    """Write only when the content changed: keeps file-sync and Git churn (and sync locks) to the files that really differ."""
+    data = text.replace('\r\n', '\n').replace('\n', '\r\n').encode('utf-8')
+    if os.path.exists(path):
+        with open(path, 'rb') as fh:
+            if fh.read() == data:
+                WRITES['unchanged'] += 1
+                return
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, 'w', encoding='utf-8', newline='\r\n') as fh:
-        fh.write(text)
+    with open(path, 'wb') as fh:
+        fh.write(data)
+    WRITES['written'] += 1
 
 
 # ============================================================== TMDL
@@ -72,6 +83,8 @@ def render_table(t):
             L.extend(body)
             if m.get('fmt'):
                 L.append(f"\t\tformatString: {m['fmt']}")
+            if m.get('cat'):
+                L.append(f"\t\tdataCategory: {m['cat']}")
             L.append(f"\t\tdisplayFolder: {m['folder']}")
             L.append(f"\t\tlineageTag: {tag(tn, 'measure', m['name'])}")
             L.append('')
@@ -254,8 +267,8 @@ HEADER_BG, HEADER_FG = '#1F3A5F', '#FFFFFF'   # table headers: readable on both 
 # Standard grid (1280 x 720). Left panel: filters. Header: title + insight subtitle, utilities top right.
 # Content area: page content is authored on the original 1248 x 630 grid and rescaled into it.
 PANEL_W = 196
-CX, CY, CW, CH = 208, 92, 1060, 578            # content area
-FOOT_Y = 676
+CX, CY, CW, CH = 208, 92, 1060, 570            # content area
+FOOT_Y = 670
 DOCS_URL = 'https://github.com/avixd/cfo-performance-pack/blob/main/docs/01-semantic-model.md'
 SX, SY = CW / 1248, CH / 630
 
@@ -374,16 +387,16 @@ class Page:
         self.rect('bg', 0, 0, W, H, 'Page')
         self.rect('side', 0, 0, PANEL_W, H, 'Sidebar')
         self.textline('brand', 8, 10, PANEL_W - 16, 24, 'Brand', 11.5, 'Sidebar Text', bold=True)
-        self.textline('brand2', 8, 32, PANEL_W - 16, 18, 'Brand Sub', 8.5, 'Sidebar Muted')
+        self.textline('brand2', 8, 32, PANEL_W - 16, 22, 'Brand Sub', 8.5, 'Sidebar Muted')
         # page navigation: one button per page, the current page highlighted
-        y = 60
+        y = 58
         for pid, name, glyph in PAGES_NAV:
             on = pid == self.pid
-            self.button(f'nav_{pid}', 8, y, PANEL_W - 16, 28, f'{glyph}   {name}', 'PageNavigation', page=pid, fill='Sidebar Active' if on else 'Sidebar',
+            self.button(f'nav_{pid}', 8, y, PANEL_W - 16, 26, f'{glyph}   {name}', 'PageNavigation', page=pid, fill='Sidebar Active' if on else 'Sidebar',
                         text='Sidebar Text' if on else 'Sidebar Muted', outline=None, size=9, align='left', bold=on, round_=6)
-            y += 31
-        self.textline('lbl_f', 8, y + 6, PANEL_W - 16, 18, 'Lbl Filters', 7.5, 'Sidebar Muted', bold=True)
-        y += 26
+            y += 28
+        self.textline('lbl_f', 8, y + 2, PANEL_W - 16, 20, 'Lbl Filters', 7.5, 'Sidebar Muted', bold=True)
+        y += 22
         for k, spec, ttl, mode, single, sync in [
                 ('s_fy', 'Date[Fiscal Year]', 'Fiscal year', 'Dropdown', False, 'Fiscal Year'),
                 ('s_m', 'Date[Month Name]', 'Month', 'Dropdown', False, 'Month Name'),
@@ -392,17 +405,17 @@ class Page:
                 ('s_r', 'Entity[Region]', 'Region', 'Dropdown', False, 'Region'),
                 ('s_e', 'Entity[EntityName]', 'Entity', 'Dropdown', False, 'Entity'),
                 ('s_d', 'Department[DepartmentName]', 'Department', 'Dropdown', False, 'Department')]:
-            self.slicer(k, 6, y, PANEL_W - 12, 44, spec, ttl, mode=mode, single=single, horizontal=(mode == 'Basic'), sync=sync)
-            y += 45
+            self.slicer(k, 6, y, PANEL_W - 12, 52, spec, ttl, mode=mode, single=single, horizontal=(mode == 'Basic'), sync=sync)
+            y += 53
         self.button('reset', 10, y + 4, PANEL_W - 20, 26, '\u21ba  Reset all filters', 'ClearAllSlicers', tooltip='Clear every slicer on every page',
                     fill='Sidebar Active', text='Sidebar Text', outline=None, round_=6)
-        self.textline('tagline', 8, H - 44, PANEL_W - 16, 34, 'Tagline', 8.5, 'Sidebar Muted')
+        self.textline('tagline', 8, H - 34, PANEL_W - 16, 26, 'Tagline', 8.5, 'Sidebar Muted')
         # header: title, insight subtitle, filter chips + refresh stamp; utilities top right
         self.textline('title', CX - 4, 4, 540, 32, title_measure, 16, 'Title', bold=True)
         self.textline('subtitle', CX - 4, 34, 640, 22, subtitle_measure, 8.5, 'Muted')
         x = CX
         for k, wdt in [('Period', 132), ('Currency', 92), ('Region', 128), ('Entity', 128), ('Department', 150)]:
-            self.button(f'chip_{k}', x, 59, wdt, 20, '', measure=f'Ctx Line {k}', fill='Accent Soft', text='Accent', outline=None, size=7.5, round_=10)
+            self.button(f'chip_{k}', x, 58, wdt, 24, '', measure=f'Ctx Line {k}', fill='Accent Soft', text='Accent', outline=None, size=7.5, round_=12)
             x += wdt + 6
         ux = 744
         self.textline('hello', ux, 6, 112, 28, 'Greeting', 9, 'Muted', align='right')
@@ -411,13 +424,13 @@ class Page:
         self.button('support', ux + 224, 6, 106, 28, 'Request support', 'WebUrl',
                     REPO_URL + '/issues/new?labels=question&title=%5BSupport%5D%20', 'Ask a question about the report or model')
         self.slicer('s_theme', ux + 334, 4, CX + CW - ux - 334, 32, 'Theme Mode[Mode]', None, mode='Basic', single=True, horizontal=True, sync='Theme')
-        self.textline('refreshed', ux + 60, 40, CX + CW - ux - 60, 18, 'Last Refreshed', 7.5, 'Muted', align='right')
+        self.textline('refreshed', ux + 40, 36, CX + CW - ux - 40, 22, 'Last Refreshed', 7.5, 'Muted', align='right')
         self.rect('hdr_line', CX, 86, CW, 1, 'Line')
         # footer: numbered notes + page-specific source note
         self.rect('foot_line', CX, FOOT_Y, CW, 1, 'Line')
-        self.textline('note1', CX - 4, FOOT_Y + 3, 520, 18, 'Footer Note 1', 7.5, 'Muted')
-        self.textline('note2', CX - 4, FOOT_Y + 20, 520, 18, 'Footer Note 2', 7.5, 'Muted')
-        self.button('footer', CX + 520, FOOT_Y + 3, CW - 520, 36, '', measure=f'Footer {self.key}', fill=None, text='Muted', outline=None, size=7, align='right')
+        self.textline('note1', CX - 4, FOOT_Y + 3, 520, 22, 'Footer Note 1', 7.5, 'Muted')
+        self.textline('note2', CX - 4, FOOT_Y + 25, 520, 22, 'Footer Note 2', 7.5, 'Muted')
+        self.button('footer', CX + 520, FOOT_Y + 3, CW - 520, 44, '', measure=f'Footer {self.key}', fill=None, text='Muted', outline=None, size=7, align='right')
 
     # ---------------------------------------------------------------- content building blocks
     def table_objects(self, fields, size=9, wrap=False, colours=None):
@@ -473,31 +486,26 @@ class Page:
         self.add(key + '_bg', 'textbox', x0, y0, w0, h0, content=False, header=False,
                  objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]})
         self.button(key + '_ic', x0 + 10, y0 + 10, 30, 30, glyph, fill='Accent Soft', text='Accent', outline=None, size=11, round_=15, bold=True)
-        self.button(key + '_v', x0 + 44, y0 + 6, w0 - 50, 24, '', measure=value, fill=None, text='Title', outline=None, size=15, align='left', bold=True)
-        self.button(key + '_l', x0 + 44, y0 + 28, w0 - 50, 16, label + '  \u24d8', 'WebUrl', url=DOCS_URL + (doc_anchor or ''),
+        self.button(key + '_v', x0 + 44, y0 + 6, w0 - 50, 30, '', measure=value, fill=None, text='Title', outline=None, size=15, align='left', bold=True)
+        self.button(key + '_l', x0 + 44, y0 + 36, w0 - 50, 20, label + '  \u24d8', 'WebUrl', url=DOCS_URL + (doc_anchor or ''),
                     tooltip=(desc or label)[:250], fill=None, text='Muted', outline=None, size=8, align='left')
         if sub:
-            self.button(key + '_s', x0 + 4, y0 + 48, w0 * 0.58, 18, '', measure=sub, fill=None, text='Muted', outline=None, size=7.5, align='left')
+            self.button(key + '_s', x0 + 4, y0 + 60, w0 * 0.6, 22, '', measure=sub, fill=None, text='Muted', outline=None, size=7.5, align='left')
             if sub_colour:
                 self.visuals[-1]['visual']['objects']['text'][1]['properties']['fontColor'] = mcolor(sub_colour)
         if spark:
-            obj = {'dataPoint': [{'properties': {'fill': T('Accent')}}],
-                   'lineStyles': [{'properties': {'strokeWidth': L(2), 'lineChartType': L('smooth'), 'showMarker': L(False)}}],
-                   'categoryAxis': [{'properties': {'show': L(False)}}], 'valueAxis': [{'properties': {'show': L(False), 'gridlineShow': L(False)}}],
-                   'legend': [{'properties': {'show': L(False)}}]}
-            self.add(key + '_sp', 'lineChart', x0 + w0 * 0.58, y0 + 40, w0 * 0.40, 30, roles={'Category': ['Date[Month Name]'], 'Y': [spark]},
-                     objects=obj, content=False, background=False, header=False, sort=[('Date[Month Name]', 'Ascending')])
+            self.image(key + '_sp', x0 + w0 * 0.6, y0 + 52, w0 * 0.38, 34, spark)
         if prog_text:
-            self.button(key + '_pt', x0 + 4, y0 + h0 - 26, w0 - 8, 14, '', measure=prog_text, fill=None, text='Muted', outline=None, size=7, align='left')
+            self.button(key + '_pt', x0 + 4, y0 + h0 - 36, w0 - 8, 20, '', measure=prog_text, fill=None, text='Muted', outline=None, size=7, align='left')
         if prog_bar:
-            obj = {'dataPoint': [{'properties': {'fill': T('Accent')}}],
-                   'categoryAxis': [{'properties': {'show': L(False), 'innerPadding': L(0)}}],
-                   'valueAxis': [{'properties': {'show': L(False), 'start': L(0), 'end': L(1), 'gridlineShow': L(False)}}],
-                   'labels': [{'properties': {'show': L(False)}}], 'legend': [{'properties': {'show': L(False)}}]}
-            self.add(key + '_pb', 'clusteredBarChart', x0 + 10, y0 + h0 - 11, w0 - 20, 6, roles={'Y': [prog_bar]}, objects=obj, content=False,
-                     background=False, header=False,
-                     container={'background': [{'properties': {'show': L(True), 'color': T('Track'), 'transparency': L(0)}}],
-                                'padding': [{'properties': {'top': L(0), 'bottom': L(0), 'left': L(0), 'right': L(0)}}]})
+            self.image(key + '_pb', x0 + 10, y0 + h0 - 16, w0 - 20, 10, prog_bar)
+
+    def image(self, key, x, y, w, h, measure):
+        """Image visual bound to an SVG measure (dataCategory ImageUrl)."""
+        obj = {'image': [{'properties': {'sourceType': L('imageData'), 'sourceField': {'expr': mfield(measure)}}}],
+               'imageScaling': [{'properties': {'imageScalingType': L('Fit')}}]}
+        return self.add(key, 'image', x, y, w, h, objects=obj, background=False, header=False,
+                        container={'padding': [{'properties': {'top': L(0), 'bottom': L(0), 'left': L(0), 'right': L(0)}}]})
 
     def axes(self, extra=None, value_axis=True, legend=True):
         o = {'categoryAxis': [{'properties': {'fontSize': L(8.5), 'labelColor': T('Muted')}}],
@@ -568,16 +576,16 @@ def page_overview():
     p.chrome('PT Overview', 'PS Overview')
     p.story('story', 16, 74, 400, 630, 'Overview', '=VT Story', 'Sub Story')
     x0, w4 = 428, 202
-    full(p, 'k0', x0, 74, w4, 104, 'Revenue', 'Net revenue', '$', 'Revenue vs Budget Text', 'Revenue Var Color', 'Revenue Spark', 'Revenue Progress Text', 'Revenue Progress Bar')
-    full(p, 'k1', x0 + (w4 + 10), 74, w4, 104, 'Organic Growth %', 'Organic growth', '\u2197', 'Revenue Growth Short')
-    full(p, 'k2', x0 + 2 * (w4 + 10), 74, w4, 104, 'Revenue New Entities', 'New-entity revenue', '+', 'Entity Budget Status Summary')
-    full(p, 'k3', x0 + 3 * (w4 + 10), 74, w4, 104, 'Entities Reporting', 'Entities reporting', '#', 'Sub Entities Short')
-    p.add('rev_fy', 'columnChart', 428, 186, 430, 300,
+    full(p, 'k0', x0, 74, w4, 136, 'Revenue', 'Net revenue', '$', 'Revenue vs Budget Text', 'Revenue Var Color', 'SVG Spark Revenue', 'Revenue Progress Text', 'SVG Bar Revenue')
+    full(p, 'k1', x0 + (w4 + 10), 74, w4, 136, 'Organic Growth %', 'Organic growth', '\u2197', 'Revenue Growth Short')
+    full(p, 'k2', x0 + 2 * (w4 + 10), 74, w4, 136, 'Revenue New Entities', 'New-entity revenue', '+', 'Entity Budget Status Summary')
+    full(p, 'k3', x0 + 3 * (w4 + 10), 74, w4, 136, 'Entities Reporting', 'Entities reporting', '#', 'Sub Entities Short')
+    p.add('rev_fy', 'columnChart', 428, 220, 430, 270,
           roles={'Category': ['Date[Fiscal Year]'], 'Series': ['Entity[Region]'], 'Y': [('Revenue Actual (in context)', 'Net revenue')]},
           objects=p.axes({'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000000), 'labelPrecision': L(1), 'fontSize': L(8), 'color': solid('#FFFFFF')}}]}, value_axis=False),
           title='=VT Revenue by FY', subtitle='Sub Revenue Mix', sort=[('Date[Fiscal Year]', 'Ascending')])
     fields = ['Entity[EntityName]', 'Entity[CurrencyCode]', 'Entity[Effective Ownership]', 'Entity Joined FY', 'Entity Budget Status', 'Revenue (M)']
-    p.add('entities', 'tableEx', 870, 186, 394, 518,
+    p.add('entities', 'tableEx', 870, 220, 394, 484,
           roles={'Values': [('Entity[EntityName]', 'Entity'), ('Entity[CurrencyCode]', 'Ccy'), ('Entity[Effective Ownership]', 'Group %'),
                             ('Entity Joined FY', 'Joined'), ('Entity Budget Status', 'Budget'), ('Revenue (M)', 'Revenue (M)')]},
           objects=p.table_objects(fields, colours={'_Measures.Entity Budget Status': 'Entity Budget Status Color'}),
@@ -591,30 +599,30 @@ def page_executive():
     p.chrome('PT Executive', 'PS Executive')
     p.card('headline', 16, 74, 1248, 40, 'Headline', None, size=12, colour='Accent')
     w = (1248 - 5 * 10) / 6
-    tiles = [('Revenue', 'Net revenue', '$', 'Revenue vs Budget Text', 'Revenue Var Color', 'Revenue Spark', 'Revenue Progress Text', 'Revenue Progress Bar'),
-             ('Gross Profit Margin %', 'Gross margin', '%', 'Gross Margin Text', 'Gross Margin Var Color', 'Gross Margin Spark', 'Gross Margin Progress Text', None),
-             ('EBITDA', 'EBITDA', '\u03a3', 'EBITDA vs Budget Text', 'EBITDA Var Color', 'EBITDA Spark', 'EBITDA Progress Text', 'EBITDA Progress Bar'),
-             ('Net Income', 'Net income', '\u25c6', 'Net Income vs Budget Text', 'Net Income Var Color', 'Net Income Spark', 'Net Income Progress Text', 'Net Income Progress Bar'),
-             ('Net Income Outlook FY', 'FY net income outlook', '\u2197', 'Net Income Outlook Gap Text', 'Net Income Outlook Gap Color', None, 'Net Income Outlook Progress Text', 'Net Income Outlook Progress Bar'),
-             ('Cash', 'Cash at month end', '\u00a4', 'Cash Change Text', 'Cash Change Color', 'Cash Spark', 'Cash Progress Text', None)]
+    tiles = [('Revenue', 'Net revenue', '$', 'Revenue vs Budget Text', 'Revenue Var Color', 'SVG Spark Revenue', 'Revenue Progress Text', 'SVG Bar Revenue'),
+             ('Gross Profit Margin %', 'Gross margin', '%', 'Gross Margin Text', 'Gross Margin Var Color', 'SVG Spark Gross Margin', 'Gross Margin Progress Text', None),
+             ('EBITDA', 'EBITDA', '\u03a3', 'EBITDA vs Budget Text', 'EBITDA Var Color', 'SVG Spark EBITDA', 'EBITDA Progress Text', 'SVG Bar EBITDA'),
+             ('Net Income', 'Net income', '\u25c6', 'Net Income vs Budget Text', 'Net Income Var Color', 'SVG Spark Net Income', 'Net Income Progress Text', 'SVG Bar Net Income'),
+             ('Net Income Outlook FY', 'FY net income outlook', '\u2197', 'Net Income Outlook Gap Text', 'Net Income Outlook Gap Color', None, 'Net Income Outlook Progress Text', 'SVG Bar Net Income Outlook'),
+             ('Cash', 'Cash at month end', '\u00a4', 'Cash Change Text', 'Cash Change Color', 'SVG Spark Cash', 'Cash Progress Text', None)]
     for i, t in enumerate(tiles):
-        full(p, f'k{i}', 16 + i * (w + 10), 122, w, 104, *t)
+        full(p, f'k{i}', 16 + i * (w + 10), 120, w, 136, *t)
     wf = p.axes({'sentimentColors': [{'properties': {'increaseFill': T('Good'), 'decreaseFill': T('Bad'), 'totalFill': solid(SERIES['total'])}}],
                  'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000000), 'labelPrecision': L(1), 'fontSize': L(8.5), 'color': T('Text')}}]}, value_axis=False)
-    p.add('wf_rev', 'waterfallChart', 16, 232, 404, 220, roles={'Category': ['Revenue Bridge[Step]'], 'Y': [('Revenue Bridge Value', 'Revenue growth')]},
+    p.add('wf_rev', 'waterfallChart', 16, 266, 404, 190, roles={'Category': ['Revenue Bridge[Step]'], 'Y': [('Revenue Bridge Value', 'Revenue growth')]},
           objects=wf, title='=Title Revenue Bridge', subtitle='Sub Revenue Bridge', sort=[('Revenue Bridge[Step]', 'Ascending')])
-    p.add('wf_ebitda', 'waterfallChart', 430, 232, 404, 220, roles={'Category': ['EBITDA Bridge[Step]'], 'Y': [('EBITDA Bridge Value', 'EBITDA variance')]},
+    p.add('wf_ebitda', 'waterfallChart', 430, 266, 404, 190, roles={'Category': ['EBITDA Bridge[Step]'], 'Y': [('EBITDA Bridge Value', 'EBITDA variance')]},
           objects=wf, title='=Title EBITDA Bridge', subtitle='Sub EBITDA Bridge', sort=[('EBITDA Bridge[Step]', 'Ascending')])
-    p.insights('ins', 844, 232, 420, 220, [1, 2, 4])
+    p.insights('ins', 844, 266, 420, 190, [1, 2, 4])
     fields = ['Exception Rank Shown', 'Entity[EntityName]', 'Report Line[LineName]', 'Exception Actual', 'Exception Var', 'Exception Var %']
-    p.add('exceptions', 'tableEx', 16, 462, 620, 242,
+    p.add('exceptions', 'tableEx', 16, 466, 620, 238,
           roles={'Values': [('Exception Rank Shown', '#'), ('Entity[EntityName]', 'Entity'), ('Report Line[LineName]', 'P&L line'),
                             ('Exception Actual', 'Actual (K)'), ('Exception Var', 'Var (K)'), ('Exception Var %', 'Var %')]},
           objects=p.table_objects(fields, colours={'_Measures.Exception Var': 'Exception Color', '_Measures.Exception Var %': 'Exception Color'}),
           title='=VT Exceptions', subtitle='Sub Exceptions', sort=[('Exception Rank Shown', 'Ascending')],
           filters=[cat_filter(hexid(p.pid, 'exceptions', 'f'), 'Report Line', 'LineType', ['Detail']),
                    cat_filter(hexid(p.pid, 'exceptions', 'g'), 'Report Line', 'Statement', ['Income Statement'])])
-    p.bars('by_entity', 646, 462, 618, 242, 'Entity[EntityName]', 'Metric Var vs Budget', 'Metric Var Color', '=VT Exec Entity', 'Sub Entity Variance')
+    p.bars('by_entity', 646, 466, 618, 238, 'Entity[EntityName]', 'Metric Var vs Budget', 'Metric Var Color', '=VT Exec Entity', 'Sub Entity Variance')
     return p
 
 
@@ -623,20 +631,20 @@ def page_bva():
     p.chrome('PT BvA', 'Title BvA')
     p.slicer('s_metric', 16, 74, 640, 44, 'Metric[Metric]', None, mode='Basic', single=True, horizontal=True, content=True)
     w = (1248 - 3 * 10) / 4
-    tiles = [('Metric Actual', 'Actual', '$', 'Metric Var Text', 'Metric Var Color', 'Metric Monthly Actual', 'Metric Progress Text', 'Metric Progress Bar'),
-             ('Metric Budget', 'Budget', '\u25a4', 'Metric Budget FY Text', None, 'Metric Monthly Budget', None, None),
-             ('Metric PY', 'Prior year', '\u21ba', 'Metric Growth Text', None, 'Metric Monthly Prior Year', None, None),
-             ('Metric Outlook FY', 'Full-year outlook', '\u2197', 'Metric Gap Text', 'Metric Gap Color', None, 'Metric Outlook Progress Text', 'Metric Outlook Progress Bar')]
+    tiles = [('Metric Actual', 'Actual', '$', 'Metric Var Text', 'Metric Var Color', 'SVG Spark Metric', 'Metric Progress Text', 'SVG Bar Metric'),
+             ('Metric Budget', 'Budget', '\u25a4', 'Metric Budget FY Text', None, 'SVG Spark Metric Budget', None, None),
+             ('Metric PY', 'Prior year', '\u21ba', 'Metric Growth Text', None, 'SVG Spark Metric PY', None, None),
+             ('Metric Outlook FY', 'Full-year outlook', '\u2197', 'Metric Gap Text', 'Metric Gap Color', None, 'Metric Outlook Progress Text', 'SVG Bar Metric Outlook')]
     for i, t in enumerate(tiles):
-        full(p, f'k{i}', 16 + i * (w + 10), 124, w, 100, *t)
-    combo(p, 'trend', 16, 230, 620, 258, '=Title BvA Trend', 'Sub Monthly')
+        full(p, f'k{i}', 16 + i * (w + 10), 124, w, 132, *t)
+    combo(p, 'trend', 16, 264, 620, 226, '=Title BvA Trend', 'Sub Monthly')
     obj = p.axes({'dataPoint': [{'properties': {'fill': solid(SERIES['actual'])}, 'selector': {'metadata': '_Measures.Metric Cumulative Actual'}},
                                 {'properties': {'fill': solid(SERIES['outlook'])}, 'selector': {'metadata': '_Measures.Metric Cumulative Outlook'}},
                                 {'properties': {'fill': solid(SERIES['budget'])}, 'selector': {'metadata': '_Measures.Metric Cumulative Budget'}}],
                   'lineStyles': [{'properties': {'lineStyle': L('dashed')}, 'selector': {'metadata': '_Measures.Metric Cumulative Outlook'}},
                                  {'properties': {'lineStyle': L('dotted')}, 'selector': {'metadata': '_Measures.Metric Cumulative Budget'}},
                                  {'properties': {'strokeWidth': L(3)}, 'selector': {'metadata': '_Measures.Metric Cumulative Actual'}}]})
-    p.add('cum', 'lineChart', 646, 230, 618, 258,
+    p.add('cum', 'lineChart', 646, 264, 618, 226,
           roles={'Category': ['Date[Month Name]'],
                  'Y': [('Metric Cumulative Actual', 'Actual YTD'), ('Metric Cumulative Outlook', 'Outlook'), ('Metric Cumulative Budget', 'Budget')]},
           objects=obj, title='=Title BvA Outlook', subtitle='Sub Cumulative', sort=[('Date[Month Name]', 'Ascending')])
@@ -783,4 +791,5 @@ if __name__ == '__main__':
     pages = build_report()
     print('model:', len(M.TABLES), 'tables,', len(M.MEAS), 'measures,', len(M.RELATIONSHIPS), 'relationships')
     print('report:', ', '.join(f'{pg.display} ({len(pg.visuals)})' for pg in pages))
+    print('files written:', WRITES['written'], '| unchanged:', WRITES['unchanged'])
     print('DataRoot:', 'kept from existing model' if '--data-root' not in sys.argv else 'set from argument', '| placeholder' if dr == PLACEHOLDER else '')
