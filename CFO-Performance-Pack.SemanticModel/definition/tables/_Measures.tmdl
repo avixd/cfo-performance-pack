@@ -1803,7 +1803,7 @@ table _Measures
 		displayFolder: 10 Layout
 		lineageTag: 1d572535-ae21-5df0-bbe7-982e97f52dd2
 
-	measure 'KV Revenue' = VAR v = [Revenue] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+	measure 'KV Revenue' = VAR v = [Revenue] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 		displayFolder: 11 KPI Cards
 		lineageTag: da762ac8-24ba-54a6-bea9-237bfdb2234d
 
@@ -1811,19 +1811,19 @@ table _Measures
 		displayFolder: 11 KPI Cards
 		lineageTag: d1cc38ab-9084-5879-8b8c-cf402146b4da
 
-	measure 'KV EBITDA' = VAR v = [EBITDA] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+	measure 'KV EBITDA' = VAR v = [EBITDA] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 		displayFolder: 11 KPI Cards
 		lineageTag: 17ccf333-993f-5db9-bfbc-9b030362a626
 
-	measure 'KV Net Income' = VAR v = [Net Income] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+	measure 'KV Net Income' = VAR v = [Net Income] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 		displayFolder: 11 KPI Cards
 		lineageTag: 780d189b-813e-538e-8126-d0c1b3b4365e
 
-	measure 'KV Net Income Outlook FY' = VAR v = [Net Income Outlook FY] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+	measure 'KV Net Income Outlook FY' = VAR v = [Net Income Outlook FY] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 		displayFolder: 11 KPI Cards
 		lineageTag: 5a3a7ec1-ee28-5d45-be17-f1013244990e
 
-	measure 'KV Cash' = VAR v = [Cash] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+	measure 'KV Cash' = VAR v = [Cash] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 		displayFolder: 11 KPI Cards
 		lineageTag: de7298f1-5f05-5598-962d-c4f32485a4a4
 
@@ -1831,7 +1831,7 @@ table _Measures
 		displayFolder: 11 KPI Cards
 		lineageTag: e57bbd69-6584-5b82-a444-dc95f9fc2147
 
-	measure 'KV Revenue New Entities' = VAR v = [Revenue New Entities] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+	measure 'KV Revenue New Entities' = VAR v = [Revenue New Entities] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 		displayFolder: 11 KPI Cards
 		lineageTag: 3c8b521b-f30f-5af1-9e57-46a913cfac6d
 
@@ -1839,19 +1839,19 @@ table _Measures
 		displayFolder: 11 KPI Cards
 		lineageTag: 9f122aaa-3083-53a4-a3ff-530a825cc5b5
 
-	measure 'KV Metric Actual' = VAR v = [Metric Actual] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+	measure 'KV Metric Actual' = VAR v = [Metric Actual] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 		displayFolder: 11 KPI Cards
 		lineageTag: 15c2f917-33a5-5a4f-99ca-e9525ffa95bc
 
-	measure 'KV Metric Budget' = VAR v = [Metric Budget] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+	measure 'KV Metric Budget' = VAR v = [Metric Budget] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 		displayFolder: 11 KPI Cards
 		lineageTag: 4579ed55-73be-58f2-9826-13aba8e4aed6
 
-	measure 'KV Metric PY' = VAR v = [Metric PY] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+	measure 'KV Metric PY' = VAR v = [Metric PY] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 		displayFolder: 11 KPI Cards
 		lineageTag: 8c4779be-8876-550b-96b7-744bb6bf9f2d
 
-	measure 'KV Metric Outlook FY' = VAR v = [Metric Outlook FY] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+	measure 'KV Metric Outlook FY' = VAR v = [Metric Outlook FY] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 		displayFolder: 11 KPI Cards
 		lineageTag: d9eab4cc-5d7f-5ac4-a1f6-2b9e599c0dca
 

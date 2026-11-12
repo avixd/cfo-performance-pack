@@ -723,7 +723,8 @@ add('Footer Note 2', '"2  Described in the model: every measure has a descriptio
 def kv_expr(name):
     fmt = next(m.get('fmt') for m in MEAS if m['name'] == name)
     if fmt == F:
-        return f'VAR v = [{name}] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )'
+        return (f'VAR v = [{name}] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", '
+                f'FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )')
     if fmt in (P, '0%'):
         return f'FORMAT ( [{name}], "0.0%" )'
     if fmt == '0.00':

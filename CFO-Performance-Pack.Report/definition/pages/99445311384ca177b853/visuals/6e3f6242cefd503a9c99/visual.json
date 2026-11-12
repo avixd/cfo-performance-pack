@@ -2,11 +2,11 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "6e3f6242cefd503a9c99",
   "position": {
-    "x": 748.0,
-    "y": 102.0,
+    "x": 746.0,
+    "y": 101.0,
     "z": 48000,
-    "height": 30,
-    "width": 30,
+    "height": 26,
+    "width": 26,
     "tabOrder": 48000
   },
   "visual": {
@@ -65,7 +65,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "11D"
+                  "Value": "10D"
                 }
               }
             },
