@@ -1,0 +1,115 @@
+/// General ledger fact in local currency: actuals one file per month, budgets one file per fiscal year. Grain: month x entity x department x account x scenario.
+table GL
+	lineageTag: b23f94e1-9ba8-5689-a2ff-f6a4f3156d70
+
+	column Month
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: fb631f95-1592-5da5-ac41-47678fbdaf4d
+		summarizeBy: none
+		sourceColumn: Month
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column EntityKey
+		dataType: int64
+		isHidden
+		lineageTag: 8186d412-b8a6-5d3e-8dc6-35bfb1520143
+		summarizeBy: none
+		sourceColumn: EntityKey
+
+	column DepartmentKey
+		dataType: int64
+		isHidden
+		lineageTag: 139c2e99-a516-5d92-acd3-2d69bae1e6eb
+		summarizeBy: none
+		sourceColumn: DepartmentKey
+
+	column AccountKey
+		dataType: int64
+		isHidden
+		lineageTag: 28284f5d-65d7-5130-9b64-d8201a89260e
+		summarizeBy: none
+		sourceColumn: AccountKey
+
+	column AmountLC
+		dataType: double
+		isHidden
+		formatString: #,0
+		lineageTag: ce9031ba-ed11-5e42-a3fd-3a68fd2dd36b
+		summarizeBy: none
+		sourceColumn: AmountLC
+
+	column Scenario
+		dataType: string
+		lineageTag: fe878f0b-8816-5984-a508-4ff2b2a47274
+		sourceColumn: Scenario
+
+	column BudgetSource
+		dataType: string
+		lineageTag: f59ad1d5-df20-5951-9f5e-c5f4cda7b2c0
+		sourceColumn: BudgetSource
+
+	column SourceFile
+		dataType: string
+		isHidden
+		lineageTag: 8cd1a9ec-354f-57a6-baae-dc921c33fe52
+		sourceColumn: SourceFile
+
+	column 'Rate Type' = IF ( RELATED ( Account[Statement] ) = "Balance Sheet", "End", IF ( GL[Scenario] = "Budget", "Budget", "Avg" ) )
+		isHidden
+		lineageTag: b8359cb2-1fc9-5f81-8f75-3dac04e315a0
+
+	column 'Rate to CAD' =
+			VAR k = RELATED ( Entity[CurrencyCode] ) & "|" & FORMAT ( GL[Month], "yyyy-MM" )
+			RETURN
+			    SWITCH (
+			        GL[Rate Type],
+			        "End", LOOKUPVALUE ( FX[EndRate], FX[FXKey], k ),
+			        "Budget", LOOKUPVALUE ( FX[BudgetRate], FX[FXKey], k ),
+			        LOOKUPVALUE ( FX[AvgRate], FX[FXKey], k )
+			    )
+		isHidden
+		lineageTag: 2b579d5b-43a4-55a9-b568-5a87e3907794
+		summarizeBy: none
+
+	column 'Rate USD to CAD' =
+			VAR k = "USD|" & FORMAT ( GL[Month], "yyyy-MM" )
+			RETURN
+			    SWITCH (
+			        GL[Rate Type],
+			        "End", LOOKUPVALUE ( FX[EndRate], FX[FXKey], k ),
+			        "Budget", LOOKUPVALUE ( FX[BudgetRate], FX[FXKey], k ),
+			        LOOKUPVALUE ( FX[AvgRate], FX[FXKey], k )
+			    )
+		isHidden
+		lineageTag: b88a6597-f683-585f-bdaf-35e3db495ba4
+		summarizeBy: none
+
+	column 'Amount CAD' = GL[AmountLC] * GL[Rate to CAD] * RELATED ( Account[Sign] )
+		isHidden
+		formatString: #,0
+		lineageTag: aeef14f8-b7d5-5c27-aa95-c74b39da5dd8
+		summarizeBy: none
+
+	column 'Amount USD' = DIVIDE ( GL[Amount CAD], GL[Rate USD to CAD] )
+		isHidden
+		formatString: #,0
+		lineageTag: f5e559a8-bd4b-57a4-8042-87b6ed6e43ac
+		summarizeBy: none
+
+	partition GL = m
+		mode: import
+		source =
+				let
+				    Actuals = fnLoadLedgerFolder("actuals", "Actual"),
+				    Budget = fnLoadLedgerFolder("budget", "Budget"),
+				    Combined = Table.Combine({Actuals, Budget}),
+				    Renamed = Table.RenameColumns(Combined, {{"Name", "SourceFile"}}),
+				    Source = Table.TransformColumns(Renamed, {{"BudgetSource", each if _ = null or _ = "" then "Ledger" else _}}),
+				    Typed = Table.TransformColumnTypes(Source, {{"Month", type date}, {"EntityKey", Int64.Type}, {"DepartmentKey", Int64.Type}, {"AccountKey", Int64.Type}, {"AmountLC", type number}, {"BudgetSource", type text}, {"SourceFile", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+

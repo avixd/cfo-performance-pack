@@ -1,0 +1,82 @@
+/// Management P&L and balance-sheet template (Goodly method). Order follows LineKey.
+table 'Report Line'
+	lineageTag: 4df457e1-f969-517e-a5fb-5fc81e44f79f
+
+	column LineKey
+		dataType: int64
+		lineageTag: cc4ba022-4a7a-5139-b269-c204e481ca99
+		summarizeBy: none
+		sourceColumn: LineKey
+
+	column LineName
+		dataType: string
+		lineageTag: 7ab5b70d-3665-544e-89b6-674c67ea43c9
+		sourceColumn: LineName
+		sortByColumn: LineKey
+
+	column Section
+		dataType: string
+		lineageTag: 94a4c049-4485-506c-ad0a-fd04ec147370
+		sourceColumn: Section
+
+	column LineType
+		dataType: string
+		lineageTag: 97814ac4-c91e-58bb-bf57-b627cda3468f
+		sourceColumn: LineType
+
+	column Statement
+		dataType: string
+		lineageTag: f871440b-4815-5d5d-ba40-d9fce7a9f1a3
+		sourceColumn: Statement
+
+	partition 'Report Line' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [LineKey = Int64.Type, LineName = text, Section = text, LineType = text, Statement = text], {
+				        {1, "Gross Sales", "Revenue", "Detail", "Income Statement"},
+				        {2, "Returns & Discounts", "Revenue", "Detail", "Income Statement"},
+				        {3, "Net Revenue", "Revenue", "Subtotal", "Income Statement"},
+				        {4, "Cost of Sales", "Cost of Sales", "Detail", "Income Statement"},
+				        {5, "Gross Profit", "Gross Profit", "Subtotal", "Income Statement"},
+				        {6, "Salaries & Benefits", "Operating Expenses", "Detail", "Income Statement"},
+				        {7, "Commissions", "Operating Expenses", "Detail", "Income Statement"},
+				        {8, "Travel & Entertainment", "Operating Expenses", "Detail", "Income Statement"},
+				        {9, "Marketing", "Operating Expenses", "Detail", "Income Statement"},
+				        {10, "Office, Professional & Software", "Operating Expenses", "Detail", "Income Statement"},
+				        {11, "Occupancy & Utilities", "Operating Expenses", "Detail", "Income Statement"},
+				        {12, "Total Operating Expenses", "Operating Expenses", "Subtotal", "Income Statement"},
+				        {13, "EBITDA", "EBITDA", "Total", "Income Statement"},
+				        {14, "Depreciation & Amortization", "Below EBITDA", "Detail", "Income Statement"},
+				        {15, "Operating Profit (EBIT)", "EBIT", "Total", "Income Statement"},
+				        {16, "Net Interest", "Below EBIT", "Detail", "Income Statement"},
+				        {17, "Other Income / (Expense)", "Below EBIT", "Detail", "Income Statement"},
+				        {18, "Profit Before Tax", "Profit Before Tax", "Total", "Income Statement"},
+				        {19, "Income Tax", "Below PBT", "Detail", "Income Statement"},
+				        {20, "Net Income", "Net Income", "Total", "Income Statement"},
+				        {101, "Cash", "Assets", "Detail", "Balance Sheet"},
+				        {102, "Receivables", "Assets", "Detail", "Balance Sheet"},
+				        {103, "Inventory", "Assets", "Detail", "Balance Sheet"},
+				        {104, "Other Current Assets (incl. intercompany)", "Assets", "Detail", "Balance Sheet"},
+				        {105, "Total Current Assets", "Assets", "Subtotal", "Balance Sheet"},
+				        {106, "Property, Plant & Equipment", "Assets", "Detail", "Balance Sheet"},
+				        {107, "Other Assets", "Assets", "Detail", "Balance Sheet"},
+				        {108, "Total Assets", "Assets", "Total", "Balance Sheet"},
+				        {109, "Accounts Payable", "Liabilities", "Detail", "Balance Sheet"},
+				        {110, "Accrued Liabilities", "Liabilities", "Detail", "Balance Sheet"},
+				        {111, "Short-term Debt", "Liabilities", "Detail", "Balance Sheet"},
+				        {112, "Other Current Liabilities (incl. intercompany)", "Liabilities", "Detail", "Balance Sheet"},
+				        {113, "Total Current Liabilities", "Liabilities", "Subtotal", "Balance Sheet"},
+				        {114, "Long-term Debt", "Liabilities", "Detail", "Balance Sheet"},
+				        {115, "Pension & Other Long-term Liabilities", "Liabilities", "Detail", "Balance Sheet"},
+				        {116, "Total Liabilities", "Liabilities", "Subtotal", "Balance Sheet"},
+				        {117, "Paid-in Capital", "Equity", "Detail", "Balance Sheet"},
+				        {118, "Retained Earnings", "Equity", "Detail", "Balance Sheet"},
+				        {119, "Total Equity", "Equity", "Subtotal", "Balance Sheet"},
+				        {120, "Total Liabilities & Equity", "Liabilities & Equity", "Total", "Balance Sheet"}
+				    })
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,31 @@
+/// Rows for the insight tables: each topic shows one narrative measure.
+table Insight
+	lineageTag: 48a5a841-244b-51c6-811a-e1f9fa4e13fa
+
+	column Key
+		dataType: int64
+		isHidden
+		lineageTag: d57d1260-b3db-5932-b962-e5c844c9c223
+		summarizeBy: none
+		sourceColumn: Key
+
+	column Topic
+		dataType: string
+		lineageTag: c5767106-572b-5e00-8216-27534d42a269
+		sourceColumn: Topic
+		sortByColumn: Key
+
+	partition Insight = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [Key = Int64.Type, Topic = text], {
+				        {1, "Growth quality"},
+				        {2, "Cost absorption"},
+				        {3, "Full-year outlook"}
+				    })
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+

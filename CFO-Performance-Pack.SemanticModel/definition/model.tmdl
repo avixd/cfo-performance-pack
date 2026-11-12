@@ -1,0 +1,36 @@
+model Model
+	culture: en-CA
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: en-CA
+	valueFilterBehavior: independent
+	discourageImplicitMeasures
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+annotation __PBI_TimeIntelligenceEnabled = 0
+
+annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
+
+annotation PBI_QueryOrder = ["DataRoot","fnReadCsv","fnLoadLedgerFolder","Account","Entity","Department","GL","FX","Report Line","Report Line Map","Reporting Currency","Period View","Metric","Revenue Bridge","EBITDA Bridge","Insight","DQ File Log","DQ Injection Log","_Measures"]
+
+ref table Account
+ref table Entity
+ref table Department
+ref table GL
+ref table FX
+ref table 'Report Line'
+ref table 'Report Line Map'
+ref table Date
+ref table 'Reporting Currency'
+ref table 'Period View'
+ref table Metric
+ref table 'Revenue Bridge'
+ref table 'EBITDA Bridge'
+ref table Insight
+ref table 'DQ File Log'
+ref table 'DQ Injection Log'
+ref table _Measures
+
+ref cultureInfo en-CA
+

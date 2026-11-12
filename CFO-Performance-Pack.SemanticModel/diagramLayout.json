@@ -1,0 +1,165 @@
+{
+  "version": "1.1.0",
+  "diagrams": [
+    {
+      "ordinal": 0,
+      "scrollPosition": {
+        "x": 0,
+        "y": 0
+      },
+      "nodes": [
+        {
+          "location": {
+            "x": 0,
+            "y": 26
+          },
+          "nodeIndex": "Account",
+          "nodeLineageTag": "5d8f6d03-b336-4887-8557-a6c11c7e6219",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 284,
+            "y": 74
+          },
+          "nodeIndex": "Department",
+          "nodeLineageTag": "229fe922-33de-4f7a-81b0-ac02b7ac341f",
+          "size": {
+            "height": 152,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 568,
+            "y": 50
+          },
+          "nodeIndex": "Entity",
+          "nodeLineageTag": "53b63a67-25f9-458e-a5b5-737bef532302",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 852,
+            "y": 26
+          },
+          "nodeIndex": "FX",
+          "nodeLineageTag": "6a79ed1c-d8f6-4f3d-bca7-14df9f430466",
+          "size": {
+            "height": 248,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1136,
+            "y": 14
+          },
+          "nodeIndex": "GL",
+          "nodeLineageTag": "9fcc3dea-cce0-4a9a-a254-b51449a710b1",
+          "size": {
+            "height": 272,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1420,
+            "y": 0
+          },
+          "nodeIndex": "Date",
+          "nodeLineageTag": "4a90c2ee-1a15-4c3e-b34d-55ebf975bcc7",
+          "size": {
+            "height": 300,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1704,
+            "y": 50
+          },
+          "nodeIndex": "Report Line",
+          "nodeLineageTag": "931f3594-f3c8-4d45-a3d5-fd3e0173a76e",
+          "size": {
+            "height": 200,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 1988,
+            "y": 86
+          },
+          "nodeIndex": "Report Line Map",
+          "nodeLineageTag": "77bf8ad2-5481-443f-a773-0f08c437d892",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2272,
+            "y": 98
+          },
+          "nodeIndex": "_Measures",
+          "nodeLineageTag": "45b9e8d6-c339-450a-8bc2-d9d38be1a1e6",
+          "size": {
+            "height": 104,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2556,
+            "y": 86
+          },
+          "nodeIndex": "Period View",
+          "nodeLineageTag": "ff897c4c-4ba3-4952-8054-a9e1996e75f2",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        },
+        {
+          "location": {
+            "x": 2840,
+            "y": 86
+          },
+          "nodeIndex": "Reporting Currency",
+          "nodeLineageTag": "e2ce7c56-4dcd-483a-938c-8ad12c2735ff",
+          "size": {
+            "height": 128,
+            "width": 234
+          },
+          "zIndex": 0
+        }
+      ],
+      "name": "All tables",
+      "zoomValue": 40.0525547248832,
+      "pinKeyFieldsToTop": false,
+      "showExtraHeaderInfo": false,
+      "hideKeyFieldsWhenCollapsed": false,
+      "tablesLocked": false
+    }
+  ],
+  "selectedDiagram": "All tables",
+  "defaultDiagram": "All tables"
+}

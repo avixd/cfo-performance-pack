@@ -1,0 +1,39 @@
+/// Root folder holding reference/, actuals/, budget/, fx/ and inbox/. Change this one value to run the model on another machine.
+expression DataRoot = "<YOUR-LOCAL-PATH>\data\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
+	lineageTag: c494f972-fde3-585a-9acb-3bd729d69ee1
+
+	annotation PBI_ResultType = Text
+
+/// Reads one UTF-8 CSV (subfolder of DataRoot, file name) through the single Folder.Files(DataRoot) source; blank strings become null.
+expression fnReadCsv =
+		(subfolder as text, fileName as text) as table =>
+		let
+		    Target = Text.Lower(if subfolder = "" then DataRoot else DataRoot & subfolder & "\"),
+		    Hit = Table.SelectRows(Folder.Files(DataRoot), each Text.Lower([Folder Path]) = Target and Text.Lower([Name]) = Text.Lower(fileName)),
+		    Source = Csv.Document(Hit{0}[Content], [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+		    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+		    Blanks = Table.TransformColumns(Promoted, {}, (x) => if x = "" then null else x)
+		in
+		    Blanks
+	lineageTag: e595d3c5-8417-5464-8ff4-eea5508f286c
+
+	annotation PBI_ResultType = Function
+
+/// Combines every GL_*.csv in a subfolder of DataRoot: columns matched by name (order and extra columns ignored), exact duplicate rows removed, blank department mapped to 0 "Unassigned". Adding or removing a file adds or removes a period.
+expression fnLoadLedgerFolder =
+		(subfolder as text, scenario as text) as table =>
+		let
+		    Target = Text.Lower(DataRoot & subfolder & "\"),
+		    Files = Table.SelectRows(Folder.Files(DataRoot), each Text.Lower([Folder Path]) = Target),
+		    Csvs = Table.SelectRows(Files, each Text.Lower([Extension]) = ".csv" and Text.StartsWith([Name], "GL_")),
+		    Parsed = Table.AddColumn(Csvs, "Data", each Table.Distinct(Table.SelectColumns(Table.PromoteHeaders(Csv.Document([Content], [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]), {"Month", "EntityKey", "DepartmentKey", "AccountKey", "AmountLC", "BudgetSource"}, MissingField.UseNull))),
+		    Kept = Table.SelectColumns(Parsed, {"Name", "Data"}),
+		    Expanded = Table.ExpandTableColumn(Kept, "Data", {"Month", "EntityKey", "DepartmentKey", "AccountKey", "AmountLC", "BudgetSource"}),
+		    DeptFixed = Table.ReplaceValue(Table.ReplaceValue(Expanded, "", "0", Replacer.ReplaceValue, {"DepartmentKey"}), null, "0", Replacer.ReplaceValue, {"DepartmentKey"}),
+		    WithScenario = Table.AddColumn(DeptFixed, "Scenario", each scenario, type text)
+		in
+		    WithScenario
+	lineageTag: b2435c18-26e6-5b88-9a9e-0d4ddf841882
+
+	annotation PBI_ResultType = Function
+

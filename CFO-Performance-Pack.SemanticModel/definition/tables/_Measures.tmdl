@@ -1,0 +1,1224 @@
+/// Home table for all measures, organised in display folders.
+table _Measures
+	lineageTag: 76288148-93bb-5a23-a24d-abc08674d4e8
+
+	/// Ledger amount in the selected reporting currency (CAD default). Costs are negative.
+	measure Amount = IF ( SELECTEDVALUE ( 'Reporting Currency'[Currency], "CAD" ) = "USD", SUM ( GL[Amount USD] ), SUM ( GL[Amount CAD] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 0 Base
+		lineageTag: 9a50ffa7-ca88-5e2f-8b6c-238da2335e74
+
+	measure 'Currency Label' = SELECTEDVALUE ( 'Reporting Currency'[Currency], "CAD" )
+		displayFolder: 0 Base
+		lineageTag: 2c53cfe4-60bb-5e3e-910b-6dde63efb7a6
+
+	/// Latest month with actuals loaded (the close). Moves forward automatically when a new actuals file is added.
+	measure 'As Of Month' = CALCULATE ( MAX ( GL[Month] ), REMOVEFILTERS (), GL[Scenario] = "Actual" )
+		formatString: mmm yyyy
+		displayFolder: 0 Base
+		lineageTag: cee1f161-cd7e-55e1-b73a-cc6607a75f30
+
+	/// Reporting month: the latest month selected in the date slicers, capped at the close. Defaults to the close.
+	measure 'Selected Month' =
+			VAR picked = CALCULATE ( MAX ( 'Date'[Month] ), ALLSELECTED ( 'Date' ) )
+			VAR asOf = [As Of Month]
+			RETURN IF ( ISBLANK ( picked ) || picked > asOf, asOf, picked )
+		formatString: mmm yyyy
+		displayFolder: 0 Base
+		lineageTag: 8f512a59-549d-527e-a031-5bd9c1089a5c
+
+	measure 'Selected Fiscal Year' = VAR m = [Selected Month] RETURN "FY" & ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) )
+		displayFolder: 0 Base
+		lineageTag: dbd056b0-2852-55be-b0a3-8b721dd86229
+
+	measure 'Fiscal Month Of Selection' = MOD ( MONTH ( [Selected Month] ) + 8, 12 ) + 1
+		formatString: 0
+		displayFolder: 0 Base
+		lineageTag: 3ed48db8-424a-5540-aba3-57c4c7486ead
+
+	measure 'Period Label' = SELECTEDVALUE ( 'Period View'[View], "YTD" ) & " " & FORMAT ( [Selected Month], "mmm yyyy" ) & " · " & [Currency Label]
+		displayFolder: 0 Base
+		lineageTag: 43499d5c-3d1a-5fc1-9d35-123d26f2e509
+
+	measure Actual = CALCULATE ( [Amount], GL[Scenario] = "Actual" )
+		formatString: #,0;(#,0);-
+		displayFolder: 0 Base
+		lineageTag: 7dcacfbf-8ae5-5219-a4a9-eb38942b5661
+
+	measure Budget = CALCULATE ( [Amount], GL[Scenario] = "Budget" )
+		formatString: #,0;(#,0);-
+		displayFolder: 0 Base
+		lineageTag: 80f270b8-b830-5ecf-8361-ddac5e96cfd2
+
+	measure 'Actual MTD' =
+			VAR m = [Selected Month]
+			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: ee31ae98-7067-53c5-9b4c-d1c8d9cb9224
+
+	measure 'Budget MTD' =
+			VAR m = [Selected Month]
+			RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: 68ed2d4e-c609-5e85-96d1-f4c8a935f6b0
+
+	measure 'Prior Year MTD' =
+			VAR m = EDATE ( [Selected Month], -12 )
+			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: e4621977-ef57-51a2-aee8-bf2b6bf8cb05
+
+	measure 'Actual QTD' =
+			VAR m = [Selected Month]
+			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( YEAR ( m ), INT ( ( MONTH ( m ) - 1 ) / 3 ) * 3 + 1, 1 ) && 'Date'[Month] <= m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: 2e5ce83c-5899-55d6-8452-bb5d8dc39ad9
+
+	measure 'Budget QTD' =
+			VAR m = [Selected Month]
+			RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( YEAR ( m ), INT ( ( MONTH ( m ) - 1 ) / 3 ) * 3 + 1, 1 ) && 'Date'[Month] <= m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: afa7e53b-38d2-57d3-b3ae-bb4595cde189
+
+	measure 'Prior Year QTD' =
+			VAR m = EDATE ( [Selected Month], -12 )
+			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( YEAR ( m ), INT ( ( MONTH ( m ) - 1 ) / 3 ) * 3 + 1, 1 ) && 'Date'[Month] <= m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: 49bba018-1b9f-5aba-934c-2a606b086b49
+
+	measure 'Actual YTD' =
+			VAR m = [Selected Month]
+			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) - 1, 4, 1 ) && 'Date'[Month] <= m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: 2467bada-092b-53a7-aa55-e03a3dcf6e57
+
+	measure 'Budget YTD' =
+			VAR m = [Selected Month]
+			RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) - 1, 4, 1 ) && 'Date'[Month] <= m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: fcf51821-c2b9-5d89-a40e-c665c4d74061
+
+	measure 'Prior Year YTD' =
+			VAR m = EDATE ( [Selected Month], -12 )
+			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) - 1, 4, 1 ) && 'Date'[Month] <= m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: 4ce429e6-9118-5836-a7b4-8a0389f97460
+
+	/// Full fiscal-year budget for the year of the selected month.
+	measure 'Budget FY' =
+			VAR m = [Selected Month] VAR fy = ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) )
+			RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Fiscal Year Number] = fy )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: db34269d-2727-5a89-80c6-a5568de3e745
+
+	/// Rolling fiscal-year outlook: actuals to the selected month + budget for the remaining months (Goodly level-3 pattern).
+	measure 'Outlook FY' =
+			VAR m = [Selected Month] VAR fy = ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) )
+			RETURN [Actual YTD] + CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Fiscal Year Number] = fy && 'Date'[Month] > m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: 0583feeb-bbb7-5e7c-b3f9-d099759a4942
+
+	measure 'Actual (Period)' = SWITCH ( SELECTEDVALUE ( 'Period View'[View], "YTD" ), "MTD", [Actual MTD], "QTD", [Actual QTD], [Actual YTD] )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: 06aaf99d-8d29-5c67-a737-3c28bd5c11fd
+
+	measure 'Budget (Period)' = SWITCH ( SELECTEDVALUE ( 'Period View'[View], "YTD" ), "MTD", [Budget MTD], "QTD", [Budget QTD], [Budget YTD] )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: 74920714-7353-5c2f-aba1-b53b4fba5e96
+
+	measure 'Prior Year (Period)' = SWITCH ( SELECTEDVALUE ( 'Period View'[View], "YTD" ), "MTD", [Prior Year MTD], "QTD", [Prior Year QTD], [Prior Year YTD] )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: e12ffa17-a02e-5fb7-ab7e-0515580c5cc2
+
+	/// Balance-sheet value at the selected month end.
+	measure 'Closing Balance' =
+			VAR m = [Selected Month]
+			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: d216693c-510d-5b54-94ef-c7b90ec21b49
+
+	/// Balance at the previous fiscal year end (31 March).
+	measure 'Prior Year-End Balance' =
+			VAR m = [Selected Month] VAR ye = DATE ( ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) - 1, 3, 1 )
+			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = ye )
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)
+		lineageTag: e021c823-a265-56f9-864e-1b7d8a0b731b
+
+	/// Month-axis charts: actual for each fiscal month of the selected year, up to the selected month. Independent of which years the date slicer shows.
+	measure 'Monthly Actual (Selected FY)' =
+			IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ),
+			    VAR fm = MAX ( 'Date'[Fiscal Month Number] ) VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
+			    RETURN IF ( d <= sel, CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)\Month axis
+		lineageTag: 4dc6c521-8730-5a45-888f-ff242229cc29
+
+	measure 'Monthly Budget (Selected FY)' =
+			IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ),
+			    VAR fm = MAX ( 'Date'[Fiscal Month Number] ) VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
+			    RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)\Month axis
+		lineageTag: 252a726e-a924-51fa-ba02-b3ff89f3a949
+
+	/// Budget shown as the outlook for months after the selected month.
+	measure 'Monthly Outlook (Selected FY)' =
+			IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ),
+			    VAR fm = MAX ( 'Date'[Fiscal Month Number] ) VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
+			    RETURN IF ( d > sel, CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)\Month axis
+		lineageTag: 31bd4af8-3860-59a4-889f-f6f9172dafa9
+
+	measure 'Monthly Prior Year (Selected FY)' =
+			IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ),
+			    VAR fm = MAX ( 'Date'[Fiscal Month Number] ) VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
+			    RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)\Month axis
+		lineageTag: efa05e12-44dc-5178-a1ee-f9cae9ffde74
+
+	measure 'Cumulative Actual (Selected FY)' =
+			IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ),
+			    VAR fm = MAX ( 'Date'[Fiscal Month Number] ) VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
+			    RETURN IF ( d <= sel, CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= fyStart && 'Date'[Month] <= d ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)\Month axis
+		lineageTag: 45f20c42-8704-5820-bf77-afc9157a3640
+
+	/// Actual to the selected month plus budget for later months, accumulated: where the year is heading.
+	measure 'Cumulative Outlook (Selected FY)' =
+			IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ),
+			    VAR fm = MAX ( 'Date'[Fiscal Month Number] ) VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
+			    RETURN IF ( d >= sel, CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= fyStart && 'Date'[Month] <= sel ) + CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] > sel && 'Date'[Month] <= d ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)\Month axis
+		lineageTag: 7d2c8a42-7cf0-57f8-863b-449ee11ca37a
+
+	measure 'Cumulative Budget (Selected FY)' =
+			IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ),
+			    VAR fm = MAX ( 'Date'[Fiscal Month Number] ) VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
+			    RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= fyStart && 'Date'[Month] <= d )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 1 Period (fiscal)\Month axis
+		lineageTag: dc78b74b-e345-546e-ace8-6c097ce54619
+
+	/// Report-line value for the Period View; one line at a time.
+	measure 'Line Actual' =
+			IF ( HASONEVALUE ( 'Report Line'[LineKey] ),
+			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
+			    RETURN CALCULATE ( [Actual (Period)], TREATAS ( accts, Account[AccountKey] ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 2 Statement Lines
+		lineageTag: 68c91e21-55f2-5b38-99de-8f6d555db71a
+
+	measure 'Line Budget' =
+			IF ( HASONEVALUE ( 'Report Line'[LineKey] ),
+			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
+			    RETURN CALCULATE ( [Budget (Period)], TREATAS ( accts, Account[AccountKey] ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 2 Statement Lines
+		lineageTag: 0bf568f2-f17c-5e50-b02f-71ff4e75137b
+
+	measure 'Line Prior Year' =
+			IF ( HASONEVALUE ( 'Report Line'[LineKey] ),
+			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
+			    RETURN CALCULATE ( [Prior Year (Period)], TREATAS ( accts, Account[AccountKey] ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 2 Statement Lines
+		lineageTag: 3d6bd189-d5e9-5eec-9a45-6c06902b40a2
+
+	/// Positive = favourable (costs are stored negative).
+	measure 'Line Var vs Budget' = [Line Actual] - [Line Budget]
+		formatString: #,0;(#,0);-
+		displayFolder: 2 Statement Lines
+		lineageTag: a1c54cb5-03a4-54a9-9fa4-1ffc24e67ea3
+
+	measure 'Line Var % vs Budget' = IF ( NOT ISBLANK ( [Line Budget] ), DIVIDE ( [Line Actual] - [Line Budget], ABS ( [Line Budget] ) ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 2 Statement Lines
+		lineageTag: 829a5441-3fb0-5833-a612-a8c9d6e19d43
+
+	measure 'Line Var vs Prior Year' = [Line Actual] - [Line Prior Year]
+		formatString: #,0;(#,0);-
+		displayFolder: 2 Statement Lines
+		lineageTag: 4fccbdd6-7f0f-5f77-bcd5-d5ca572c1e86
+
+	measure 'Line Growth %' = IF ( NOT ISBLANK ( [Line Prior Year] ), DIVIDE ( [Line Actual] - [Line Prior Year], ABS ( [Line Prior Year] ) ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 2 Statement Lines
+		lineageTag: b48d2990-a997-565d-8982-cf1e9735b98f
+
+	measure 'Line % of Revenue' = DIVIDE ( [Line Actual], CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 2 Statement Lines
+		lineageTag: d2024bc5-6541-5751-bc48-04ef87e1acef
+
+	measure 'Line Outlook FY' =
+			IF ( HASONEVALUE ( 'Report Line'[LineKey] ),
+			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
+			    RETURN CALCULATE ( [Outlook FY], TREATAS ( accts, Account[AccountKey] ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 2 Statement Lines
+		lineageTag: dbe7cc83-4b87-5257-8dd4-c78aa5e31f4e
+
+	measure 'Line Budget FY' =
+			IF ( HASONEVALUE ( 'Report Line'[LineKey] ),
+			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
+			    RETURN CALCULATE ( [Budget FY], TREATAS ( accts, Account[AccountKey] ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 2 Statement Lines
+		lineageTag: 3763bc90-8398-5641-9fdc-3c3fdf4bf332
+
+	measure 'Line Closing Balance' =
+			IF ( HASONEVALUE ( 'Report Line'[LineKey] ),
+			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
+			    RETURN CALCULATE ( [Closing Balance], TREATAS ( accts, Account[AccountKey] ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 2 Statement Lines
+		lineageTag: af38e13b-7f66-542e-a0f6-1e3bd84b4d09
+
+	measure 'Line Prior Year-End Balance' =
+			IF ( HASONEVALUE ( 'Report Line'[LineKey] ),
+			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
+			    RETURN CALCULATE ( [Prior Year-End Balance], TREATAS ( accts, Account[AccountKey] ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 2 Statement Lines
+		lineageTag: 7da8bb17-19b6-57a2-82f5-ea702f3facb0
+
+	measure 'Line Balance Change' = [Line Closing Balance] - [Line Prior Year-End Balance]
+		formatString: #,0;(#,0);-
+		displayFolder: 2 Statement Lines
+		lineageTag: 660c8fe5-e300-5378-8b59-a5dc474f5cfa
+
+	measure 'Line Var Color' = IF ( [Line Var vs Budget] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: 669bda09-e5bd-57ac-baff-40fb5230b794
+
+	measure Revenue = CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: 3ea43793-6346-5570-9733-71810985839b
+
+	measure 'Revenue Budget' = CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: b0c864df-2a50-539c-9917-fd057058b1fe
+
+	measure 'Revenue PY' = CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: 81bba724-5de0-5528-a1a8-b612a4bf70b3
+
+	measure 'Revenue Var vs Budget' = [Revenue] - [Revenue Budget]
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: 03f2e84c-1c94-5f95-9030-207d83ca5543
+
+	measure 'Revenue Var % vs Budget' = DIVIDE ( [Revenue] - [Revenue Budget], ABS ( [Revenue Budget] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: ef136c89-69ae-5b7b-b3ed-89a00172faae
+
+	measure 'Revenue Growth %' = DIVIDE ( [Revenue] - [Revenue PY], ABS ( [Revenue PY] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: d115b660-0745-54c3-ad3e-076f09b16d02
+
+	measure 'Revenue Outlook FY' = CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: 514570a5-8ad6-5bbd-9a33-8b551e333256
+
+	measure 'Revenue Budget FY' = CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: 829d31c5-1661-5713-954c-d7264c558757
+
+	measure 'Revenue Monthly Actual' = CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: 9d1f31ad-79c2-5669-a2c4-e30f1c6a1730
+
+	measure 'Revenue vs Budget Text' = FORMAT ( [Revenue Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs Bud  ·  " & FORMAT ( [Revenue Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs PY"
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: 11006cfa-5fc5-5858-b02a-96cc6f1f3625
+
+	measure 'Revenue Var Color' = IF ( [Revenue Var vs Budget] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: e4c3ca7d-949c-5afa-8b0d-258aa5a8e9d1
+
+	measure 'Cost of Sales' = CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Cost of Sales
+		lineageTag: b6e45bed-ed70-5c40-a819-24c9888cb286
+
+	measure 'Cost of Sales Budget' = CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Cost of Sales
+		lineageTag: eb514ebe-1502-5a49-89f6-23f0c84b1655
+
+	measure 'Cost of Sales PY' = CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Cost of Sales
+		lineageTag: 050119e6-855a-51bc-8fa5-c0da7cbda4e8
+
+	measure 'Cost of Sales Var vs Budget' = [Cost of Sales] - [Cost of Sales Budget]
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Cost of Sales
+		lineageTag: fd061f62-849c-598e-89dc-b672582a26d0
+
+	measure 'Cost of Sales Var % vs Budget' = DIVIDE ( [Cost of Sales] - [Cost of Sales Budget], ABS ( [Cost of Sales Budget] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Cost of Sales
+		lineageTag: fc741759-aed8-5fdd-815f-69b9083053f1
+
+	measure 'Cost of Sales Growth %' = DIVIDE ( [Cost of Sales] - [Cost of Sales PY], ABS ( [Cost of Sales PY] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Cost of Sales
+		lineageTag: 10097a7d-44d4-5749-b5e0-12a4bd4c9efd
+
+	measure 'Cost of Sales Outlook FY' = CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Cost of Sales
+		lineageTag: 5e9c0532-64c7-5a35-8b4c-14fa259e7332
+
+	measure 'Cost of Sales Budget FY' = CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Cost of Sales
+		lineageTag: 2d1aa66d-2f33-532a-a315-35a6ce6f39cf
+
+	measure 'Cost of Sales Monthly Actual' = CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Cost of Sales
+		lineageTag: c309aa25-a932-5bdc-896a-4de7de0a527f
+
+	measure 'Cost of Sales vs Budget Text' = FORMAT ( [Cost of Sales Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs Bud  ·  " & FORMAT ( [Cost of Sales Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs PY"
+		displayFolder: 3 KPIs\Cost of Sales
+		lineageTag: 98c60acc-a7b7-5f84-aac7-e4e19f0088eb
+
+	measure 'Cost of Sales Var Color' = IF ( [Cost of Sales Var vs Budget] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: fd3a52c0-354e-523a-95ef-0d5d0989650f
+
+	measure 'Gross Profit' = CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Gross Profit
+		lineageTag: 7b9dfbe7-d0a5-5eba-86b5-27efd739b66c
+
+	measure 'Gross Profit Budget' = CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Gross Profit
+		lineageTag: 6a3cbcf8-6534-5ae8-8df2-8cab68a042ad
+
+	measure 'Gross Profit PY' = CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Gross Profit
+		lineageTag: 70914060-28a8-5bf3-a353-b61539a9d698
+
+	measure 'Gross Profit Var vs Budget' = [Gross Profit] - [Gross Profit Budget]
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Gross Profit
+		lineageTag: 88ea4144-91cb-5b56-887f-37f1b2eb10c2
+
+	measure 'Gross Profit Var % vs Budget' = DIVIDE ( [Gross Profit] - [Gross Profit Budget], ABS ( [Gross Profit Budget] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Gross Profit
+		lineageTag: 04f27e85-5305-5ccf-9249-fa3fed016612
+
+	measure 'Gross Profit Growth %' = DIVIDE ( [Gross Profit] - [Gross Profit PY], ABS ( [Gross Profit PY] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Gross Profit
+		lineageTag: 7d52e2ea-a15e-5cad-ba0e-47c8fa7335b0
+
+	measure 'Gross Profit Outlook FY' = CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Gross Profit
+		lineageTag: fe08a62c-3d10-5963-a00e-ca30a867ec9a
+
+	measure 'Gross Profit Budget FY' = CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Gross Profit
+		lineageTag: 4e6f8463-c38b-569d-9d82-ad1f8e441015
+
+	measure 'Gross Profit Monthly Actual' = CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Gross Profit
+		lineageTag: 6c530667-3a37-5468-979e-4a902e2e900e
+
+	measure 'Gross Profit vs Budget Text' = FORMAT ( [Gross Profit Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs Bud  ·  " & FORMAT ( [Gross Profit Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs PY"
+		displayFolder: 3 KPIs\Gross Profit
+		lineageTag: 4b864759-b52e-5fb4-82ce-3d225e9ad195
+
+	measure 'Gross Profit Var Color' = IF ( [Gross Profit Var vs Budget] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: 34e87c00-1aac-538e-b6b3-7722a4b0d6e0
+
+	measure 'Operating Expenses' = CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Operating Expenses
+		lineageTag: c0b7f43a-c492-5e60-a810-33daedb641f6
+
+	measure 'Operating Expenses Budget' = CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Operating Expenses
+		lineageTag: ec53ac78-392a-5793-ac5a-f06357a001ac
+
+	measure 'Operating Expenses PY' = CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Operating Expenses
+		lineageTag: 91f5bb45-f47a-57d5-8f03-8e5ef3941181
+
+	measure 'Operating Expenses Var vs Budget' = [Operating Expenses] - [Operating Expenses Budget]
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Operating Expenses
+		lineageTag: 69ec9823-75de-582c-8b4f-c1dadf2f3b55
+
+	measure 'Operating Expenses Var % vs Budget' = DIVIDE ( [Operating Expenses] - [Operating Expenses Budget], ABS ( [Operating Expenses Budget] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Operating Expenses
+		lineageTag: df0cd2ac-8fbc-596f-95a5-2896ca798d75
+
+	measure 'Operating Expenses Growth %' = DIVIDE ( [Operating Expenses] - [Operating Expenses PY], ABS ( [Operating Expenses PY] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Operating Expenses
+		lineageTag: 88b656e9-9c51-56ae-a2ac-ab8ceb961b17
+
+	measure 'Operating Expenses Outlook FY' = CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Operating Expenses
+		lineageTag: 714b4bc5-0e0c-5cdf-a44e-acd4d497bbee
+
+	measure 'Operating Expenses Budget FY' = CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Operating Expenses
+		lineageTag: a199a3a9-acbe-5bbe-bab5-f27bcf8c9a11
+
+	measure 'Operating Expenses Monthly Actual' = CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Operating Expenses
+		lineageTag: 7530c406-d91e-59bc-94c3-ea5aba423924
+
+	measure 'Operating Expenses vs Budget Text' = FORMAT ( [Operating Expenses Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs Bud  ·  " & FORMAT ( [Operating Expenses Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs PY"
+		displayFolder: 3 KPIs\Operating Expenses
+		lineageTag: 60e85f87-9cc9-5c97-9ff8-b19ab4909521
+
+	measure 'Operating Expenses Var Color' = IF ( [Operating Expenses Var vs Budget] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: 69fe6aa4-0556-54df-922d-fe90eb73e596
+
+	measure EBITDA = CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: da81866f-cac4-5ee0-9032-7ff2653e247e
+
+	measure 'EBITDA Budget' = CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: 16a0cc74-0837-5772-b544-402ca6b17888
+
+	measure 'EBITDA PY' = CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: a4609c0b-6985-5aff-9e90-31f1da3cf46f
+
+	measure 'EBITDA Var vs Budget' = [EBITDA] - [EBITDA Budget]
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: edff737e-bd3a-59d7-b265-56eae2bb8d8b
+
+	measure 'EBITDA Var % vs Budget' = DIVIDE ( [EBITDA] - [EBITDA Budget], ABS ( [EBITDA Budget] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: b1dfb2ca-7fee-54d4-b4cb-10088982b6d3
+
+	measure 'EBITDA Growth %' = DIVIDE ( [EBITDA] - [EBITDA PY], ABS ( [EBITDA PY] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: 4ff5c96f-1020-583e-b21f-2a6ba1eac5db
+
+	measure 'EBITDA Outlook FY' = CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: 1cd779db-0d47-509f-8948-a3ec6c52760e
+
+	measure 'EBITDA Budget FY' = CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: 0d67e711-a9cc-5891-bb96-e13ec1016d42
+
+	measure 'EBITDA Monthly Actual' = CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: 2ec15e87-01d7-5c8b-9256-30a54e97e417
+
+	measure 'EBITDA vs Budget Text' = FORMAT ( [EBITDA Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs Bud  ·  " & FORMAT ( [EBITDA Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs PY"
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: 114e2319-4c5a-568a-9b8b-812d959eb892
+
+	measure 'EBITDA Var Color' = IF ( [EBITDA Var vs Budget] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: 0f92d38c-6bce-504d-a1c8-8309109350de
+
+	measure EBIT = CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBIT
+		lineageTag: afbe31ac-f338-5d40-9089-0081841c76c3
+
+	measure 'EBIT Budget' = CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBIT
+		lineageTag: 0e532924-1b03-5135-8f3d-a6662faf3c4b
+
+	measure 'EBIT PY' = CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBIT
+		lineageTag: d739c6db-afd8-5834-a6da-03dafa50fdcb
+
+	measure 'EBIT Var vs Budget' = [EBIT] - [EBIT Budget]
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBIT
+		lineageTag: 12f4986e-7153-5393-a8bc-06de26f58eef
+
+	measure 'EBIT Var % vs Budget' = DIVIDE ( [EBIT] - [EBIT Budget], ABS ( [EBIT Budget] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\EBIT
+		lineageTag: 9f222a22-f122-5cba-bc01-6578b6650dc9
+
+	measure 'EBIT Growth %' = DIVIDE ( [EBIT] - [EBIT PY], ABS ( [EBIT PY] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\EBIT
+		lineageTag: b8f57a2d-046d-5b9f-9c5a-e5e0c369cb24
+
+	measure 'EBIT Outlook FY' = CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBIT
+		lineageTag: f31c2650-5107-5ec5-bd48-c92b0f0e4052
+
+	measure 'EBIT Budget FY' = CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBIT
+		lineageTag: 6b214759-04b7-55d1-a3ef-de30d9819908
+
+	measure 'EBIT Monthly Actual' = CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBIT
+		lineageTag: 37b8f569-e303-5fb9-ad5c-e5b65275ea7c
+
+	measure 'EBIT vs Budget Text' = FORMAT ( [EBIT Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs Bud  ·  " & FORMAT ( [EBIT Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs PY"
+		displayFolder: 3 KPIs\EBIT
+		lineageTag: adb67f2a-6f90-5879-8927-6e0e9c949d9d
+
+	measure 'EBIT Var Color' = IF ( [EBIT Var vs Budget] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: e559b348-a031-5677-8b0e-106f4a0bbce5
+
+	measure 'Net Income' = CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Net Income
+		lineageTag: d882e907-ef46-50a3-8aef-dac16e0802cb
+
+	measure 'Net Income Budget' = CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Net Income
+		lineageTag: 24e0f5c0-2303-5ee9-b513-dcb235e52384
+
+	measure 'Net Income PY' = CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Net Income
+		lineageTag: 11cae03a-50ae-5431-ad18-481547c92bf4
+
+	measure 'Net Income Var vs Budget' = [Net Income] - [Net Income Budget]
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Net Income
+		lineageTag: a6d746f4-cef8-517b-a300-80f86d42949b
+
+	measure 'Net Income Var % vs Budget' = DIVIDE ( [Net Income] - [Net Income Budget], ABS ( [Net Income Budget] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Net Income
+		lineageTag: 3333b168-c010-5f87-9b3d-3d0d3b4790f1
+
+	measure 'Net Income Growth %' = DIVIDE ( [Net Income] - [Net Income PY], ABS ( [Net Income PY] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Net Income
+		lineageTag: 040eb307-7b6d-576a-9567-55228d4e463d
+
+	measure 'Net Income Outlook FY' = CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Net Income
+		lineageTag: 0ce1149e-c88f-500f-b777-159a04a96121
+
+	measure 'Net Income Budget FY' = CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Net Income
+		lineageTag: d818e7cb-e738-53cf-b769-db3419baa168
+
+	measure 'Net Income Monthly Actual' = CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Net Income
+		lineageTag: 3683b0fc-0a52-5bd2-8d23-085307c33da3
+
+	measure 'Net Income vs Budget Text' = FORMAT ( [Net Income Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs Bud  ·  " & FORMAT ( [Net Income Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs PY"
+		displayFolder: 3 KPIs\Net Income
+		lineageTag: e24eccbc-2438-561d-a2ef-6a13b7ac7f4e
+
+	measure 'Net Income Var Color' = IF ( [Net Income Var vs Budget] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: 9120bc2b-d41a-5c67-9273-40ae0fbeb57d
+
+	measure 'Gross Profit Margin %' = DIVIDE ( [Gross Profit], [Revenue] )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Margins
+		lineageTag: 28c08666-964c-5711-bc1d-14a863961595
+
+	measure 'Gross Profit Margin % Budget' = DIVIDE ( [Gross Profit Budget], [Revenue Budget] )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Margins
+		lineageTag: 966acc4d-26e4-5aa8-9bcd-b545c1213063
+
+	measure 'Gross Profit Margin pts vs Budget' = [Gross Profit Margin %] - [Gross Profit Margin % Budget]
+		formatString: +0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Margins
+		lineageTag: e160db93-20db-5500-a96f-a589f5df38e6
+
+	measure 'EBITDA Margin %' = DIVIDE ( [EBITDA], [Revenue] )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Margins
+		lineageTag: 175dd687-35b5-52f0-bd52-2b744dd6fc56
+
+	measure 'EBITDA Margin % Budget' = DIVIDE ( [EBITDA Budget], [Revenue Budget] )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Margins
+		lineageTag: 44a326e4-9aaa-526b-ad9a-d10122cb340a
+
+	measure 'EBITDA Margin pts vs Budget' = [EBITDA Margin %] - [EBITDA Margin % Budget]
+		formatString: +0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Margins
+		lineageTag: 231ac0bb-9aa3-5d86-ad97-78cbf463a4c4
+
+	measure 'Net Income Margin %' = DIVIDE ( [Net Income], [Revenue] )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Margins
+		lineageTag: 03940b68-9ab5-55db-af83-027dd742a560
+
+	measure 'Net Income Margin % Budget' = DIVIDE ( [Net Income Budget], [Revenue Budget] )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Margins
+		lineageTag: 86c568b7-9e7d-58ff-8f74-ae96de8274b3
+
+	measure 'Net Income Margin pts vs Budget' = [Net Income Margin %] - [Net Income Margin % Budget]
+		formatString: +0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Margins
+		lineageTag: f6fd371e-cb22-5bd3-8840-820193059366
+
+	measure 'OpEx % of Revenue' = DIVIDE ( -[Operating Expenses], [Revenue] )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Margins
+		lineageTag: 5cd763cd-6852-5eb4-8df6-a6f81ff0a3f1
+
+	measure 'Gross Margin Text' = FORMAT ( [Gross Profit Margin pts vs Budget] * 100, "▲ 0.0;▼ 0.0;0.0" ) & " pts vs budget"
+		displayFolder: 3 KPIs\Margins
+		lineageTag: f0ace085-c67d-5f24-bf2b-0481339866d5
+
+	measure 'Gross Margin Var Color' = IF ( [Gross Profit Margin pts vs Budget] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: 657b2796-adc3-5b75-aebd-08edab8f8aab
+
+	/// Revenue from entities that also traded in the same period last year.
+	measure 'Revenue Like-for-Like' = SUMX ( VALUES ( Entity[EntityKey] ), IF ( NOT ISBLANK ( [Revenue PY] ), [Revenue] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: 571b3656-8882-5c28-a5a7-dd8c431f2121
+
+	/// Revenue from entities that joined the group within the last twelve months.
+	measure 'Revenue New Entities' = [Revenue] - [Revenue Like-for-Like]
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: 2731af40-0f56-5775-b3da-9a4852662bdc
+
+	measure 'Organic Growth %' = DIVIDE ( [Revenue Like-for-Like] - [Revenue PY], ABS ( [Revenue PY] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: f7e7dd33-e745-50f3-923d-c281ecd89a84
+
+	/// Revenue earned by entities with no budget for the period (acquired after the budget was set).
+	measure 'Revenue Unbudgeted' = SUMX ( VALUES ( Entity[EntityKey] ), IF ( ISBLANK ( [Revenue Budget] ), [Revenue] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: 8506dea8-aacf-5579-b463-cd8c110b7f39
+
+	measure 'Revenue Var vs Budget (Budgeted Entities)' = SUMX ( VALUES ( Entity[EntityKey] ), IF ( NOT ISBLANK ( [Revenue Budget] ), [Revenue] - [Revenue Budget] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: 67928d5d-3ee7-5f09-b18d-e2c42cd44522
+
+	measure 'Revenue Var % vs Budget (Budgeted Entities)' = DIVIDE ( [Revenue Var vs Budget (Budgeted Entities)], ABS ( [Revenue Budget] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: cc6d7f53-b4e9-5b4d-9eaf-6df33341550f
+
+	measure 'Entities Reporting' = VAR m = [Selected Month] RETURN CALCULATE ( DISTINCTCOUNT ( GL[EntityKey] ), GL[Scenario] = "Actual", REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m )
+		formatString: 0
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: a2100f31-b0dd-51ef-8078-6d56e6bb23ef
+
+	measure 'Revenue TTM' =
+			VAR m = [Selected Month]
+			RETURN CALCULATE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] > EDATE ( m, -12 ) && 'Date'[Month] <= m )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: 405aed6c-59cf-537c-bdae-ce831d0d9f97
+
+	/// Revenue growth vs prior year split into organic (like-for-like entities) and new entities; the waterfall total is the total growth.
+	measure 'Revenue Bridge Value' = SWITCH ( SELECTEDVALUE ( 'Revenue Bridge'[Step] ), "Organic growth", [Revenue Like-for-Like] - [Revenue PY], "New entities", [Revenue New Entities] )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: e91a2c95-14ea-5c31-ad2e-a811c9497bda
+
+	/// EBITDA variance to budget split by driver; the waterfall total is the EBITDA variance.
+	measure 'EBITDA Bridge Value' = SWITCH ( SELECTEDVALUE ( 'EBITDA Bridge'[Step] ), "Revenue", [Revenue Var vs Budget], "Cost of sales", [Cost of Sales Var vs Budget], "Operating expenses", [Operating Expenses Var vs Budget] )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\EBITDA
+		lineageTag: 91ee8477-bbc8-519f-afc9-050172f05b9f
+
+	measure 'Net Income Attributable to Group' = SUMX ( VALUES ( Entity[EntityKey] ), CALCULATE ( [Net Income] ) * CALCULATE ( MAX ( Entity[Effective Ownership] ) ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Ownership
+		lineageTag: f32749bc-79c2-5fa2-8f3a-9e766a7a1944
+
+	/// Share of profit belonging to minority partners in partly owned entities.
+	measure 'Net Income Attributable to NCI' = [Net Income] - [Net Income Attributable to Group]
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Ownership
+		lineageTag: 92ec9938-d508-5198-ab20-2a0871b04921
+
+	/// First month the entity appears in the actuals ledger.
+	measure 'Entity First Month' = CALCULATE ( MIN ( GL[Month] ), GL[Scenario] = "Actual", REMOVEFILTERS ( 'Date' ) )
+		formatString: mmm yyyy
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: fdc7cf2e-e4b3-5d15-99bf-3b81201d5ba2
+
+	measure 'Entity Joined FY' = VAR m = [Entity First Month] RETURN IF ( NOT ISBLANK ( m ), "FY" & ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) )
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: 9785311d-35bd-5ed1-89d6-f0dfd6a21bf0
+
+	/// Whether the entity has a budget for the selected fiscal year.
+	measure 'Entity Budget Status' = IF ( NOT ISBLANK ( [Entity First Month] ), IF ( ISBLANK ( [Budget FY] ), "Not budgeted", "Budgeted" ) )
+		displayFolder: 3 KPIs\Perimeter
+		lineageTag: db828e70-0bd2-504b-9bb0-2ba83f502e0d
+
+	/// Net revenue for whatever dates are on the axis (e.g. a fiscal-year column).
+	measure 'Revenue Actual (in context)' = CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: 46294a64-e1fb-51e2-b5f5-53d1b554b829
+
+	/// Month-end cash for each month on the axis.
+	measure 'Cash Balance (month)' = CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: 43755276-93c2-56dc-ac29-dc8756a840b5
+
+	/// Trade working capital at each month end: receivables + inventory - payables.
+	measure 'Working Capital (month)' = CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 102 ), Account[AccountKey] ) ) + CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 103 ), Account[AccountKey] ) ) - CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 109 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: 48348524-80a0-5003-94c7-0c08f9e920ce
+
+	measure 'Line Row Background' = IF ( HASONEVALUE ( 'Report Line'[LineKey] ), SWITCH ( SELECTEDVALUE ( 'Report Line'[LineType] ), "Subtotal", "#EEF1F5", "Total", "#DCE3EC", "#FFFFFF" ) )
+		displayFolder: 8 Formatting
+		lineageTag: f3a26d84-96a6-5619-9778-bcc37eb46ab5
+
+	measure 'Line Growth Color' = IF ( [Line Growth %] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: 8e1d3b0f-c606-5a1b-8b4e-3081d4e0fb67
+
+	measure 'Balance Change Color' = IF ( [Line Balance Change] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: 6979cca6-6713-574b-a78e-7a770a05a537
+
+	measure 'Metric Name' = SELECTEDVALUE ( Metric[Metric], "Revenue" )
+		displayFolder: 5 Metric Selector
+		lineageTag: fe972265-70c9-5538-996e-48e57f7e6401
+
+	measure 'Metric Actual' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Actual (Period)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: 72d5f0cb-ee7d-51f7-a551-c0496a1be14c
+
+	measure 'Metric Budget' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Budget (Period)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: f2fecbd9-090f-5988-9e37-cdf760ddc195
+
+	measure 'Metric PY' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Prior Year (Period)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: d2cbf70f-97d0-5551-82a4-6249799e459e
+
+	measure 'Metric Var vs Budget' = [Metric Actual] - [Metric Budget]
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: 2dc60196-8b18-5eca-909b-896a2e9e952e
+
+	measure 'Metric Var % vs Budget' = DIVIDE ( [Metric Actual] - [Metric Budget], ABS ( [Metric Budget] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 5 Metric Selector
+		lineageTag: 4ae2e548-e910-59e6-b9d6-248c0fbdcbea
+
+	measure 'Metric Growth %' = DIVIDE ( [Metric Actual] - [Metric PY], ABS ( [Metric PY] ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 5 Metric Selector
+		lineageTag: 16e03872-389b-5e23-a80f-facee50e8843
+
+	measure 'Metric Outlook FY' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Outlook FY], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: 54a60acb-224b-5ae0-bb9c-a484ef5cdddf
+
+	measure 'Metric Budget FY' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Budget FY], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: 367ac4bb-72cd-53ed-b437-0f41c90fc5cc
+
+	measure 'Metric Outlook Gap' = [Metric Outlook FY] - [Metric Budget FY]
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: a173804b-fc60-5bb6-8b7a-102a88ed0234
+
+	measure 'Metric Monthly Actual' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Monthly Actual (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: 01265a22-5445-5735-b2ed-3082c5ddd0ad
+
+	measure 'Metric Monthly Budget' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Monthly Budget (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: 55c3efbc-6d04-56a2-859a-62f591648aca
+
+	measure 'Metric Monthly Outlook' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Monthly Outlook (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: 7659de5a-f85b-581a-b731-89574db84062
+
+	measure 'Metric Monthly Prior Year' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Monthly Prior Year (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: 72af7ad3-420b-514a-ac5f-a64694e6208d
+
+	measure 'Metric Cumulative Actual' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Cumulative Actual (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: f35fa356-a3a4-522b-8e67-664504b92e00
+
+	measure 'Metric Cumulative Outlook' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Cumulative Outlook (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: 5285cd21-2598-5e1c-9334-4a6713ca3de8
+
+	measure 'Metric Cumulative Budget' =
+			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Cumulative Budget (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 5 Metric Selector
+		lineageTag: 395f0724-92c4-54bd-aba9-bbc93f6d6b46
+
+	measure 'Metric Var Color' = IF ( [Metric Var vs Budget] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: b6d9db1f-f0f7-511d-a021-7158d760bc8b
+
+	measure 'Metric Gap Color' = IF ( [Metric Outlook Gap] < 0, "#C0392B", "#2E7D32" )
+		displayFolder: 8 Formatting
+		lineageTag: a586d394-ace4-56ea-a1c6-c8f12cf5af0b
+
+	measure Cash = CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: f3fbe669-e16c-5f4d-8e15-07d623929f35
+
+	measure 'Total Assets' = CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 108 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: f486df1f-05d7-585a-9b32-fe2691d0141b
+
+	measure 'Total Equity' = CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 119 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: 62e86610-0272-5bce-827a-3006673a8a5a
+
+	measure 'Current Ratio' = DIVIDE ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 105 ), Account[AccountKey] ) ), CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 113 ), Account[AccountKey] ) ) )
+		formatString: 0.00
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: f5dc2ba2-3d62-55ea-806f-b0b7e8a28e6a
+
+	measure 'Debt to Equity' = DIVIDE ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 111 ), Account[AccountKey] ) ) + CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 114 ), Account[AccountKey] ) ), CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 119 ), Account[AccountKey] ) ) )
+		formatString: 0.00
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: 0fef3ee4-566b-584a-954a-1812b16ed00d
+
+	measure 'Cost of Sales TTM' =
+			VAR m = [Selected Month]
+			RETURN CALCULATE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] > EDATE ( m, -12 ) && 'Date'[Month] <= m )
+		formatString: #,0;(#,0);-
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: 243ff9fb-50c6-53ea-aafb-5de54f55d563
+
+	/// Receivables / trailing-twelve-month revenue x 365.
+	measure 'DSO (days)' = DIVIDE ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 102 ), Account[AccountKey] ) ), [Revenue TTM] ) * 365
+		formatString: 0
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: 9ec9739c-fdb4-5153-a735-54c34a596305
+
+	/// Payables / TTM cost of sales x 365.
+	measure 'DPO (days)' = DIVIDE ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 109 ), Account[AccountKey] ) ), -[Cost of Sales TTM] ) * 365
+		formatString: 0
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: 4a877de0-5353-51fe-841f-1e8c950bd98c
+
+	/// Inventory / TTM cost of sales x 365.
+	measure 'DIO (days)' = DIVIDE ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 103 ), Account[AccountKey] ) ), -[Cost of Sales TTM] ) * 365
+		formatString: 0
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: 51d5c246-fb7d-5a22-bb03-3ad8d66cf234
+
+	measure 'Cash Conversion Cycle (days)' = [DSO (days)] + [DIO (days)] - [DPO (days)]
+		formatString: 0
+		displayFolder: 4 Balance Sheet KPIs
+		lineageTag: bc16a9d4-2705-5d1b-84a6-d7f5e5b6fc0f
+
+	measure 'Title Overview' = "Adventure Works Group · FY" & ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) ) & " month " & [Fiscal Month Of Selection] & " of 12 (closed " & FORMAT ( [As Of Month], "mmm yyyy" ) & ") · " & [Currency Label]
+		displayFolder: 6 Narrative
+		lineageTag: cde3fd62-2a52-538c-a267-628b28ad3f20
+
+	measure 'Title Executive' = "Executive summary · " & [Selected Fiscal Year] & " " & [Period Label]
+		displayFolder: 6 Narrative
+		lineageTag: ac17b55f-ba34-5a95-80f2-cf7e3060dd51
+
+	/// One-sentence executive headline that updates with every filter.
+	measure Headline =
+			VAR rv = [Revenue Var % vs Budget] VAR og = [Organic Growth %] VAR ev = [EBITDA Var % vs Budget]
+			RETURN [Currency Label] & " " & FORMAT ( [Revenue] / 1e6, "#,0.0" ) & "M" & " revenue, " & FORMAT ( ABS ( rv ), "0.0%" ) & IF ( rv >= 0, " above", " below" ) & " budget ("
+			    & FORMAT ( og, "+0.0%;-0.0%" ) & " organic growth). EBITDA " & FORMAT ( [EBITDA] / 1e6, "#,0.0" ) & "M" & ", " & FORMAT ( ev, "+0.0%;-0.0%" ) & " vs budget."
+		displayFolder: 6 Narrative
+		lineageTag: f25fa65d-ea2e-538e-810f-79f356ba544a
+
+	measure 'Insight Perimeter' =
+			VAR nu = [Revenue New Entities] VAR ub = [Revenue Unbudgeted]
+			RETURN IF ( nu > 0 || ub > 0,
+			    "Entities new to the group added " & [Currency Label] & " " & FORMAT ( nu / 1e6, "#,0.0" ) & "M" & "; " & [Currency Label] & " " & FORMAT ( ub / 1e6, "#,0.0" ) & "M" & " of revenue has no budget behind it. Excluding unbudgeted entities, revenue is "
+			        & FORMAT ( [Revenue Var % vs Budget (Budgeted Entities)], "+0.0%;-0.0%" ) & " vs budget.",
+			    "No change in the group perimeter versus last year." )
+		displayFolder: 6 Narrative
+		lineageTag: 1d0c2e8d-f8fa-5fa8-af9e-617136b3ac5a
+
+	measure 'Insight Cost Absorption' =
+			VAR gp = [Gross Profit Var vs Budget] VAR ox = [Operating Expenses Var vs Budget]
+			RETURN IF ( gp > 0 && ox < 0,
+			    "Operating expenses ran " & [Currency Label] & " " & FORMAT ( -ox / 1e6, "#,0.0" ) & "M" & " over budget, absorbing " & FORMAT ( DIVIDE ( -ox, gp ), "0%" ) & " of the gross-profit upside.",
+			    IF ( ox >= 0, "Operating expenses are within budget.", "Gross profit is below budget and operating expenses are over budget." ) )
+		displayFolder: 6 Narrative
+		lineageTag: 86f1de69-9258-5da9-b268-11277e5ae958
+
+	measure 'Insight Outlook' =
+			VAR g = [Net Income Outlook FY] - [Net Income Budget FY]
+			RETURN "Full-year outlook: net income " & [Currency Label] & " " & FORMAT ( [Net Income Outlook FY] / 1e6, "#,0.0" ) & "M" & " vs budget " & FORMAT ( [Net Income Budget FY] / 1e6, "#,0.0" ) & "M"
+			    & " (" & FORMAT ( g / 1e6, "+#,0.0;-#,0.0" ) & "M), assuming the remaining months land on budget."
+		displayFolder: 6 Narrative
+		lineageTag: c03ec82c-69bf-5300-9391-cb020134b121
+
+	measure 'Title BvA' = [Metric Name] & " · " & [Period Label] & ": " & [Currency Label] & " " & FORMAT ( [Metric Actual] / 1e6, "#,0.0" ) & "M" & ", " & FORMAT ( ABS ( [Metric Var % vs Budget] ), "0.0%" ) & IF ( [Metric Var vs Budget] >= 0, " favourable", " unfavourable" ) & " to budget"
+		displayFolder: 6 Narrative
+		lineageTag: 0d12a3fb-1ec7-5261-875b-3eed66af936c
+
+	measure 'Title BvA Trend' = [Metric Name] & " by month, " & [Selected Fiscal Year] & ": actual to " & FORMAT ( [As Of Month], "mmm yyyy" ) & ", budget as outlook thereafter"
+		displayFolder: 6 Narrative
+		lineageTag: d7ad63fe-c0fb-5cce-8a7d-25b45956ee7b
+
+	measure 'Title BvA Outlook' = "Full-year outlook " & [Currency Label] & " " & FORMAT ( [Metric Outlook FY] / 1e6, "#,0.0" ) & "M" & " vs budget " & FORMAT ( [Metric Budget FY] / 1e6, "#,0.0" ) & "M" & " (" & FORMAT ( [Metric Outlook Gap] / 1e6, "+#,0.0;-#,0.0" ) & "M)"
+		displayFolder: 6 Narrative
+		lineageTag: a10d1423-e11e-5f07-a7cf-40b9c889eeb8
+
+	measure 'Title Variance by Entity' = "Where the " & LOWER ( [Metric Name] ) & " variance comes from: by entity (green = favourable)"
+		displayFolder: 6 Narrative
+		lineageTag: 9b2e15aa-000c-53be-bae9-8c33ab261e06
+
+	/// Fixed on operating expenses: in the source ledger all revenue and cost of sales post to one department, so only opex has a meaningful department split.
+	measure 'Title Variance by Department' = "Where operating expenses landed vs budget, by department: " & FORMAT ( [Operating Expenses Var vs Budget] / 1e6, "+#,0.0;-#,0.0" ) & "M in total (red = over budget)"
+		displayFolder: 6 Narrative
+		lineageTag: acddc1b6-12d3-5771-b356-bc2aab3b7d8c
+
+	/// Total assets minus total liabilities and equity at the selected month. Must be 0.
+	measure 'DQ Balance Sheet Difference' = CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 108 ), Account[AccountKey] ) ) - CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 120 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);0
+		displayFolder: 9 Data Quality
+		lineageTag: 971dbbf6-62ff-51d3-afb1-13603eb33288
+
+	measure 'DQ Unmapped Accounts With Activity' = COUNTROWS ( FILTER ( VALUES ( GL[AccountKey] ), NOT ( GL[AccountKey] IN VALUES ( 'Report Line Map'[AccountKey] ) ) && LOOKUPVALUE ( Account[Statement], Account[AccountKey], GL[AccountKey] ) <> "Statistical" ) ) + 0
+		formatString: 0
+		displayFolder: 9 Data Quality
+		lineageTag: f53e1658-be3a-575b-87bb-eb7f2ee2914f
+
+	measure 'DQ Accounts Missing From Chart' = COUNTROWS ( FILTER ( VALUES ( GL[AccountKey] ), ISBLANK ( LOOKUPVALUE ( Account[AccountKey], Account[AccountKey], GL[AccountKey] ) ) ) ) + 0
+		formatString: 0
+		displayFolder: 9 Data Quality
+		lineageTag: 1dcb461d-e9da-5d81-a589-79d266b076c0
+
+	measure 'DQ Rows Missing FX Rate' = COUNTROWS ( FILTER ( GL, ISBLANK ( GL[Rate to CAD] ) ) ) + 0
+		formatString: 0
+		displayFolder: 9 Data Quality
+		lineageTag: 7ff34a3a-c0d3-5b6b-94db-51af73affb2d
+
+	measure 'DQ Duplicates Removed' = SUM ( 'DQ File Log'[DuplicateRows] ) + 0
+		formatString: 0
+		displayFolder: 9 Data Quality
+		lineageTag: 2c4e593e-4ec7-599b-9fe4-4fbcb0eceb91
+
+	measure 'DQ Blank Departments Fixed' = SUM ( 'DQ File Log'[MissingDepartmentRows] ) + 0
+		formatString: 0
+		displayFolder: 9 Data Quality
+		lineageTag: 12e9b875-e289-5865-b299-f005c2605722
+
+	measure 'DQ Files With Schema Drift' = CALCULATE ( COUNTROWS ( 'DQ File Log' ), 'DQ File Log'[SchemaDrift] = TRUE () ) + 0
+		formatString: 0
+		displayFolder: 9 Data Quality
+		lineageTag: 4697f630-9b87-588d-968b-7a7f8e126848
+
+	measure 'DQ Files Loaded' = DISTINCTCOUNT ( GL[SourceFile] )
+		formatString: 0
+		displayFolder: 9 Data Quality
+		lineageTag: 0cd9c979-2b05-573a-b323-70abd1c9fc59
+
+	measure 'DQ Synthetic Budget Share' = DIVIDE ( CALCULATE ( COUNTROWS ( GL ), GL[BudgetSource] = "Synthetic" ), CALCULATE ( COUNTROWS ( GL ), GL[Scenario] = "Budget" ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 9 Data Quality
+		lineageTag: 7b2f0615-f61b-5a10-a538-853f60e184ca
+
+	measure 'Metric Var Text' = FORMAT ( [Metric Var vs Budget] / 1e6, "+#,0.0;-#,0.0" ) & "M (" & FORMAT ( [Metric Var % vs Budget], "+0.0%;-0.0%" ) & ") vs budget"
+		displayFolder: 6 Narrative
+		lineageTag: 7bd59d81-9391-5383-a79a-913e594623f1
+
+	measure 'Metric Gap Text' = FORMAT ( [Metric Outlook Gap] / 1e6, "+#,0.0;-#,0.0" ) & "M vs full-year budget"
+		displayFolder: 6 Narrative
+		lineageTag: cb3e042a-dbb5-5b09-884a-caaa22ae26ce
+
+	measure 'Metric Growth Text' = FORMAT ( [Metric Growth %], "+0.0%;-0.0%" ) & " vs prior year"
+		displayFolder: 6 Narrative
+		lineageTag: 5aa86697-c963-5237-942c-5fa81737b3af
+
+	measure 'Title Income Statement' = "Income statement · " & [Period Label] & " · costs shown negative, so a positive variance is favourable"
+		displayFolder: 6 Narrative
+		lineageTag: 639edd4b-9dd3-5d1a-9c2c-9198eb07fe75
+
+	measure 'Title Balance Sheet' = "Balance sheet at " & FORMAT ( [Selected Month], "mmm yyyy" ) & " vs year end " & FORMAT ( DATE ( ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) ) - 1, 3, 1 ), "mmm yyyy" ) & " · " & [Currency Label]
+		displayFolder: 6 Narrative
+		lineageTag: 6a68ca65-d921-58ce-9b0b-54c18621f940
+
+	measure 'Title Overview Revenue' = "Net revenue by fiscal year and region · " & [Selected Fiscal Year] & " is year to date (" & FORMAT ( [As Of Month], "mmm yyyy" ) & ")"
+		displayFolder: 6 Narrative
+		lineageTag: bc88b736-82a5-5253-a145-d5bbcfd22d30
+
+	measure 'Title Revenue Bridge' = "Revenue growth vs prior year: " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & ", of which organic " & FORMAT ( [Organic Growth %], "+0.0%;-0.0%" )
+		displayFolder: 6 Narrative
+		lineageTag: f86a93e8-49ed-5fac-9859-530eb2001665
+
+	measure 'Title EBITDA Bridge' = "EBITDA vs budget: " & FORMAT ( [EBITDA Var vs Budget] / 1e6, "+#,0.0;-#,0.0" ) & "M, by driver"
+		displayFolder: 6 Narrative
+		lineageTag: 00b8c171-9ba0-57c0-a588-bb7dcef307d7
+
+	measure 'Title DQ' = "Data quality · " & [DQ Files Loaded] & " ledger files loaded · balance-sheet difference " & FORMAT ( [DQ Balance Sheet Difference], "#,0" )
+		displayFolder: 6 Narrative
+		lineageTag: edf28f89-3518-5e79-a5b5-86b801034a1a
+
+	/// Narrative for the topic on the row of an insight table.
+	measure 'Insight Text' = SWITCH ( SELECTEDVALUE ( Insight[Key] ), 1, [Insight Perimeter], 2, [Insight Cost Absorption], 3, [Insight Outlook] )
+		displayFolder: 6 Narrative
+		lineageTag: 5743f2f0-129c-5925-92e7-cfc7cf45380c
+
+	measure 'Entity Budget Status Color' = IF ( [Entity Budget Status] = "Not budgeted", "#C0392B", "#1F2A37" )
+		displayFolder: 8 Formatting
+		lineageTag: 76243574-ceef-5703-82e3-a09c1547c840
+
+	column Placeholder
+		dataType: string
+		isHidden
+		lineageTag: 66e1d7ac-a462-5b8b-8976-c05915894fa6
+		sourceColumn: Placeholder
+
+	partition _Measures = m
+		mode: import
+		source =
+				#table(type table [Placeholder = text], {})
+
+	annotation PBI_ResultType = Table
+

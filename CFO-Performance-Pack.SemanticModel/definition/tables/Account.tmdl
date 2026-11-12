@@ -1,0 +1,60 @@
+/// Chart of accounts (parent-child) with statement type.
+table Account
+	lineageTag: 35deeb7f-ec24-5d77-92c3-8cb1ff9e2c36
+
+	column AccountKey
+		dataType: int64
+		lineageTag: 39c61cb1-4e18-525c-abef-d6d883020612
+		summarizeBy: none
+		sourceColumn: AccountKey
+
+	column ParentAccountKey
+		dataType: int64
+		isHidden
+		lineageTag: 94b3bd2f-5c14-56d5-b5ec-74f0c926998d
+		summarizeBy: none
+		sourceColumn: ParentAccountKey
+
+	column AccountCode
+		dataType: string
+		lineageTag: 50266f7a-29a4-5826-8d13-528eefe81acb
+		sourceColumn: AccountCode
+
+	column AccountName
+		dataType: string
+		lineageTag: b3a288ce-13b3-5a0e-b6cb-be45257ef3f2
+		sourceColumn: AccountName
+
+	column AccountType
+		dataType: string
+		lineageTag: fa36c2d2-2325-5656-8037-65c64376d119
+		sourceColumn: AccountType
+
+	column UnaryOperator
+		dataType: string
+		isHidden
+		lineageTag: 5c537652-9a40-59f3-a285-35e491512c96
+		sourceColumn: UnaryOperator
+
+	column Statement
+		dataType: string
+		lineageTag: 096202e6-8375-51c0-a1bc-cb4e7e884994
+		sourceColumn: Statement
+
+	/// Ledger stores revenue and costs as positive values; costs are shown negative so subtotals sum and a positive variance is always favourable.
+	column Sign = SWITCH ( Account[AccountType], "Revenue", 1, "Expenditures", -1, "Assets", 1, "Liabilities", 1, 0 )
+		isHidden
+		lineageTag: edcb8f8d-93b1-51dc-ad84-ca733ea340d9
+		summarizeBy: none
+
+	partition Account = m
+		mode: import
+		source =
+				let
+				    Src = fnReadCsv("reference", "Account.csv"),
+				    Typed = Table.TransformColumnTypes(Src, {{"AccountKey", Int64.Type}, {"ParentAccountKey", Int64.Type}, {"AccountCode", type text}, {"AccountName", type text}, {"AccountType", type text}, {"UnaryOperator", type text}, {"Statement", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,30 @@
+/// Slicer: presentation currency (CAD default).
+table 'Reporting Currency'
+	lineageTag: d402f302-e949-57cc-b209-ac42def220d6
+
+	column Currency
+		dataType: string
+		lineageTag: 15f3eb2b-4334-5887-b5b5-e00f7bc11349
+		sourceColumn: Currency
+		sortByColumn: Sort
+
+	column Sort
+		dataType: int64
+		isHidden
+		lineageTag: d7988144-de89-519d-a480-4c92b9891911
+		summarizeBy: none
+		sourceColumn: Sort
+
+	partition 'Reporting Currency' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [Currency = text, Sort = Int64.Type], {
+				        {"CAD", 1},
+				        {"USD", 2}
+				    })
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+

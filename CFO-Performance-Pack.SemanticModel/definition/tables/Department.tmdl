@@ -1,0 +1,34 @@
+/// Department groups; 0 = Unassigned (blank department in source).
+table Department
+	lineageTag: 40aaf66a-bbb5-59ff-a163-d089c33a06d7
+
+	column DepartmentKey
+		dataType: int64
+		lineageTag: f1095fc9-fc8e-5834-b06f-e125d1066c4c
+		summarizeBy: none
+		sourceColumn: DepartmentKey
+
+	column ParentDepartmentKey
+		dataType: int64
+		isHidden
+		lineageTag: cefac57d-63aa-5ecd-8c46-b09d495e085e
+		summarizeBy: none
+		sourceColumn: ParentDepartmentKey
+
+	column DepartmentName
+		dataType: string
+		lineageTag: ef7699e5-c3d9-5d13-bb48-ff4317a78c87
+		sourceColumn: DepartmentName
+
+	partition Department = m
+		mode: import
+		source =
+				let
+				    Src = fnReadCsv("reference", "Department.csv"),
+				    Typed = Table.TransformColumnTypes(Src, {{"DepartmentKey", Int64.Type}, {"ParentDepartmentKey", Int64.Type}, {"DepartmentName", type text}}, "en-US"),
+				    WithUnassigned = Table.Combine({Typed, #table(type table [DepartmentKey = Int64.Type, ParentDepartmentKey = Int64.Type, DepartmentName = text], {{0, 1, "Unassigned"}})})
+				in
+				    WithUnassigned
+
+	annotation PBI_ResultType = Table
+

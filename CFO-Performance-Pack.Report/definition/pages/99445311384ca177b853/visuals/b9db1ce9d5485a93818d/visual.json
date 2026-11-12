@@ -1,0 +1,290 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "b9db1ce9d5485a93818d",
+  "position": {
+    "x": 16,
+    "y": 80,
+    "z": 7000,
+    "height": 624,
+    "width": 400,
+    "tabOrder": 7000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "Who we are",
+                    "textStyle": {
+                      "fontSize": "13pt",
+                      "color": "#1F3A5F",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Designs and sells performance bicycles, components and riding apparel through dealers and its own online store. Canadian parent: reports in CAD, fiscal year 1 April to 31 March (FY2027 ends 31 March 2027).",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "",
+                    "textStyle": {
+                      "fontSize": "6pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Three years in brief",
+                    "textStyle": {
+                      "fontSize": "13pt",
+                      "color": "#1F3A5F",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "FY2025  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "North American core: five US divisions and Canada.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "FY2026  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "European entry: France (50%) and Germany (25%) joined in April 2025, after the budget was set. An ERP migration in August 2025 left 3% of postings without a department.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "FY2027  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "Pacific entry: an Australian joint venture (37.5% group interest) began trading in April 2026, again outside the budget. A new Software Subscriptions account opened as cloud tools replaced professional services; September 2026 was the first ledger exported from ERP v2.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "",
+                    "textStyle": {
+                      "fontSize": "6pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "The CFO's four questions",
+                    "textStyle": {
+                      "fontSize": "13pt",
+                      "color": "#1F3A5F",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "1  Is growth organic or bought?  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "Executive Summary",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#5B6676",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "2  Is cost growth eating the upside?  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "Income Statement",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#5B6676",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "3  Where will the year land?  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "Budget vs Actual",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#5B6676",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "4  Is the balance sheet funding growth?  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "Balance Sheet & Cash",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#5B6676",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "",
+                    "textStyle": {
+                      "fontSize": "6pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Fictional company built on Microsoft's AdventureWorksDW sample (MIT licence), re-dated; FY2026-FY2028 budgets generated by a documented script.",
+                    "textStyle": {
+                      "fontSize": "8pt",
+                      "color": "#5B6676",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

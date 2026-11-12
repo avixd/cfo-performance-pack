@@ -1,0 +1,113 @@
+{
+  "name": "CFO Performance Pack",
+  "dataColors": [
+    "#1F3A5F",
+    "#2A7F8E",
+    "#D98E04",
+    "#8DB3D9",
+    "#9AA5B4",
+    "#5B6676",
+    "#C9D0D9",
+    "#2E7D32",
+    "#C0392B"
+  ],
+  "foreground": "#1F2A37",
+  "background": "#FFFFFF",
+  "backgroundLight": "#F4F6F9",
+  "tableAccent": "#1F3A5F",
+  "good": "#2E7D32",
+  "bad": "#C0392B",
+  "neutral": "#9AA5B4",
+  "textClasses": {
+    "callout": {
+      "fontSize": 20,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#1F2A37"
+    },
+    "title": {
+      "fontSize": 11,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#1F2A37"
+    },
+    "header": {
+      "fontSize": 11,
+      "fontFace": "Segoe UI Semibold",
+      "color": "#1F2A37"
+    },
+    "label": {
+      "fontSize": 9,
+      "fontFace": "Segoe UI",
+      "color": "#5B6676"
+    }
+  },
+  "visualStyles": {
+    "*": {
+      "*": {
+        "background": [
+          {
+            "show": true,
+            "color": {
+              "solid": {
+                "color": "#FFFFFF"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "border": [
+          {
+            "show": false
+          }
+        ],
+        "dropShadow": [
+          {
+            "show": false
+          }
+        ],
+        "title": [
+          {
+            "fontSize": 10,
+            "fontColor": {
+              "solid": {
+                "color": "#1F2A37"
+              }
+            },
+            "fontFamily": "Segoe UI Semibold"
+          }
+        ],
+        "padding": [
+          {
+            "top": 6,
+            "bottom": 6,
+            "left": 8,
+            "right": 8
+          }
+        ]
+      }
+    },
+    "page": {
+      "*": {
+        "background": [
+          {
+            "color": {
+              "solid": {
+                "color": "#F4F6F9"
+              }
+            },
+            "transparency": 0
+          }
+        ],
+        "outspace": [
+          {
+            "color": {
+              "solid": {
+                "color": "#F4F6F9"
+              }
+            },
+            "transparency": 0
+          }
+        ]
+      }
+    }
+  }
+}

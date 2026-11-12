@@ -1,0 +1,215 @@
+{
+  "files_profiled": 34,
+  "rows_profiled": 48851,
+  "detected": {
+    "exact_duplicates": 30,
+    "blank_department": 30,
+    "blank_any_key": 0,
+    "unknown_account": 0,
+    "non_numeric_amount": 0,
+    "schema_drift_files": 1
+  },
+  "clean_rows": 48821,
+  "post_clean_duplicates": 0,
+  "post_clean_nulls": {
+    "Month": 0,
+    "EntityKey": 0,
+    "DepartmentKey": 0,
+    "AccountKey": 0,
+    "AmountLC": 0,
+    "AccountType": 0,
+    "CurrencyCode": 0
+  },
+  "bs_entity_months": 231,
+  "bs_max_abs_diff_LC": 9.313225746154785e-10,
+  "perimeter": [
+    {
+      "EntityName": "Australia",
+      "first_actual": "Apr 2026",
+      "first_budget": "never",
+      "CurrencyCode": "AUD",
+      "OwnershipPct": 0.5,
+      "joined_FY": "FY2027"
+    },
+    {
+      "EntityName": "Canadian Division",
+      "first_actual": "Apr 2024",
+      "first_budget": "Apr 2024",
+      "CurrencyCode": "CAD",
+      "OwnershipPct": 0.75,
+      "joined_FY": "FY2025"
+    },
+    {
+      "EntityName": "Central Division",
+      "first_actual": "Apr 2024",
+      "first_budget": "Apr 2024",
+      "CurrencyCode": "USD",
+      "OwnershipPct": 1.0,
+      "joined_FY": "FY2025"
+    },
+    {
+      "EntityName": "France",
+      "first_actual": "Apr 2025",
+      "first_budget": "Apr 2026",
+      "CurrencyCode": "EUR",
+      "OwnershipPct": 0.5,
+      "joined_FY": "FY2026"
+    },
+    {
+      "EntityName": "Germany",
+      "first_actual": "Apr 2025",
+      "first_budget": "Apr 2026",
+      "CurrencyCode": "EUR",
+      "OwnershipPct": 0.25,
+      "joined_FY": "FY2026"
+    },
+    {
+      "EntityName": "Northeast Division",
+      "first_actual": "Apr 2024",
+      "first_budget": "Apr 2024",
+      "CurrencyCode": "USD",
+      "OwnershipPct": 1.0,
+      "joined_FY": "FY2025"
+    },
+    {
+      "EntityName": "Northwest Division",
+      "first_actual": "Apr 2024",
+      "first_budget": "Apr 2024",
+      "CurrencyCode": "USD",
+      "OwnershipPct": 1.0,
+      "joined_FY": "FY2025"
+    },
+    {
+      "EntityName": "Southeast Division",
+      "first_actual": "Apr 2024",
+      "first_budget": "Apr 2024",
+      "CurrencyCode": "USD",
+      "OwnershipPct": 1.0,
+      "joined_FY": "FY2025"
+    },
+    {
+      "EntityName": "Southwest Division",
+      "first_actual": "Apr 2024",
+      "first_budget": "Apr 2024",
+      "CurrencyCode": "USD",
+      "OwnershipPct": 1.0,
+      "joined_FY": "FY2025"
+    }
+  ],
+  "fy2027_ytd_revenue": {
+    "total": 36185471,
+    "like_for_like": 34302643,
+    "acquired": 1882828,
+    "prior_ytd": 27872637,
+    "organic_growth_pct": 0.2307,
+    "total_growth_pct": 0.2982,
+    "budget": 29616049,
+    "unbudgeted_entity_revenue": 1882828
+  },
+  "outliers_flagged": 519,
+  "outlier_series_points": 7782,
+  "benford": {
+    "n": 28083,
+    "chi2": 145.7,
+    "p": 1.56e-27,
+    "MAD": 0.0068,
+    "nigrini_conformity": "acceptable"
+  },
+  "normality": [
+    {
+      "series": "GL line amounts (P&L, abs) - sample 5,000",
+      "n": 5000,
+      "skew": 14.07,
+      "excess_kurtosis": 238.0,
+      "shapiro_p": 7.58e-93,
+      "dagostino_p": 0.0,
+      "normal_at_5pct": false
+    },
+    {
+      "series": "log(GL line amounts)",
+      "n": 5000,
+      "skew": 0.98,
+      "excess_kurtosis": 1.42,
+      "shapiro_p": 7.54e-42,
+      "dagostino_p": 2.31e-159,
+      "normal_at_5pct": false
+    },
+    {
+      "series": "Monthly group revenue (CAD)",
+      "n": 31,
+      "skew": 0.5,
+      "excess_kurtosis": -0.29,
+      "shapiro_p": 0.519,
+      "dagostino_p": 0.434,
+      "normal_at_5pct": true
+    },
+    {
+      "series": "Month-on-month revenue growth",
+      "n": 30,
+      "skew": 1.01,
+      "excess_kurtosis": -0.15,
+      "shapiro_p": 0.000565,
+      "dagostino_p": 0.0565,
+      "normal_at_5pct": false
+    },
+    {
+      "series": "Revenue variance vs budget % (budgeted entity x month)",
+      "n": 200,
+      "skew": 10.05,
+      "excess_kurtosis": 114.1,
+      "shapiro_p": 5.5e-29,
+      "dagostino_p": 5.37e-82,
+      "normal_at_5pct": false
+    }
+  ],
+  "correlation": [
+    {
+      "pair": "Revenue vs CostOfSales",
+      "n": 231,
+      "pearson_r": 0.943,
+      "pearson_p": 1.8e-111,
+      "spearman_rho": 0.944
+    },
+    {
+      "pair": "Revenue vs OpEx",
+      "n": 231,
+      "pearson_r": 0.674,
+      "pearson_p": 5.9e-32,
+      "spearman_rho": 0.663
+    },
+    {
+      "pair": "Headcount vs Salaries",
+      "n": 231,
+      "pearson_r": 0.532,
+      "pearson_p": 3e-18,
+      "spearman_rho": 0.716
+    },
+    {
+      "pair": "Revenue vs Headcount",
+      "n": 231,
+      "pearson_r": 0.057,
+      "pearson_p": 0.39,
+      "spearman_rho": 0.191
+    }
+  ],
+  "reconciliation": [
+    {
+      "Issue": "Exact duplicate rows",
+      "Injected": 30,
+      "Detected": 30,
+      "Reconciled": "Yes"
+    },
+    {
+      "Issue": "Missing DepartmentKey",
+      "Injected": 30,
+      "Detected": 30,
+      "Reconciled": "Yes"
+    },
+    {
+      "Issue": "Schema drift (files)",
+      "Injected": 1,
+      "Detected": 1,
+      "Reconciled": "Yes"
+    }
+  ]
+}

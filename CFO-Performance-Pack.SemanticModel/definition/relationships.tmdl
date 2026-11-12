@@ -1,0 +1,16 @@
+relationship GL_Month_Date_Month
+	fromColumn: GL.Month
+	toColumn: Date.Month
+
+relationship GL_EntityKey_Entity_EntityKey
+	fromColumn: GL.EntityKey
+	toColumn: Entity.EntityKey
+
+relationship GL_DepartmentKey_Department_DepartmentKey
+	fromColumn: GL.DepartmentKey
+	toColumn: Department.DepartmentKey
+
+relationship GL_AccountKey_Account_AccountKey
+	fromColumn: GL.AccountKey
+	toColumn: Account.AccountKey
+

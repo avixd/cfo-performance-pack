@@ -1,0 +1,6 @@
+Month,Issue,RowsAffected,Cause,Treatment
+2025-06,Exact duplicate rows,15,Re-export appended rows twice,Power Query removes exact duplicates
+2026-01,Exact duplicate rows,15,Re-export appended rows twice,Power Query removes exact duplicates
+2025-08,Missing DepartmentKey,30,Department not populated after ERP migration,"Mapped to department 0 ""Unassigned""; flagged on the data-quality page"
+2026-09,Schema drift,1124,Columns reordered; extra Comment column,"Loader expands columns by name, so order and extras do not matter"
+2026-04+,New GL account,355,Account 102 Software Subscriptions opened; 40% of account 74 reclassified,Added to chart of accounts and report-line map; totals unchanged

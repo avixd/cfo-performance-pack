@@ -1,0 +1,12 @@
+# Power BI Project local-only files (never commit)
+**/.pbi/localSettings.json
+**/.pbi/cache.abf
+**/.pbi/*.abf
+*.pbix
+# OS / editor
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+# Python
+__pycache__/

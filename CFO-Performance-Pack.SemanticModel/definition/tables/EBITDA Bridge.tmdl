@@ -1,0 +1,31 @@
+/// Axis for the budget to actual EBITDA bridge.
+table 'EBITDA Bridge'
+	lineageTag: 759ce980-314b-551f-b65b-21121b616310
+
+	column Step
+		dataType: string
+		lineageTag: 60a6a0ed-2b91-5542-84db-f77dd00bfc94
+		sourceColumn: Step
+		sortByColumn: Sort
+
+	column Sort
+		dataType: int64
+		isHidden
+		lineageTag: f2cd72a1-ad50-5c1e-8404-b1080847371c
+		summarizeBy: none
+		sourceColumn: Sort
+
+	partition 'EBITDA Bridge' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [Step = text, Sort = Int64.Type], {
+				        {"Revenue", 1},
+				        {"Cost of sales", 2},
+				        {"Operating expenses", 3}
+				    })
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+

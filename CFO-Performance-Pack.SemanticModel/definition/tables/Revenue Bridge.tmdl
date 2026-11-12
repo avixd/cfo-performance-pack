@@ -1,0 +1,30 @@
+/// Axis for the prior-year to current-year revenue bridge.
+table 'Revenue Bridge'
+	lineageTag: 1f3a9dc6-acab-5e55-b276-f2c8360f6b81
+
+	column Step
+		dataType: string
+		lineageTag: 830fcaf8-3109-56a3-849d-62fb249943c9
+		sourceColumn: Step
+		sortByColumn: Sort
+
+	column Sort
+		dataType: int64
+		isHidden
+		lineageTag: c711b5d1-3d8b-5d5c-b2d9-e49267e9f58c
+		summarizeBy: none
+		sourceColumn: Sort
+
+	partition 'Revenue Bridge' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [Step = text, Sort = Int64.Type], {
+				        {"Organic growth", 1},
+				        {"New entities", 2}
+				    })
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+
