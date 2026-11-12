@@ -405,8 +405,9 @@ class Page:
                 ('s_r', 'Entity[Region]', 'Region', 'Dropdown', False, 'Region'),
                 ('s_e', 'Entity[EntityName]', 'Entity', 'Dropdown', False, 'Entity'),
                 ('s_d', 'Department[DepartmentName]', 'Department', 'Dropdown', False, 'Department')]:
-            self.slicer(k, 6, y, PANEL_W - 12, 52, spec, ttl, mode=mode, single=single, horizontal=(mode == 'Basic'), sync=sync)
-            y += 53
+            hh = 46 if mode == 'Basic' else 58   # tile slicers need less height than dropdowns
+            self.slicer(k, 6, y, PANEL_W - 12, hh, spec, ttl, mode=mode, single=single, horizontal=(mode == 'Basic'), sync=sync)
+            y += hh + 1
         self.button('reset', 10, y + 4, PANEL_W - 20, 26, '\u21ba  Reset all filters', 'ClearAllSlicers', tooltip='Clear every slicer on every page',
                     fill='Sidebar Active', text='Sidebar Text', outline=None, round_=6)
         self.textline('tagline', 8, H - 34, PANEL_W - 16, 26, 'Tagline', 8.5, 'Sidebar Muted')
@@ -485,16 +486,16 @@ class Page:
         x0, y0, w0, h0 = X(x), Y(y), w * SX, h * SY
         self.add(key + '_bg', 'textbox', x0, y0, w0, h0, content=False, header=False,
                  objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]})
-        self.button(key + '_ic', x0 + 10, y0 + 10, 30, 30, glyph, fill='Accent Soft', text='Accent', outline=None, size=11, round_=15, bold=True)
-        self.button(key + '_v', x0 + 44, y0 + 6, w0 - 50, 30, '', measure=value, fill=None, text='Title', outline=None, size=15, align='left', bold=True)
-        self.button(key + '_l', x0 + 44, y0 + 36, w0 - 50, 20, label + '  \u24d8', 'WebUrl', url=DOCS_URL + (doc_anchor or ''),
+        self.button(key + '_ic', x0 + 8, y0 + 9, 26, 26, glyph, fill='Accent Soft', text='Accent', outline=None, size=10, round_=13, bold=True)
+        self.button(key + '_v', x0 + 36, y0 + 6, 88 if spark else (w0 - 42), 30, '', measure=value, fill=None, text='Title', outline=None, size=14, align='left', bold=True)
+        self.button(key + '_l', x0 + 36, y0 + 36, w0 - 42, 20, label + '  \u24d8', 'WebUrl', url=DOCS_URL + (doc_anchor or ''),
                     tooltip=(desc or label)[:250], fill=None, text='Muted', outline=None, size=8, align='left')
         if sub:
-            self.button(key + '_s', x0 + 4, y0 + 60, w0 * 0.6, 22, '', measure=sub, fill=None, text='Muted', outline=None, size=7.5, align='left')
+            self.button(key + '_s', x0 + 4, y0 + 60, w0 - 8, 22, '', measure=sub, fill=None, text='Muted', outline=None, size=7.5, align='left')
             if sub_colour:
                 self.visuals[-1]['visual']['objects']['text'][1]['properties']['fontColor'] = mcolor(sub_colour)
         if spark:
-            self.image(key + '_sp', x0 + w0 * 0.6, y0 + 52, w0 * 0.38, 34, spark)
+            self.image(key + '_sp', x0 + 126, y0 + 9, w0 - 136, 24, spark)
         if prog_text:
             self.button(key + '_pt', x0 + 4, y0 + h0 - 36, w0 - 8, 20, '', measure=prog_text, fill=None, text='Muted', outline=None, size=7, align='left')
         if prog_bar:
@@ -504,7 +505,7 @@ class Page:
         """Image visual bound to an SVG measure (dataCategory ImageUrl)."""
         obj = {'image': [{'properties': {'sourceType': L('imageData'), 'sourceField': {'expr': mfield(measure)}}}],
                'imageScaling': [{'properties': {'imageScalingType': L('Fit')}}]}
-        return self.add(key, 'image', x, y, w, h, objects=obj, background=False, header=False,
+        return self.add(key, 'image', x, y, w, h, objects=obj, content=False, background=False, header=False,
                         container={'padding': [{'properties': {'top': L(0), 'bottom': L(0), 'left': L(0), 'right': L(0)}}]})
 
     def axes(self, extra=None, value_axis=True, legend=True):

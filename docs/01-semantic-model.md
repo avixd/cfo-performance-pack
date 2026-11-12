@@ -2237,7 +2237,7 @@ RETURN "Month-end cash ranged " & FORMAT ( ( MAXX ( lo, [@c] ) ) / 1e6, "#,0.0" 
 
 **KV Revenue**
 ```dax
-VAR v = [Revenue] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+VAR v = [Revenue] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 ```
 
 **KV Gross Profit Margin %**
@@ -2247,22 +2247,22 @@ FORMAT ( [Gross Profit Margin %], "0.0%" )
 
 **KV EBITDA**
 ```dax
-VAR v = [EBITDA] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+VAR v = [EBITDA] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 ```
 
 **KV Net Income**
 ```dax
-VAR v = [Net Income] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+VAR v = [Net Income] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 ```
 
 **KV Net Income Outlook FY**
 ```dax
-VAR v = [Net Income Outlook FY] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+VAR v = [Net Income Outlook FY] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 ```
 
 **KV Cash**
 ```dax
-VAR v = [Cash] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+VAR v = [Cash] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 ```
 
 **KV Organic Growth %**
@@ -2272,7 +2272,7 @@ FORMAT ( [Organic Growth %], "0.0%" )
 
 **KV Revenue New Entities**
 ```dax
-VAR v = [Revenue New Entities] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+VAR v = [Revenue New Entities] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 ```
 
 **KV Entities Reporting**
@@ -2282,22 +2282,22 @@ FORMAT ( [Entities Reporting], "#,0" )
 
 **KV Metric Actual**
 ```dax
-VAR v = [Metric Actual] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+VAR v = [Metric Actual] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 ```
 
 **KV Metric Budget**
 ```dax
-VAR v = [Metric Budget] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+VAR v = [Metric Budget] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 ```
 
 **KV Metric PY**
 ```dax
-VAR v = [Metric PY] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+VAR v = [Metric PY] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 ```
 
 **KV Metric Outlook FY**
 ```dax
-VAR v = [Metric Outlook FY] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+VAR v = [Metric Outlook FY] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )
 ```
 
 **Revenue Spark** · format `#,0;(#,0);-`  
