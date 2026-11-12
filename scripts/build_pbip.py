@@ -173,7 +173,7 @@ def build_model(data_root):
 
 
 # ============================================================== PBIR helpers
-VC_SCHEMA = 'https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json'
+VC_SCHEMA = 'https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json'
 PAGE_SCHEMA = 'https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json'
 W, H = 1280, 720
 C = dict(navy='#1F3A5F', ink='#1F2A37', muted='#5B6676', actual='#2F3B4C', budget='#9AA5B4', py='#C9D0D9',
@@ -333,22 +333,25 @@ class Page:
         if sub:
             self.card(key + '_sub', x, y + top, w, h - top, sub, None, size=9, color_measure=sub_color, color=C['muted'])
 
-    def slicer(self, key, x, y, w, h, spec, header, mode='Dropdown', single=False, horizontal=False):
+    def slicer(self, key, x, y, w, h, spec, header, mode='Dropdown', single=False, horizontal=False, sync=None):
         obj = {'data': [{'properties': {'mode': L(mode)}}],
-               'header': [{'properties': {'show': L(True), 'text': L(header), 'fontSize': L(8), 'fontColor': solid(C['muted'])}}],
-               'items': [{'properties': {'fontSize': L(9)}}],
+               'header': [{'properties': {'show': L(True), 'text': L(header), 'textSize': L(8), 'fontColor': solid(C['muted'])}}],
+               'items': [{'properties': {'textSize': L(9)}}],
                'selection': [{'properties': {'singleSelect': L(single), 'strictSingleSelect': L(single)}}]}
         if horizontal:
             obj['general'] = [{'properties': {'orientation': L(1)}}]
-        return self.add(key, 'slicer', x, y, w, h, roles={'Values': [spec]}, objects=obj, background=False)
+        vid = self.add(key, 'slicer', x, y, w, h, roles={'Values': [spec]}, objects=obj, background=False)
+        if sync:  # same group name on every page = one selection shared across the report
+            self.visuals[-1]['visual']['syncGroup'] = {'groupName': sync, 'fieldChanges': True, 'filterChanges': True}
+        return vid
 
     def header(self, title, subtitle_measure, metric=False):
         self.text('hdr', 12, 2, 620, 44, [(title, 18, True, C['navy'])])
         self.narrative('hdr_sub', 16, 40, 660, 38, [subtitle_measure], size=9.5, color=C['muted'], bar=False, background=False)
-        self.slicer('s_fy', 680, 6, 96, 60, 'Date[Fiscal Year]', 'Fiscal year')
-        self.slicer('s_m', 780, 6, 84, 60, 'Date[Month Name]', 'Month')
-        self.slicer('s_p', 868, 6, 250, 60, 'Period View[View]', 'Period', mode='Basic', single=True, horizontal=True)
-        self.slicer('s_c', 1122, 6, 146, 60, 'Reporting Currency[Currency]', 'Currency', mode='Basic', single=True, horizontal=True)
+        self.slicer('s_fy', 680, 6, 96, 60, 'Date[Fiscal Year]', 'Fiscal year', sync='Fiscal Year')
+        self.slicer('s_m', 780, 6, 84, 60, 'Date[Month Name]', 'Month', sync='Month Name')
+        self.slicer('s_p', 868, 6, 250, 60, 'Period View[View]', 'Period', mode='Basic', single=True, horizontal=True, sync='View')
+        self.slicer('s_c', 1122, 6, 146, 60, 'Reporting Currency[Currency]', 'Currency', mode='Basic', single=True, horizontal=True, sync='Currency')
 
     # ---- charts
     def bars(self, key, x, y, w, h, category, value, color_measure, title, sort_desc=True):
