@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "2fde5f66cf155465bf97",
   "position": {
-    "x": 1024,
+    "x": 968,
     "y": 6,
-    "z": 17000,
-    "height": 26,
-    "width": 112,
-    "tabOrder": 17000
+    "z": 30000,
+    "height": 28,
+    "width": 106,
+    "tabOrder": 30000
   },
   "visual": {
     "visualType": "actionButton",
@@ -22,9 +22,6 @@
                 }
               }
             }
-          },
-          "selector": {
-            "id": "default"
           }
         }
       ],
@@ -37,7 +34,11 @@
                   "Value": "true"
                 }
               }
-            },
+            }
+          }
+        },
+        {
+          "properties": {
             "text": {
               "expr": {
                 "Literal": {
@@ -61,17 +62,52 @@
                 }
               }
             },
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'DIN'"
-                }
-              }
-            },
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "9D"
+                  "Value": "8.5D"
+                }
+              }
+            },
+            "horizontalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'center'"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "leftMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "rightMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "topMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "bottomMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
                 }
               }
             }
@@ -90,7 +126,11 @@
                   "Value": "true"
                 }
               }
-            },
+            }
+          }
+        },
+        {
+          "properties": {
             "fillColor": {
               "solid": {
                 "color": {
@@ -129,7 +169,11 @@
                   "Value": "true"
                 }
               }
-            },
+            }
+          }
+        },
+        {
+          "properties": {
             "lineColor": {
               "solid": {
                 "color": {

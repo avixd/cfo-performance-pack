@@ -2,21 +2,32 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "91a7df5993c85e5ea97d",
   "position": {
-    "x": 10,
-    "y": 8,
+    "x": 8,
+    "y": 10,
     "z": 3000,
-    "height": 30,
-    "width": 184,
+    "height": 24,
+    "width": 180,
     "tabOrder": 3000
   },
   "visual": {
-    "visualType": "multiRowCard",
-    "query": {
-      "queryState": {
-        "Values": {
-          "projections": [
-            {
-              "field": {
+    "visualType": "actionButton",
+    "objects": {
+      "text": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "text": {
+              "expr": {
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
@@ -25,26 +36,9 @@
                   },
                   "Property": "Brand"
                 }
-              },
-              "queryRef": "_Measures.Brand",
-              "nativeQueryRef": "Brand"
-            }
-          ]
-        }
-      }
-    },
-    "objects": {
-      "dataLabels": [
-        {
-          "properties": {
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "12.5D"
-                }
               }
             },
-            "color": {
+            "fontColor": {
               "solid": {
                 "color": {
                   "expr": {
@@ -54,23 +48,75 @@
                           "Entity": "_Measures"
                         }
                       },
-                      "Property": "Col Accent"
+                      "Property": "Col Sidebar Text"
                     }
                   }
                 }
               }
             },
-            "fontFamily": {
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "'DIN'"
+                  "Value": "11.5D"
+                }
+              }
+            },
+            "horizontalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'left'"
+                }
+              }
+            },
+            "verticalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'middle'"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "leftMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "rightMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "topMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "bottomMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
                 }
               }
             }
+          },
+          "selector": {
+            "id": "default"
           }
         }
       ],
-      "categoryLabels": [
+      "icon": [
         {
           "properties": {
             "show": {
@@ -83,36 +129,26 @@
           }
         }
       ],
-      "card": [
+      "fill": [
         {
           "properties": {
-            "barShow": {
+            "show": {
               "expr": {
                 "Literal": {
                   "Value": "false"
                 }
               }
-            },
-            "outline": {
+            }
+          }
+        }
+      ],
+      "outline": [
+        {
+          "properties": {
+            "show": {
               "expr": {
                 "Literal": {
-                  "Value": "'None'"
-                }
-              }
-            },
-            "cardBackground": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Measure": {
-                      "Expression": {
-                        "SourceRef": {
-                          "Entity": "_Measures"
-                        }
-                      },
-                      "Property": "Col Panel"
-                    }
-                  }
+                  "Value": "false"
                 }
               }
             }

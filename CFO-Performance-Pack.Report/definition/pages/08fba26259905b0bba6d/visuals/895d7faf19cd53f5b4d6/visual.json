@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "895d7faf19cd53f5b4d6",
   "position": {
-    "x": 212.0,
-    "y": 222.1,
-    "z": 31000,
-    "height": 241.6,
-    "width": 522.6,
-    "tabOrder": 31000
+    "x": 208.0,
+    "y": 235.1,
+    "z": 66000,
+    "height": 236.7,
+    "width": 526.6,
+    "tabOrder": 66000
   },
   "visual": {
     "visualType": "lineClusteredColumnComboChart",
@@ -130,13 +130,6 @@
                 }
               }
             },
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'DIN'"
-                }
-              }
-            },
             "labelColor": {
               "solid": {
                 "color": {
@@ -170,13 +163,6 @@
               "expr": {
                 "Literal": {
                   "Value": "8D"
-                }
-              }
-            },
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'DIN'"
                 }
               }
             },
@@ -245,13 +231,6 @@
               "expr": {
                 "Literal": {
                   "Value": "8D"
-                }
-              }
-            },
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'DIN'"
                 }
               }
             },
@@ -426,16 +405,9 @@
                           "Entity": "_Measures"
                         }
                       },
-                      "Property": "Col Text"
+                      "Property": "Col Title"
                     }
                   }
-                }
-              }
-            },
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'DIN'"
                 }
               }
             },
@@ -443,6 +415,13 @@
               "expr": {
                 "Literal": {
                   "Value": "10.5D"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
                 }
               }
             }
@@ -487,13 +466,6 @@
                 }
               }
             },
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'DIN'"
-                }
-              }
-            },
             "fontSize": {
               "expr": {
                 "Literal": {
@@ -534,6 +506,42 @@
               "expr": {
                 "Literal": {
                   "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Measures"
+                        }
+                      },
+                      "Property": "Col Line"
+                    }
+                  }
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
                 }
               }
             }

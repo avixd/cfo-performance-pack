@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "0b8c5ba9b78759d09726",
   "position": {
-    "x": 726.2,
-    "y": 76.0,
-    "z": 24000,
-    "height": 82.4,
-    "width": 130.2,
-    "tabOrder": 24000
+    "x": 726.1,
+    "y": 92.0,
+    "z": 39000,
+    "height": 80.7,
+    "width": 131.2,
+    "tabOrder": 39000
   },
   "visual": {
     "visualType": "card",
@@ -42,13 +42,6 @@
               "expr": {
                 "Literal": {
                   "Value": "19D"
-                }
-              }
-            },
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'DIN'"
                 }
               }
             },
@@ -99,13 +92,6 @@
               "expr": {
                 "Literal": {
                   "Value": "8.5D"
-                }
-              }
-            },
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'DIN'"
                 }
               }
             },
@@ -199,6 +185,42 @@
               "expr": {
                 "Literal": {
                   "Value": "0D"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "border": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            },
+            "color": {
+              "solid": {
+                "color": {
+                  "expr": {
+                    "Measure": {
+                      "Expression": {
+                        "SourceRef": {
+                          "Entity": "_Measures"
+                        }
+                      },
+                      "Property": "Col Line"
+                    }
+                  }
+                }
+              }
+            },
+            "radius": {
+              "expr": {
+                "Literal": {
+                  "Value": "10D"
                 }
               }
             }

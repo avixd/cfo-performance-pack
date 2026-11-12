@@ -1240,13 +1240,13 @@ table _Measures
 		displayFolder: 10 Theme
 		lineageTag: 8195e60c-5136-52d6-8aef-7ffd1f6c407d
 
-	/// Theme colour "Page": #F4F6F9 light / #0B1220 dark.
-	measure 'Col Page' = IF ( [Is Dark], "#0B1220", "#F4F6F9" )
+	/// Theme colour "Page": #F1F4F8 light / #0B1220 dark.
+	measure 'Col Page' = IF ( [Is Dark], "#0B1220", "#F1F4F8" )
 		displayFolder: 10 Theme
 		lineageTag: 8f5d497b-3936-5879-8f79-f3180b55b2fa
 
-	/// Theme colour "Panel": #FFFFFF light / #162032 dark.
-	measure 'Col Panel' = IF ( [Is Dark], "#162032", "#FFFFFF" )
+	/// Theme colour "Panel": #FFFFFF light / #141D2E dark.
+	measure 'Col Panel' = IF ( [Is Dark], "#141D2E", "#FFFFFF" )
 		displayFolder: 10 Theme
 		lineageTag: 3025171e-6d91-5964-9bd9-d7d4b52264de
 
@@ -1265,8 +1265,8 @@ table _Measures
 		displayFolder: 10 Theme
 		lineageTag: bef442d6-bc0a-5ecc-874f-d72022f23549
 
-	/// Theme colour "Accent": #1F3A5F light / #8DB3D9 dark.
-	measure 'Col Accent' = IF ( [Is Dark], "#8DB3D9", "#1F3A5F" )
+	/// Theme colour "Accent": #2F5D9F light / #7FB0E6 dark.
+	measure 'Col Accent' = IF ( [Is Dark], "#7FB0E6", "#2F5D9F" )
 		displayFolder: 10 Theme
 		lineageTag: 96d1713f-a570-5bab-ab12-52855c8a7245
 
@@ -1315,6 +1315,41 @@ table _Measures
 		displayFolder: 10 Theme
 		lineageTag: 4c669764-a7ce-530b-8b22-7a37c26a033e
 
+	/// Theme colour "Accent Soft": #E6EEF8 light / #1E3350 dark.
+	measure 'Col Accent Soft' = IF ( [Is Dark], "#1E3350", "#E6EEF8" )
+		displayFolder: 10 Theme
+		lineageTag: 213cfa0a-5340-5ab4-8575-6aacbda341e0
+
+	/// Theme colour "Track": #E5E9F0 light / #22314A dark.
+	measure 'Col Track' = IF ( [Is Dark], "#22314A", "#E5E9F0" )
+		displayFolder: 10 Theme
+		lineageTag: d2400728-e865-5ef9-ad07-6e7b6ebaa1ea
+
+	/// Theme colour "Sidebar": #0F2340 light / #070D1A dark.
+	measure 'Col Sidebar' = IF ( [Is Dark], "#070D1A", "#0F2340" )
+		displayFolder: 10 Theme
+		lineageTag: c9d9396c-92aa-598f-a378-8a1b9f35261c
+
+	/// Theme colour "Sidebar Text": #E8EDF4 light / #E8EDF4 dark.
+	measure 'Col Sidebar Text' = IF ( [Is Dark], "#E8EDF4", "#E8EDF4" )
+		displayFolder: 10 Theme
+		lineageTag: 9b63871b-875b-51ca-9176-c884dda34005
+
+	/// Theme colour "Sidebar Muted": #8FA3BF light / #7F8EA6 dark.
+	measure 'Col Sidebar Muted' = IF ( [Is Dark], "#7F8EA6", "#8FA3BF" )
+		displayFolder: 10 Theme
+		lineageTag: 1ad87ef7-aef3-5680-81c9-dfaabd65107e
+
+	/// Theme colour "Sidebar Active": #23497A light / #1E3350 dark.
+	measure 'Col Sidebar Active' = IF ( [Is Dark], "#1E3350", "#23497A" )
+		displayFolder: 10 Theme
+		lineageTag: 9346bcaa-4ac8-503a-a35e-3877c82700bb
+
+	/// Theme colour "Title": #14213D light / #F1F5F9 dark.
+	measure 'Col Title' = IF ( [Is Dark], "#F1F5F9", "#14213D" )
+		displayFolder: 10 Theme
+		lineageTag: ac09f315-f7ff-5472-a7b6-1ba1b423ec9c
+
 	/// First name only (text before @, \ or .); never the full sign-in, domain or machine name. Anonymous (Publish to web) viewers see "guest".
 	measure Greeting =
 			VAR u = USERPRINCIPALNAME ()
@@ -1328,7 +1363,7 @@ table _Measures
 		displayFolder: 10 Layout
 		lineageTag: d5974801-2751-5ba9-812a-b67b7d68d073
 
-	measure 'Ctx Period' = [Selected Fiscal Year] & " · " & SELECTEDVALUE ( 'Period View'[View], "YTD" ) & " to " & FORMAT ( [Selected Month], "mmm yyyy" )
+	measure 'Ctx Period' = [Selected Fiscal Year] & " " & SELECTEDVALUE ( 'Period View'[View], "YTD" ) & " " & FORMAT ( [Selected Month], "mmm yy" )
 		displayFolder: 10 Layout
 		lineageTag: 96dbbabc-218f-50e9-9ca1-819b3d1f1d50
 
@@ -1713,6 +1748,267 @@ table _Measures
 			RETURN "Month-end cash ranged " & FORMAT ( MAXX ( lo, [@c] ) / 1e6, "#,0.0" ) & "M" & " (" & FORMAT ( MAXX ( lo, 'Date'[Month] ), "mmm yy" ) & ") to " & FORMAT ( MAXX ( hi, [@c] ) / 1e6, "#,0.0" ) & "M" & " (" & FORMAT ( MAXX ( hi, 'Date'[Month] ), "mmm yy" ) & "); it moves with working capital, not profit." 
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: a87ab307-2f34-57e2-be4d-52b7398eb2cb
+
+	measure 'Lbl Current View' = "Current view"
+		displayFolder: 10 Layout
+		lineageTag: e497b8ac-6142-54b8-b335-d85553afaf41
+
+	measure 'Ctx Line Period' = "Period: " & [Ctx Period]
+		displayFolder: 10 Layout
+		lineageTag: f8da9815-ab05-5306-b301-f6fd445b9927
+
+	measure 'Ctx Line Currency' = "Currency: " & [Ctx Currency]
+		displayFolder: 10 Layout
+		lineageTag: 0519fc77-1d26-5518-832a-474309b65570
+
+	measure 'Ctx Line Region' = "Region: " & [Ctx Region]
+		displayFolder: 10 Layout
+		lineageTag: 807a6a9e-6d98-5180-bb15-a56777b9cb8e
+
+	measure 'Ctx Line Entity' = "Entity: " & [Ctx Entity]
+		displayFolder: 10 Layout
+		lineageTag: 97f7453f-418a-507e-ae1a-6ed36f786a58
+
+	measure 'Ctx Line Department' = "Department: " & [Ctx Department]
+		displayFolder: 10 Layout
+		lineageTag: d20ba948-6952-512f-8bf9-6e1c133e40f1
+
+	measure 'Last Refreshed' = "Refreshed " & FORMAT ( MAX ( 'Refresh Info'[Refreshed At] ), "dd mmm yyyy hh:nn" ) & " UTC · books closed " & FORMAT ( [As Of Month], "mmm yyyy" )
+		displayFolder: 10 Layout
+		lineageTag: bb21370a-3a5c-5c68-a1ad-aac5c3eb8502
+
+	measure 'Brand Sub' = "Adventure Works Group"
+		displayFolder: 10 Layout
+		lineageTag: 03c0a743-47bc-5417-b07a-6c793012e39d
+
+	measure Tagline = "Every number traces back to the ledger."
+		displayFolder: 10 Layout
+		lineageTag: 5aef569d-83e4-54a5-9a1d-9da7e09e5f84
+
+	measure 'Lbl Filters' = "FILTERS"
+		displayFolder: 10 Layout
+		lineageTag: 6d43b9bc-4719-58a2-95da-73b7c497bf6a
+
+	/// Share of the fiscal year closed at the selected month.
+	measure 'Year Elapsed %' = DIVIDE ( [Fiscal Month Of Selection], 12 )
+		formatString: 0%
+		displayFolder: 1 Period (fiscal)
+		lineageTag: ad003aeb-4671-57a8-b0ec-5336cc8441fe
+
+	measure 'Footer Note 1' = "1  One definition per metric: hover a KPI label for its definition; click it for the DAX."
+		displayFolder: 10 Layout
+		lineageTag: f013e149-4b6a-520c-8144-3610d8e2304c
+
+	measure 'Footer Note 2' = "2  Described in the model: every measure has a description (docs/01-semantic-model.md)."
+		displayFolder: 10 Layout
+		lineageTag: 1d572535-ae21-5df0-bbe7-982e97f52dd2
+
+	measure 'KV Revenue' = VAR v = [Revenue] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+		displayFolder: 11 KPI Cards
+		lineageTag: da762ac8-24ba-54a6-bea9-237bfdb2234d
+
+	measure 'KV Gross Profit Margin %' = FORMAT ( [Gross Profit Margin %], "0.0%" )
+		displayFolder: 11 KPI Cards
+		lineageTag: d1cc38ab-9084-5879-8b8c-cf402146b4da
+
+	measure 'KV EBITDA' = VAR v = [EBITDA] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 17ccf333-993f-5db9-bfbc-9b030362a626
+
+	measure 'KV Net Income' = VAR v = [Net Income] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 780d189b-813e-538e-8126-d0c1b3b4365e
+
+	measure 'KV Net Income Outlook FY' = VAR v = [Net Income Outlook FY] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 5a3a7ec1-ee28-5d45-be17-f1013244990e
+
+	measure 'KV Cash' = VAR v = [Cash] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+		displayFolder: 11 KPI Cards
+		lineageTag: de7298f1-5f05-5598-962d-c4f32485a4a4
+
+	measure 'KV Organic Growth %' = FORMAT ( [Organic Growth %], "0.0%" )
+		displayFolder: 11 KPI Cards
+		lineageTag: e57bbd69-6584-5b82-a444-dc95f9fc2147
+
+	measure 'KV Revenue New Entities' = VAR v = [Revenue New Entities] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 3c8b521b-f30f-5af1-9e57-46a913cfac6d
+
+	measure 'KV Entities Reporting' = FORMAT ( [Entities Reporting], "#,0" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 9f122aaa-3083-53a4-a3ff-530a825cc5b5
+
+	measure 'KV Metric Actual' = VAR v = [Metric Actual] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 15c2f917-33a5-5a4f-99ca-e9525ffa95bc
+
+	measure 'KV Metric Budget' = VAR v = [Metric Budget] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 4579ed55-73be-58f2-9826-13aba8e4aed6
+
+	measure 'KV Metric PY' = VAR v = [Metric PY] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 8c4779be-8876-550b-96b7-744bb6bf9f2d
+
+	measure 'KV Metric Outlook FY' = VAR v = [Metric Outlook FY] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )
+		displayFolder: 11 KPI Cards
+		lineageTag: d9eab4cc-5d7f-5ac4-a1f6-2b9e599c0dca
+
+	/// Monthly revenue for the selected fiscal year (sparkline).
+	measure 'Revenue Spark' = CALCULATE ( [Monthly Actual (Selected FY)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 11 KPI Cards
+		lineageTag: 40dd4d6f-c845-5bc2-8c3f-76ab2ffb54fb
+
+	/// Monthly gross profit for the selected fiscal year (sparkline).
+	measure 'Gross Profit Spark' = CALCULATE ( [Monthly Actual (Selected FY)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 11 KPI Cards
+		lineageTag: c7870333-a731-5952-b50e-f3f026ee7b89
+
+	/// Monthly ebitda for the selected fiscal year (sparkline).
+	measure 'EBITDA Spark' = CALCULATE ( [Monthly Actual (Selected FY)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 11 KPI Cards
+		lineageTag: 82d675d2-b6fd-51bd-8565-eef3851d7229
+
+	/// Monthly net income for the selected fiscal year (sparkline).
+	measure 'Net Income Spark' = CALCULATE ( [Monthly Actual (Selected FY)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 11 KPI Cards
+		lineageTag: c6df4c6f-4254-5fef-9280-9f75972e75ee
+
+	/// Month-end cash for closed months of the selected fiscal year (sparkline).
+	measure 'Cash Spark' = VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) ) VAR m = MAX ( 'Date'[Month] ) RETURN IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ) && m <= [Selected Month] && MAX ( 'Date'[Fiscal Year Number] ) = fy, [Cash Balance (month)] )
+		formatString: #,0;(#,0);-
+		displayFolder: 11 KPI Cards
+		lineageTag: fa70ec38-be24-50c0-b7cb-762b707e6945
+
+	measure 'Gross Margin Spark' = DIVIDE ( [Gross Profit Spark], [Revenue Spark] )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 11 KPI Cards
+		lineageTag: 818a0c34-1dad-55d9-81ec-6f362235681e
+
+	/// Revenue year to date as a share of the full-year budget.
+	measure 'Revenue FY Progress' = DIVIDE ( CALCULATE ( [Actual YTD], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ), CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ) )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: 688fd78e-efd2-5c82-9079-add89f5047e9
+
+	measure 'Revenue Progress Text' = FORMAT ( [Revenue FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+		displayFolder: 11 KPI Cards
+		lineageTag: df3f19f2-53c3-5636-8c10-69aafc1ad65e
+
+	/// EBITDA year to date as a share of the full-year budget.
+	measure 'EBITDA FY Progress' = DIVIDE ( CALCULATE ( [Actual YTD], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) ), CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) ) )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: 8b5d3857-c8cb-594b-9382-a1a179a86a63
+
+	measure 'EBITDA Progress Text' = FORMAT ( [EBITDA FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+		displayFolder: 11 KPI Cards
+		lineageTag: e3c12d26-f1fb-56a0-96d6-c21cf9b4ccbe
+
+	/// Net Income year to date as a share of the full-year budget.
+	measure 'Net Income FY Progress' = DIVIDE ( CALCULATE ( [Actual YTD], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) ), CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) ) )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: ddf48718-a702-55c5-83da-7e119d0c70b7
+
+	measure 'Net Income Progress Text' = FORMAT ( [Net Income FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+		displayFolder: 11 KPI Cards
+		lineageTag: ba943be0-05fe-53d8-a1ff-e2cc26179872
+
+	measure 'Net Income Outlook Progress' = DIVIDE ( [Net Income Outlook FY], [Net Income Budget FY] )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: 87612d58-3860-5ea1-a55a-7ded23c0fee4
+
+	measure 'Net Income Outlook Progress Text' = FORMAT ( [Net Income Outlook Progress], "0%" ) & " of FY budget"
+		displayFolder: 11 KPI Cards
+		lineageTag: 65d46501-e0db-523a-8675-f9db4476ca6c
+
+	measure 'Metric FY Progress' =
+			DIVIDE ( VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			RETURN CALCULATE ( [Actual YTD], TREATAS ( accts, Account[AccountKey] ) ), [Metric Budget FY] )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: a244c29b-3ddf-535d-a22b-d8910e3a0811
+
+	measure 'Metric Progress Text' = FORMAT ( [Metric FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+		displayFolder: 11 KPI Cards
+		lineageTag: 491c634a-4397-57f1-9946-0f342f1e615b
+
+	measure 'Metric Outlook Progress' = DIVIDE ( [Metric Outlook FY], [Metric Budget FY] )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: 9204713b-d3a1-5b6d-85aa-1cb99dc270f1
+
+	measure 'Metric Outlook Progress Text' = FORMAT ( [Metric Outlook Progress], "0%" ) & " of FY budget (outlook)"
+		displayFolder: 11 KPI Cards
+		lineageTag: ca2f6bcc-f12f-5d2a-9198-0c3c6063331e
+
+	measure 'Gross Margin Progress Text' = "Budget " & FORMAT ( [Gross Profit Margin % Budget], "0.0%" ) & " · PY " & FORMAT ( DIVIDE ( [Gross Profit PY], [Revenue PY] ), "0.0%" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 5a4d4fbb-79dc-54c2-ad25-c221cc97f0bf
+
+	measure 'Cash Progress Text' = "Year end " & FORMAT ( CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ) / 1e6, "#,0.0" ) & "M" & " · " & [DSO (days)] & "d DSO"
+		displayFolder: 11 KPI Cards
+		lineageTag: 4c7bb99f-0da3-5798-a25f-bbbcca6d46f2
+
+	/// Progress capped to 0-100% for the bar.
+	measure 'Revenue Progress Bar' = MIN ( MAX ( [Revenue FY Progress], 0 ), 1 )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: 63568836-84bd-5e88-9456-6830741a10fb
+
+	/// Progress capped to 0-100% for the bar.
+	measure 'EBITDA Progress Bar' = MIN ( MAX ( [EBITDA FY Progress], 0 ), 1 )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: bb78c6cd-62eb-5922-a87b-c02e06592527
+
+	/// Progress capped to 0-100% for the bar.
+	measure 'Net Income Progress Bar' = MIN ( MAX ( [Net Income FY Progress], 0 ), 1 )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: 2fdb8835-0f72-526a-90cd-e98a90fc643b
+
+	/// Progress capped to 0-100% for the bar.
+	measure 'Net Income Outlook Progress Bar' = MIN ( MAX ( [Net Income Outlook Progress], 0 ), 1 )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: 3bc566d4-108a-58a7-93fb-10e9ebbce285
+
+	/// Progress capped to 0-100% for the bar.
+	measure 'Metric Progress Bar' = MIN ( MAX ( [Metric FY Progress], 0 ), 1 )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: d5324969-216a-5e83-bed9-005310134363
+
+	/// Progress capped to 0-100% for the bar.
+	measure 'Metric Outlook Progress Bar' = MIN ( MAX ( [Metric Outlook Progress], 0 ), 1 )
+		formatString: 0%
+		displayFolder: 11 KPI Cards
+		lineageTag: 68d7b10e-0491-5cf5-8343-b73210124b59
+
+	measure 'Entity Budget Status Summary' = VAR t = FILTER ( ADDCOLUMNS ( VALUES ( Entity[EntityName] ), "@s", [Entity Budget Status] ), [@s] = "Not budgeted" ) RETURN IF ( COUNTROWS ( t ) > 0, "Unbudgeted: " & CONCATENATEX ( t, Entity[EntityName], ", " ), "All entities budgeted" )
+		displayFolder: 11 KPI Cards
+		lineageTag: eaf2fba1-01c3-58ef-b9f7-da206e8d48dc
+
+	measure 'Sub Entities Short' = VAR t = FILTER ( ADDCOLUMNS ( VALUES ( Entity[EntityName] ), "@s", [Entity Budget Status] ), NOT ISBLANK ( [@s] ) ) RETURN COUNTROWS ( FILTER ( t, [@s] <> "Budgeted" ) ) + 0 & " without a credible budget"
+		displayFolder: 11 KPI Cards
+		lineageTag: 59675677-fe2c-514e-8cc1-a4295b8b0fdc
+
+	measure 'Metric Budget FY Text' = "FY budget " & FORMAT ( [Metric Budget FY] / 1e6, "#,0.0" ) & "M"
+		displayFolder: 11 KPI Cards
+		lineageTag: bb136ec4-67b1-5672-a05e-a14734057934
+
+	measure 'Revenue Growth Short' = "Total growth " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & " vs PY"
+		displayFolder: 11 KPI Cards
+		lineageTag: 29fe8f84-f7e8-514f-8da7-0ad7317e3659
 
 	column Placeholder
 		dataType: string

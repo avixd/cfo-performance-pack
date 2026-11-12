@@ -2,21 +2,45 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "da0cf76b5fe654f0aa04",
   "position": {
-    "x": 208,
-    "y": 680,
-    "z": 22000,
+    "x": 728,
+    "y": 679,
+    "z": 37000,
     "height": 36,
-    "width": 1060,
-    "tabOrder": 22000
+    "width": 540,
+    "tabOrder": 37000
   },
   "visual": {
-    "visualType": "multiRowCard",
-    "query": {
-      "queryState": {
-        "Values": {
-          "projections": [
-            {
-              "field": {
+    "visualType": "actionButton",
+    "objects": {
+      "icon": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "text": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "text": {
+              "expr": {
                 "Measure": {
                   "Expression": {
                     "SourceRef": {
@@ -25,26 +49,9 @@
                   },
                   "Property": "Footer IS"
                 }
-              },
-              "queryRef": "_Measures.Footer IS",
-              "nativeQueryRef": "Footer IS"
-            }
-          ]
-        }
-      }
-    },
-    "objects": {
-      "dataLabels": [
-        {
-          "properties": {
-            "fontSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "7.5D"
-                }
               }
             },
-            "color": {
+            "fontColor": {
               "solid": {
                 "color": {
                   "expr": {
@@ -60,17 +67,62 @@
                 }
               }
             },
-            "fontFamily": {
+            "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "'DIN'"
+                  "Value": "7D"
+                }
+              }
+            },
+            "horizontalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'right'"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "leftMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "rightMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "topMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "bottomMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
                 }
               }
             }
+          },
+          "selector": {
+            "id": "default"
           }
         }
       ],
-      "categoryLabels": [
+      "fill": [
         {
           "properties": {
             "show": {
@@ -83,36 +135,13 @@
           }
         }
       ],
-      "card": [
+      "outline": [
         {
           "properties": {
-            "barShow": {
+            "show": {
               "expr": {
                 "Literal": {
                   "Value": "false"
-                }
-              }
-            },
-            "outline": {
-              "expr": {
-                "Literal": {
-                  "Value": "'None'"
-                }
-              }
-            },
-            "cardBackground": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Measure": {
-                      "Expression": {
-                        "SourceRef": {
-                          "Entity": "_Measures"
-                        }
-                      },
-                      "Property": "Col Panel"
-                    }
-                  }
                 }
               }
             }

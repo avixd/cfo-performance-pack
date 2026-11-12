@@ -2,12 +2,12 @@
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "8a64b040b5495f77861f",
   "position": {
-    "x": 8,
-    "y": 442,
-    "z": 11000,
-    "height": 28,
-    "width": 184,
-    "tabOrder": 11000
+    "x": 10,
+    "y": 591,
+    "z": 19000,
+    "height": 26,
+    "width": 176,
+    "tabOrder": 19000
   },
   "visual": {
     "visualType": "actionButton",
@@ -22,9 +22,6 @@
                 }
               }
             }
-          },
-          "selector": {
-            "id": "default"
           }
         }
       ],
@@ -37,11 +34,15 @@
                   "Value": "true"
                 }
               }
-            },
+            }
+          }
+        },
+        {
+          "properties": {
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Reset all filters'"
+                  "Value": "'↺  Reset all filters'"
                 }
               }
             },
@@ -55,23 +56,58 @@
                           "Entity": "_Measures"
                         }
                       },
-                      "Property": "Col Text"
+                      "Property": "Col Sidebar Text"
                     }
                   }
-                }
-              }
-            },
-            "fontFamily": {
-              "expr": {
-                "Literal": {
-                  "Value": "'DIN'"
                 }
               }
             },
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "9D"
+                  "Value": "8.5D"
+                }
+              }
+            },
+            "horizontalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'center'"
+                }
+              }
+            },
+            "bold": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            },
+            "leftMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "6D"
+                }
+              }
+            },
+            "rightMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "4D"
+                }
+              }
+            },
+            "topMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
+                }
+              }
+            },
+            "bottomMargin": {
+              "expr": {
+                "Literal": {
+                  "Value": "0D"
                 }
               }
             }
@@ -90,7 +126,11 @@
                   "Value": "true"
                 }
               }
-            },
+            }
+          }
+        },
+        {
+          "properties": {
             "fillColor": {
               "solid": {
                 "color": {
@@ -101,7 +141,7 @@
                           "Entity": "_Measures"
                         }
                       },
-                      "Property": "Col Button"
+                      "Property": "Col Sidebar Active"
                     }
                   }
                 }
@@ -126,36 +166,10 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "lineColor": {
-              "solid": {
-                "color": {
-                  "expr": {
-                    "Measure": {
-                      "Expression": {
-                        "SourceRef": {
-                          "Entity": "_Measures"
-                        }
-                      },
-                      "Property": "Col Line"
-                    }
-                  }
-                }
-              }
-            },
-            "roundEdge": {
-              "expr": {
-                "Literal": {
-                  "Value": "4D"
+                  "Value": "false"
                 }
               }
             }
-          },
-          "selector": {
-            "id": "default"
           }
         }
       ]
