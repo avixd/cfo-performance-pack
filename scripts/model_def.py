@@ -450,3 +450,9 @@ add('Title DQ', '"Data quality · " & [DQ Files Loaded] & " ledger files loaded 
 add('Insight Text', "SWITCH ( SELECTEDVALUE ( Insight[Key] ), 1, [Insight Perimeter], 2, [Insight Cost Absorption], 3, [Insight Outlook] )", '6 Narrative',
     None, 'Narrative for the topic on the row of an insight table.')
 add('Entity Budget Status Color', 'IF ( [Entity Budget Status] = "Not budgeted", "#C0392B", "#1F2A37" )', '8 Formatting')
+
+add('Net Income Outlook Gap Text', 'FORMAT ( ( [Net Income Outlook FY] - [Net Income Budget FY] ) / 1e6, "\u25b2 +#,0.0;\u25bc -#,0.0" ) & "M vs FY budget"', '6 Narrative')
+add('Net Income Outlook Gap Color', 'IF ( [Net Income Outlook FY] < [Net Income Budget FY], "#C0392B", "#2E7D32" )', '8 Formatting')
+CASH_PYE = LINE(101, '[Prior Year-End Balance]')
+add('Cash Change Text', 'VAR c = [Cash] - ' + CASH_PYE + ' RETURN FORMAT ( c / 1e6, "\u25b2 +#,0.0;\u25bc -#,0.0" ) & "M vs March year end"', '6 Narrative')
+add('Cash Change Color', 'IF ( [Cash] < ' + CASH_PYE + ', "#C0392B", "#2E7D32" )', '8 Formatting')

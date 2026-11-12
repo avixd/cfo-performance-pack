@@ -101,7 +101,7 @@ Integrity: balance sheet balances in every month; no rows without an FX rate; no
 - Fictional company. The ledger is Microsoft's AdventureWorksDW finance sample, re-dated; FY2026-FY2028 budgets are synthetic (prior-year actual × growth × seeded noise) and tagged as such.
 - The source ledger posts all revenue and cost of sales to one department, so department analysis is shown for operating expenses only.
 - Germany's FY2027 budget is very small relative to its actuals (a feature of the source data), which inflates its variance.
-- Bank of Canada month-end rates were collected manually; verify against the Bank of Canada source before reuse.
+- FX rates come from the Bank of Canada Valet API. A sample of 33 month-end rates (every month Jun-Oct 2026 plus six earlier month ends, including the March year ends) was checked against the source on 2026-11-12 and matched exactly; months after the last published rate carry the last rate forward.
 
 ## Credits
 
