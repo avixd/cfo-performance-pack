@@ -1,10 +1,10 @@
 # CFO Performance Pack · Power BI financial reporting built as code
 
-An executive reporting pack for a fictional multi-currency group, built end to end in Power BI: reproducible source data with realistic data-quality problems, a documented star-schema model with 216 DAX measures, and six report pages that answer the questions a CFO actually asks at month end.
+An executive reporting pack for a fictional multi-currency group, built end to end in Power BI: reproducible source data with realistic data-quality problems, a documented star-schema model with 221 DAX measures, and six report pages that answer the questions a CFO actually asks at month end.
 
 The whole Power BI project (semantic model **and** report pages) is generated from Python (`scripts/build_pbip.py`) in the open PBIP format (TMDL + PBIR), so every measure, visual and colour is reviewable in a diff.
 
-> **Live report:** *Publish-to-web link coming with the next release.*
+> **Report preview:** [PDF of all six pages](docs/CFO-Performance-Pack.pdf) · page images below. A public Publish-to-web link is not provided; see [docs/02-startup-guide.md](docs/02-startup-guide.md) for why (licensing).
 
 ---
 
@@ -47,11 +47,21 @@ docs/02-startup-guide.md                free tenant, security and Publish to web
 docs/eda/                               data-quality and exploratory analysis report + charts
 scripts/build_data.py                   builds data/ from AdventureWorksDW (seeded, deterministic)
 scripts/eda.py                          data-quality checks and EDA -> docs/eda/
-scripts/model_def.py                    the semantic model: Power Query, tables, 216 measures
+scripts/model_def.py                    the semantic model: Power Query, tables, 221 measures
 scripts/build_pbip.py                   writes the TMDL model and PBIR report from model_def.py
 scripts/document_model.py               writes docs/01-semantic-model.md
 scripts/privacy_check.sh                blocks commits containing local paths or e-mail addresses
 ```
+
+## How it was built
+
+The model and report were never assembled by hand in the Power BI canvas. The workflow was:
+
+1. **Generate:** `scripts/model_def.py` defines the semantic model as data (Power Query, columns, 221 measures, display folders, descriptions); `scripts/build_pbip.py` renders it to TMDL and renders every page and visual to PBIR JSON (positions, fields, conditional colours, measure-driven titles, synced slicers, theme).
+2. **Apply:** Power BI Desktop picks up the regenerated files with *Apply external changes* (or a reopen) and refreshes.
+3. **Validate:** DAX queries run against the live model through the Power BI Modeling MCP bridge reconcile every headline number to the independent pandas EDA, and the rendered pages are reviewed visually before each commit.
+
+That loop caught real defects that a screenshot-only review would have missed. The EDA was adding returns to budgeted revenue instead of netting them (CAD 33.5M vs the correct 29.6M). A function-built folder path made Power BI demand a gateway. A slicer property name was silently ignored. A department chart was meaningless because the source ledger posts all revenue to one department.
 
 ## Run it
 

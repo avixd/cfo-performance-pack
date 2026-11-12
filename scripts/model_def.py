@@ -440,7 +440,7 @@ add('DQ Synthetic Budget Share', 'DIVIDE ( CALCULATE ( COUNTROWS ( GL ), GL[Budg
 add('Metric Var Text', 'FORMAT ( [Metric Var vs Budget] / 1e6, "+#,0.0;-#,0.0" ) & "M (" & FORMAT ( [Metric Var % vs Budget], "+0.0%;-0.0%" ) & ") vs budget"', '6 Narrative')
 add('Metric Gap Text', 'FORMAT ( [Metric Outlook Gap] / 1e6, "+#,0.0;-#,0.0" ) & "M vs full-year budget"', '6 Narrative')
 add('Metric Growth Text', 'FORMAT ( [Metric Growth %], "+0.0%;-0.0%" ) & " vs prior year"', '6 Narrative')
-add('Title Income Statement', '"Income statement · " & [Period Label] & " · costs shown negative, so a positive variance is favourable"', '6 Narrative')
+add('Title Income Statement', '"Income statement · " & [Period Label] & " · costs negative, positive variance = favourable"', '6 Narrative')
 add('Title Balance Sheet', '"Balance sheet at " & FORMAT ( [Selected Month], "mmm yyyy" ) & " vs year end " & FORMAT ( DATE ( ' + FYN('[Selected Month]') + ' - 1, 3, 1 ), "mmm yyyy" ) & " · " & [Currency Label]', '6 Narrative')
 add('Title Overview Revenue', '"Net revenue by fiscal year and region · " & [Selected Fiscal Year] & " is year to date (" & FORMAT ( [As Of Month], "mmm yyyy" ) & ")"', '6 Narrative')
 add('Title Revenue Bridge', '"Revenue growth vs prior year: " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & ", of which organic " & FORMAT ( [Organic Growth %], "+0.0%;-0.0%" )', '6 Narrative')
@@ -456,3 +456,4 @@ add('Net Income Outlook Gap Color', 'IF ( [Net Income Outlook FY] < [Net Income 
 CASH_PYE = LINE(101, '[Prior Year-End Balance]')
 add('Cash Change Text', 'VAR c = [Cash] - ' + CASH_PYE + ' RETURN FORMAT ( c / 1e6, "\u25b2 +#,0.0;\u25bc -#,0.0" ) & "M vs March year end"', '6 Narrative')
 add('Cash Change Color', 'IF ( [Cash] < ' + CASH_PYE + ', "#C0392B", "#2E7D32" )', '8 Formatting')
+add('Revenue (M)', 'DIVIDE ( [Revenue], 1e6 )', '3 KPIs\\Revenue', '#,0.0', 'Net revenue in millions, for compact tables.')

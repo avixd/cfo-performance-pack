@@ -351,7 +351,7 @@ class Page:
         self.slicer('s_fy', 680, 6, 96, 60, 'Date[Fiscal Year]', 'Fiscal year', sync='Fiscal Year')
         self.slicer('s_m', 780, 6, 84, 60, 'Date[Month Name]', 'Month', sync='Month Name')
         self.slicer('s_p', 868, 6, 250, 60, 'Period View[View]', 'Period', mode='Basic', single=True, horizontal=True, sync='View')
-        self.slicer('s_c', 1122, 6, 146, 60, 'Reporting Currency[Currency]', 'Currency', mode='Basic', single=True, horizontal=True, sync='Currency')
+        self.slicer('s_c', 1132, 6, 132, 60, 'Reporting Currency[Currency]', 'Currency', single=True, sync='Currency')
 
     # ---- charts
     def bars(self, key, x, y, w, h, category, value, color_measure, title, sort_desc=True):
@@ -360,7 +360,7 @@ class Page:
                'valueAxis': [{'properties': {'show': L(False), 'gridlineShow': L(False)}}],
                'categoryAxis': [{'properties': {'fontSize': L(9)}}]}
         return self.add(key, 'clusteredBarChart', x, y, w, h, roles={'Category': [category], 'Y': [value]}, objects=obj, title=title,
-                        sort=[(value, 'Descending')] if sort_desc else None)
+                        sort=[(value, 'Descending' if sort_desc else 'Ascending')])
 
     def write(self, order_index):
         pdir = os.path.join(RP, 'definition', 'pages', self.pid)
@@ -412,7 +412,7 @@ def page_overview():
     p.add('entities', 'tableEx', 870, 188, 394, 516,
           roles={'Values': [('Entity[EntityName]', 'Entity'), ('Entity[CurrencyCode]', 'Ccy'),
                             ('Entity[Effective Ownership]', 'Group %'), ('Entity Joined FY', 'Joined'), ('Entity Budget Status', 'Budget'),
-                            ('Revenue', 'Revenue')]},
+                            ('Revenue (M)', 'Revenue (M)')]},
           objects={'values': [{'properties': {'fontSize': L(8.5)}},
                               {'properties': {'fontColor': mcolor('Entity Budget Status Color')}, 'selector': {'data': [{'dataViewWildcard': {'matchingOption': 1}}], 'metadata': '_Measures.Entity Budget Status'}}],
                    'total': [{'properties': {'totals': L(False)}}],
@@ -540,8 +540,8 @@ def page_balance():
     p.header('Balance Sheet & Cash', 'Title Balance Sheet')
     cols = [('Line Closing Balance', 'Closing'), ('Line Prior Year-End Balance', 'Prior year end'), ('Line Balance Change', 'Change')]
     statement_matrix(p, 'bs', 16, 76, 600, 628, 'Balance Sheet', cols, [], 'Consolidated balance sheet (month-end rates)')
-    tiles = [('Cash', 'Cash'), ('Current Ratio', 'Current ratio (x)'), ('Debt to Equity', 'Debt to equity (x)'), ('Cash Conversion Cycle (days)', 'Cash conversion cycle (days)'),
-             ('DSO (days)', 'Receivable days (DSO)'), ('DIO (days)', 'Inventory days (DIO)'), ('DPO (days)', 'Payable days (DPO)'), ('DQ Balance Sheet Difference', 'Assets - (liabilities + equity)')]
+    tiles = [('Cash', 'Cash'), ('Current Ratio', 'Current ratio (x)'), ('Debt to Equity', 'Debt to equity (x)'), ('Cash Conversion Cycle (days)', 'Cash cycle (days)'),
+             ('DSO (days)', 'Receivable days (DSO)'), ('DIO (days)', 'Inventory days (DIO)'), ('DPO (days)', 'Payable days (DPO)'), ('DQ Balance Sheet Difference', 'Balance check (A - L&E)')]
     w = (648 - 3 * 10) / 4
     for i, (m, lab) in enumerate(tiles):
         p.kpi(f'k{i}', 626 + (i % 4) * (w + 10), 76 + (i // 4) * 96, w, 88, m, lab)
@@ -549,10 +549,11 @@ def page_balance():
                          {'properties': {'fill': solid(C['outlook'])}, 'selector': {'metadata': '_Measures.Working Capital (month)'}}],
            'legend': [{'properties': {'show': L(True), 'position': L('Top'), 'fontSize': L(8)}}],
            'valueAxis': [{'properties': {'labelDisplayUnits': L(1000000), 'fontSize': L(8), 'gridlineColor': solid(C['line'])}}],
-           'categoryAxis': [{'properties': {'fontSize': L(8)}}]}
+           'lineStyles': [{'properties': {'lineChartType': L('straight'), 'strokeWidth': L(2)}}],
+           'categoryAxis': [{'properties': {'fontSize': L(8), 'axisType': L('Scalar')}}]}
     p.add('cash', 'lineChart', 626, 272, 638, 432,
-          roles={'Category': ['Date[Year Month]'], 'Y': [('Cash Balance (month)', 'Cash'), ('Working Capital (month)', 'Trade working capital')]},
-          objects=obj, title='Cash and trade working capital by month end (closed months)', sort=[('Date[Year Month]', 'Ascending')],
+          roles={'Category': ['Date[Month]'], 'Y': [('Cash Balance (month)', 'Cash'), ('Working Capital (month)', 'Trade working capital')]},
+          objects=obj, title='Cash and trade working capital by month end (closed months)', sort=[('Date[Month]', 'Ascending')],
           filters=[cat_filter(hexid(p.pid, 'cash', 'f'), 'Date', 'IsClosed', ['true'])])
     return p
 
@@ -567,13 +568,17 @@ def page_dq():
     w = (1248 - 7 * 10) / 8
     for i, (m, lab) in enumerate(tiles):
         p.kpi(f'k{i}', 16 + i * (w + 10), 76, w, 88, m, lab)
-    tbl = {'values': [{'properties': {'fontSize': L(9)}}],
+    tbl = {'values': [{'properties': {'fontSize': L(9), 'wordWrap': L(True)}}],
            'columnHeaders': [{'properties': {'fontSize': L(9), 'fontColor': solid('#FFFFFF'), 'backColor': solid(C['navy'])}}],
            'grid': [{'properties': {'rowPadding': L(3), 'gridHorizontalColor': solid(C['line'])}}]}
     p.add('inj', 'tableEx', 16, 174, 620, 210,
           roles={'Values': [('DQ Injection Log[Month]', 'Month'), ('DQ Injection Log[Issue]', 'Issue injected'), ('DQ Injection Log[RowsAffected]', 'Rows'),
                             ('DQ Injection Log[Treatment]', 'How the model handles it')]},
-          objects=tbl, title='What the data generator deliberately broke (reconcile with the counts above)')
+          objects=dict(tbl, columnWidth=[{'properties': {'value': L(52)}, 'selector': {'metadata': 'DQ Injection Log.Month'}},
+                                          {'properties': {'value': L(150)}, 'selector': {'metadata': 'DQ Injection Log.Issue'}},
+                                          {'properties': {'value': L(42)}, 'selector': {'metadata': 'DQ Injection Log.RowsAffected'}},
+                                          {'properties': {'value': L(330)}, 'selector': {'metadata': 'DQ Injection Log.Treatment'}}]),
+          title='What the data generator deliberately broke (reconcile with the counts above)')
     p.add('files', 'tableEx', 646, 174, 618, 530,
           roles={'Values': [('DQ File Log[Folder]', 'Folder'), ('DQ File Log[Name]', 'File'), ('DQ File Log[RawRows]', 'Rows'),
                             ('DQ File Log[DuplicateRows]', 'Duplicates'), ('DQ File Log[MissingDepartmentRows]', 'Blank dept'),

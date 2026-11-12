@@ -28,7 +28,7 @@
               },
               "queryRef": "_Measures.Cash Conversion Cycle (days)",
               "nativeQueryRef": "Cash Conversion Cycle (days)",
-              "displayName": "Cash conversion cycle (days)"
+              "displayName": "Cash cycle (days)"
             }
           ]
         }
