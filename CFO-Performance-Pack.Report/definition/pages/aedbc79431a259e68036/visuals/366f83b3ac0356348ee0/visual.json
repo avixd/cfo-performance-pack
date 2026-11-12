@@ -23,11 +23,11 @@
                       "Entity": "Date"
                     }
                   },
-                  "Property": "Year Month"
+                  "Property": "Month"
                 }
               },
-              "queryRef": "Date.Year Month",
-              "nativeQueryRef": "Year Month"
+              "queryRef": "Date.Month",
+              "nativeQueryRef": "Month"
             }
           ]
         },
@@ -76,7 +76,7 @@
                     "Entity": "Date"
                   }
                 },
-                "Property": "Year Month"
+                "Property": "Month"
               }
             },
             "direction": "Ascending"
@@ -182,6 +182,26 @@
           }
         }
       ],
+      "lineStyles": [
+        {
+          "properties": {
+            "lineChartType": {
+              "expr": {
+                "Literal": {
+                  "Value": "'straight'"
+                }
+              }
+            },
+            "strokeWidth": {
+              "expr": {
+                "Literal": {
+                  "Value": "2D"
+                }
+              }
+            }
+          }
+        }
+      ],
       "categoryAxis": [
         {
           "properties": {
@@ -189,6 +209,13 @@
               "expr": {
                 "Literal": {
                   "Value": "8D"
+                }
+              }
+            },
+            "axisType": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Scalar'"
                 }
               }
             }

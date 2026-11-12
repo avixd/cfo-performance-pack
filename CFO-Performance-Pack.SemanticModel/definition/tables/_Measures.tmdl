@@ -1176,7 +1176,7 @@ table _Measures
 		displayFolder: 6 Narrative
 		lineageTag: 5aa86697-c963-5237-942c-5fa81737b3af
 
-	measure 'Title Income Statement' = "Income statement · " & [Period Label] & " · costs shown negative, so a positive variance is favourable"
+	measure 'Title Income Statement' = "Income statement · " & [Period Label] & " · costs negative, positive variance = favourable"
 		displayFolder: 6 Narrative
 		lineageTag: 639edd4b-9dd3-5d1a-9c2c-9198eb07fe75
 
@@ -1224,6 +1224,12 @@ table _Measures
 	measure 'Cash Change Color' = IF ( [Cash] < CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ), "#C0392B", "#2E7D32" )
 		displayFolder: 8 Formatting
 		lineageTag: 880d1dc2-fcf3-5301-a3fa-8a44bcd12557
+
+	/// Net revenue in millions, for compact tables.
+	measure 'Revenue (M)' = DIVIDE ( [Revenue], 1e6 )
+		formatString: #,0.0
+		displayFolder: 3 KPIs\Revenue
+		lineageTag: bf60c564-80d7-5771-a4db-c48d44f54127
 
 	column Placeholder
 		dataType: string

@@ -98,12 +98,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Revenue"
+                  "Property": "Revenue (M)"
                 }
               },
-              "queryRef": "_Measures.Revenue",
-              "nativeQueryRef": "Revenue",
-              "displayName": "Revenue"
+              "queryRef": "_Measures.Revenue (M)",
+              "nativeQueryRef": "Revenue (M)",
+              "displayName": "Revenue (M)"
             }
           ]
         }

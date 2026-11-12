@@ -28,7 +28,7 @@
               },
               "queryRef": "_Measures.DQ Balance Sheet Difference",
               "nativeQueryRef": "DQ Balance Sheet Difference",
-              "displayName": "Assets - (liabilities + equity)"
+              "displayName": "Balance check (A - L&E)"
             }
           ]
         }
