@@ -1,0 +1,15 @@
+EntityKey,ParentEntityKey,EntityName,OwnershipPct,CurrencyCode
+1,,AdventureWorks Cycle,1,USD
+2,1,North America Operations,1,USD
+3,14,Northeast Division,1,USD
+4,14,Northwest Division,1,USD
+5,14,Central Division,1,USD
+6,14,Southeast Division,1,USD
+7,14,Southwest Division,1,USD
+8,2,Canadian Division,.75,CAD
+9,1,European Operations,1,EUR
+10,1,Pacific Operations,.75,AUD
+11,9,France,.50,EUR
+12,9,Germany,.25,EUR
+13,10,Australia,.50,AUD
+14,2,USA Operations,1,USD

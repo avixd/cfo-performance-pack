@@ -1,0 +1,170 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "name": "81c2ec0433f5560f9e9c",
+  "position": {
+    "x": 16,
+    "y": 394,
+    "z": 17000,
+    "height": 310,
+    "width": 620,
+    "tabOrder": 17000
+  },
+  "visual": {
+    "visualType": "textbox",
+    "objects": {
+      "general": [
+        {
+          "properties": {
+            "paragraphs": [
+              {
+                "textRuns": [
+                  {
+                    "value": "What the exploratory analysis found (docs/eda/eda_report.md)",
+                    "textStyle": {
+                      "fontSize": "12pt",
+                      "color": "#1F3A5F",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Distribution  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "Monthly group revenue is close to normal (Shapiro-Wilk p = 0.52); individual ledger lines are heavily right-skewed, so outliers are flagged with robust median/MAD z-scores, not mean and standard deviation.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Correlation  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "Revenue and cost of sales move almost one-for-one (Spearman 0.94); operating expenses less so (0.66). Margin is therefore decided below gross profit.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Integrity  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "Every injected issue was detected: 30 of 30 duplicates, 30 of 30 blank departments, 1 of 1 schema-drift file. The balance sheet balances in every month.",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Benford  ",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI Semibold"
+                    }
+                  },
+                  {
+                    "value": "First-digit distribution conforms (Nigrini MAD 0.0068, acceptable).",
+                    "textStyle": {
+                      "fontSize": "10pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "",
+                    "textStyle": {
+                      "fontSize": "6pt",
+                      "color": "#1F2A37",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              },
+              {
+                "textRuns": [
+                  {
+                    "value": "Assumptions: fiscal year April-March; P&L at monthly average rates, balance sheet at month-end rates, budget at the prior fiscal year's average rate (Bank of Canada). Adding a monthly file to data/actuals and refreshing moves the whole pack forward one month.",
+                    "textStyle": {
+                      "fontSize": "9pt",
+                      "color": "#5B6676",
+                      "fontFamily": "Segoe UI"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ],
+      "subTitle": [
+        {
+          "properties": {
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "false"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "drillFilterOtherVisuals": true
+  }
+}

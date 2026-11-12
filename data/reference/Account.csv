@@ -1,0 +1,101 @@
+AccountKey,ParentAccountKey,AccountCode,AccountName,AccountType,UnaryOperator,Statement
+1,,1,Balance Sheet,,~,Statistical
+2,1,10,Assets,Assets,+,Balance Sheet
+3,2,110,Current Assets,Assets,+,Balance Sheet
+4,3,1110,Cash,Assets,+,Balance Sheet
+5,3,1120,Receivables,Assets,+,Balance Sheet
+6,5,1130,Trade Receivables,Assets,+,Balance Sheet
+7,5,1140,Other Receivables,Assets,+,Balance Sheet
+8,3,1150,Allowance for Bad Debt,Assets,+,Balance Sheet
+9,3,1160,Inventory,Assets,+,Balance Sheet
+10,9,1162,Raw Materials,Assets,+,Balance Sheet
+11,9,1164,Work in Process,Assets,+,Balance Sheet
+12,9,1166,Finished Goods,Assets,+,Balance Sheet
+13,3,1170,Deferred Taxes,Assets,+,Balance Sheet
+14,3,1180,Prepaid Expenses,Assets,+,Balance Sheet
+15,3,1185,Intercompany Receivables,Assets,+,Balance Sheet
+17,2,1200,"Property, Plant, Equipment",Assets,+,Balance Sheet
+18,17,1210,Land & Improvements,Assets,+,Balance Sheet
+19,17,1220,Buildings & Improvements,Assets,+,Balance Sheet
+20,17,1230,Machinery & Equipment,Assets,+,Balance Sheet
+21,17,1240,Office Furniture & Equipment,Assets,+,Balance Sheet
+22,17,1250,Leasehold Improvements,Assets,+,Balance Sheet
+23,17,1260,Construction In Progress,Assets,+,Balance Sheet
+24,2,1300,Other Assets,Assets,+,Balance Sheet
+25,1,20,Liabilities and Owners Equity,Liabilities,-,Balance Sheet
+26,25,210,Liabilities,Liabilities,+,Balance Sheet
+27,26,2200,Current Liabilities,Liabilities,+,Balance Sheet
+28,27,2210,Notes Payable,Liabilities,+,Balance Sheet
+29,27,2230,Accounts Payable,Liabilities,+,Balance Sheet
+30,27,2300,Accrued Expenses,Liabilities,+,Balance Sheet
+31,30,2310,Salary & Other Comp,Liabilities,+,Balance Sheet
+32,30,2320,Insurance,Liabilities,+,Balance Sheet
+33,30,2330,Warranties,Liabilities,+,Balance Sheet
+34,27,2340,Intercompany Payables,Liabilities,+,Balance Sheet
+35,27,2350,Other Current Liabilities,Liabilities,+,Balance Sheet
+36,26,2400,Long Term Liabilities,Liabilities,+,Balance Sheet
+37,36,2410,Long Term Obligations,Liabilities,+,Balance Sheet
+38,36,2420,Pension Liability,Liabilities,+,Balance Sheet
+39,36,2430,Other Retirement Benefits,Liabilities,+,Balance Sheet
+40,36,2440,Other Long Term Liabilities,Liabilities,+,Balance Sheet
+41,25,300,Owners Equity,Liabilities,+,Balance Sheet
+42,41,3010,Partner Capital,Liabilities,+,Balance Sheet
+43,41,3020,Additional Paid In Capital,Liabilities,+,Balance Sheet
+44,41,3030,Retained Earnings,Liabilities,+,Balance Sheet
+45,44,3540,Prior Year Retained Earnings,Liabilities,+,Balance Sheet
+46,44,3550,Current Retained Earnings,Liabilities,+,Balance Sheet
+47,,4,Net Income,Revenue,+,Income Statement
+48,47,40,Operating Profit,Revenue,+,Income Statement
+49,48,400,Gross Margin,Revenue,+,Income Statement
+50,49,4100,Net Sales,Revenue,+,Income Statement
+51,50,4110,Gross Sales,Revenue,+,Income Statement
+52,51,4500,Intercompany Sales,Revenue,+,Income Statement
+53,50,4130,Returns and Adjustments,Expenditures,-,Income Statement
+54,50,4140,Discounts,Expenditures,-,Income Statement
+55,49,5000,Total Cost of Sales,Expenditures,-,Income Statement
+56,55,5020,Standard Cost of Sales,Expenditures,+,Income Statement
+57,55,5050,Variances,Expenditures,+,Income Statement
+58,48,60,Operating Expenses,Expenditures,-,Income Statement
+59,58,600,Labor Expenses,Expenditures,+,Income Statement
+60,59,6000,Salaries,Expenditures,+,Income Statement
+61,59,6020,Payroll Taxes,Expenditures,+,Income Statement
+62,59,6040,Employee Benefits,Expenditures,+,Income Statement
+63,58,6100,Commissions,Expenditures,+,Income Statement
+64,58,620,Travel Expenses,Expenditures,+,Income Statement
+65,64,6200,Travel Transportation,Expenditures,+,Income Statement
+66,64,6210,Travel Lodging,Expenditures,+,Income Statement
+67,64,6220,Meals,Expenditures,+,Income Statement
+68,64,6230,Entertainment,Expenditures,+,Income Statement
+69,64,6240,Other Travel Related,Expenditures,+,Income Statement
+70,58,630,Marketing,Expenditures,+,Income Statement
+71,70,6300,Conferences,Expenditures,+,Income Statement
+72,70,6310,Marketing Collateral,Expenditures,+,Income Statement
+73,58,6400,Office Supplies,Expenditures,+,Income Statement
+74,58,6500,Professional Services,Expenditures,+,Income Statement
+75,58,660,Telephone and Utilities,Expenditures,+,Income Statement
+76,75,6610,Telephone,Expenditures,+,Income Statement
+77,75,6620,Utilities,Expenditures,+,Income Statement
+78,58,6700,Other Expenses,Expenditures,+,Income Statement
+79,58,680,Depreciation,Expenditures,+,Income Statement
+80,79,6810,Building Leasehold,Expenditures,+,Income Statement
+81,79,6820,Vehicles,Expenditures,+,Income Statement
+82,79,6830,Equipment,Expenditures,+,Income Statement
+83,79,6840,Furniture and Fixtures,Expenditures,+,Income Statement
+84,79,6850,Other Assets,Expenditures,+,Income Statement
+85,79,6860,Amortization of Goodwill,Expenditures,+,Income Statement
+87,58,6920,Rent,Expenditures,+,Income Statement
+88,47,80,Other Income and Expense,Revenue,+,Income Statement
+89,88,8000,Interest Income,Revenue,+,Income Statement
+90,88,8010,Interest Expense,Expenditures,-,Income Statement
+91,88,8020,Gain/Loss on Sales of Asset,Revenue,+,Income Statement
+92,88,8030,Other Income,Revenue,+,Income Statement
+93,88,8040,Curr Xchg Gain/(Loss),Revenue,+,Income Statement
+94,47,8500,Taxes,Expenditures,-,Income Statement
+95,,9500,Statistical Accounts,Statistical,~,Statistical
+96,95,9510,Headcount,Balances,~,Statistical
+97,95,9520,Units,Flow,~,Statistical
+98,95,9530,Average Unit Price,Balances,~,Statistical
+99,95,9540,Square Footage,Balances,~,Statistical
+100,27,2220,Current Installments of Long-term Debt,Liabilities,+,Balance Sheet
+101,51,4200,Trade Sales,Revenue,+,Income Statement
+102,58,6450,Software Subscriptions,Expenditures,+,Income Statement

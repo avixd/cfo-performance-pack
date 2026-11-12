@@ -1,0 +1,72 @@
+/// Profile of every source file on each refresh: raw rows, exact duplicates, blank departments, schema drift.
+table 'DQ File Log'
+	lineageTag: 8522a233-9434-55f6-b062-8b00a8320bf7
+
+	column Name
+		dataType: string
+		lineageTag: 4a6702eb-c94c-578a-93db-e3da1659fe59
+		sourceColumn: Name
+
+	column Folder
+		dataType: string
+		lineageTag: 62943bdf-f792-5e62-86f0-f85d0326077c
+		sourceColumn: Folder
+
+	column RawRows
+		dataType: int64
+		lineageTag: a7727575-1604-57ad-9b1d-ace8fbf9f872
+		summarizeBy: none
+		sourceColumn: RawRows
+
+	column DuplicateRows
+		dataType: int64
+		lineageTag: d9ead9ec-b159-5f81-89c2-248a339d8758
+		summarizeBy: none
+		sourceColumn: DuplicateRows
+
+	column MissingDepartmentRows
+		dataType: int64
+		lineageTag: 4c5ae651-9a0f-50f7-8395-d398a3bb3a3b
+		summarizeBy: none
+		sourceColumn: MissingDepartmentRows
+
+	column SchemaDrift
+		dataType: boolean
+		lineageTag: 3d5fb254-6e6d-58ad-9750-b3249d6b9e3a
+		sourceColumn: SchemaDrift
+
+	column Columns
+		dataType: string
+		lineageTag: 3857cd69-5130-5ce3-944c-0a2c7d523744
+		sourceColumn: Columns
+
+	partition 'DQ File Log' = m
+		mode: import
+		source =
+				let
+				    Expected = {"Month", "EntityKey", "DepartmentKey", "AccountKey", "AmountLC"},
+				    Profile = (sub as text) as table =>
+				        let
+				            F = Table.SelectRows(Folder.Files(DataRoot), each Text.Lower([Folder Path]) = Text.Lower(DataRoot & sub & "\") and Text.Lower([Extension]) = ".csv" and Text.StartsWith([Name], "GL_")),
+				            WithStats = Table.AddColumn(F, "Stats", each
+				                let
+				                    T = Table.PromoteHeaders(Csv.Document([Content], [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]),
+				                    Cols = Table.ColumnNames(T),
+				                    Core = Table.SelectColumns(T, Expected, MissingField.UseNull),
+				                    Raw = Table.RowCount(T),
+				                    Distinct = Table.RowCount(Table.Distinct(T)),
+				                    MissingDept = Table.RowCount(Table.SelectRows(Core, each [DepartmentKey] = null or [DepartmentKey] = "")),
+				                    Drift = List.FirstN(Cols, 5) <> Expected or List.Count(List.RemoveItems(Cols, Expected & {"BudgetSource"})) > 0
+				                in
+				                    [RawRows = Raw, DuplicateRows = Raw - Distinct, MissingDepartmentRows = MissingDept, SchemaDrift = Drift, Columns = Text.Combine(Cols, ", ")]),
+				            Out = Table.AddColumn(Table.SelectColumns(WithStats, {"Name", "Stats"}), "Folder", each sub, type text)
+				        in
+				            Out,
+				    Combined = Table.Combine({Profile("actuals"), Profile("budget")}),
+				    Expanded = Table.ExpandRecordColumn(Combined, "Stats", {"RawRows", "DuplicateRows", "MissingDepartmentRows", "SchemaDrift", "Columns"}),
+				    Typed = Table.TransformColumnTypes(Expanded, {{"Name", type text}, {"RawRows", Int64.Type}, {"DuplicateRows", Int64.Type}, {"MissingDepartmentRows", Int64.Type}, {"SchemaDrift", type logical}, {"Columns", type text}})
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+

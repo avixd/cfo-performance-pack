@@ -1,0 +1,31 @@
+/// Slicer: MTD, QTD or YTD (default YTD).
+table 'Period View'
+	lineageTag: 1fadda88-f6e5-5154-9375-946aab6cc3d2
+
+	column View
+		dataType: string
+		lineageTag: 40cba6d6-9b13-50c3-9f15-db0baae109e1
+		sourceColumn: View
+		sortByColumn: Sort
+
+	column Sort
+		dataType: int64
+		isHidden
+		lineageTag: 02e81a82-271a-5bdb-8d1c-d122c23c5ca4
+		summarizeBy: none
+		sourceColumn: Sort
+
+	partition 'Period View' = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [View = text, Sort = Int64.Type], {
+				        {"YTD", 1},
+				        {"QTD", 2},
+				        {"MTD", 3}
+				    })
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "Report",
+    "displayName": "CFO-Performance-Pack"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "daf5a2a5-076b-4ea1-b4cf-08a524c4c877"
+  }
+}

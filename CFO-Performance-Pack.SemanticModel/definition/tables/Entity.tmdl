@@ -1,0 +1,64 @@
+/// Reporting entities with local currency and ownership %.
+table Entity
+	lineageTag: e7b63dec-7693-5f87-8875-49bea325e9e8
+
+	column EntityKey
+		dataType: int64
+		lineageTag: 33a2729b-61da-5c94-b59d-ed514405096c
+		summarizeBy: none
+		sourceColumn: EntityKey
+
+	column ParentEntityKey
+		dataType: int64
+		isHidden
+		lineageTag: eac34739-ace4-5c1d-9f9d-429fa7b6f900
+		summarizeBy: none
+		sourceColumn: ParentEntityKey
+
+	column EntityName
+		dataType: string
+		lineageTag: 56c5011a-ab18-53c1-b5ca-dfc1eb4dc117
+		sourceColumn: EntityName
+
+	column OwnershipPct
+		dataType: double
+		formatString: 0%
+		lineageTag: 0b4d6fa3-30a6-5096-91f4-d6be330ca75e
+		summarizeBy: none
+		sourceColumn: OwnershipPct
+
+	column CurrencyCode
+		dataType: string
+		lineageTag: 5d09ed28-facf-52dd-b6ea-81755528d26c
+		sourceColumn: CurrencyCode
+
+	/// Group economic interest: product of ownership % along the entity hierarchy.
+	column 'Effective Ownership' =
+			VAR p = PATH ( Entity[EntityKey], Entity[ParentEntityKey] )
+			RETURN
+			    PRODUCTX (
+			        GENERATESERIES ( 1, PATHLENGTH ( p ) ),
+			        LOOKUPVALUE ( Entity[OwnershipPct], Entity[EntityKey], PATHITEM ( p, [Value], INTEGER ) )
+			    )
+		formatString: 0%
+		lineageTag: bf024ae7-c6f8-5de6-9730-6fb347d51515
+		summarizeBy: none
+
+	/// Operating region (level 2 of the entity hierarchy).
+	column Region =
+			VAR p = PATH ( Entity[EntityKey], Entity[ParentEntityKey] )
+			VAR r = IF ( PATHLENGTH ( p ) >= 2, LOOKUPVALUE ( Entity[EntityName], Entity[EntityKey], PATHITEM ( p, 2, INTEGER ) ), Entity[EntityName] )
+			RETURN SWITCH ( r, "North America Operations", "North America", "European Operations", "Europe", "Pacific Operations", "Pacific", r )
+		lineageTag: f90394a3-5ec0-5b19-8ecf-198ff655ea13
+
+	partition Entity = m
+		mode: import
+		source =
+				let
+				    Src = fnReadCsv("reference", "Entity.csv"),
+				    Typed = Table.TransformColumnTypes(Src, {{"EntityKey", Int64.Type}, {"ParentEntityKey", Int64.Type}, {"EntityName", type text}, {"OwnershipPct", type number}, {"CurrencyCode", type text}}, "en-US")
+				in
+				    Typed
+
+	annotation PBI_ResultType = Table
+

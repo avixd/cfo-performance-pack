@@ -1,0 +1,40 @@
+/// Slicer: which P&L measure the Budget vs Actual page analyses.
+table Metric
+	lineageTag: 5ff3a22c-43a3-513d-b134-6a6f20cb08b6
+
+	column Metric
+		dataType: string
+		lineageTag: f5c574e8-8efc-5260-98a5-29ab8dda66ea
+		sourceColumn: Metric
+		sortByColumn: Sort
+
+	column LineKey
+		dataType: int64
+		isHidden
+		lineageTag: a9335e70-5b2c-527e-8b8d-ebc36eb29303
+		summarizeBy: none
+		sourceColumn: LineKey
+
+	column Sort
+		dataType: int64
+		isHidden
+		lineageTag: d571839d-db23-55ce-8d43-aaa7e439a59d
+		summarizeBy: none
+		sourceColumn: Sort
+
+	partition Metric = m
+		mode: import
+		source =
+				let
+				    Source = #table(type table [Metric = text, LineKey = Int64.Type, Sort = Int64.Type], {
+				        {"Revenue", 3, 1},
+				        {"Gross Profit", 5, 2},
+				        {"Operating Expenses", 12, 3},
+				        {"EBITDA", 13, 4},
+				        {"Net Income", 20, 5}
+				    })
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+

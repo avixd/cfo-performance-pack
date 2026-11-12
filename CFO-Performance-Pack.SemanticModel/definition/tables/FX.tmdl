@@ -1,0 +1,85 @@
+/// Bank of Canada rates (CAD per unit): monthly average for P&L, month-end for balance sheet, budget rate = prior fiscal-year average. Months after the last observed rate carry it forward.
+table FX
+	lineageTag: 7632a779-3e03-5d8f-b6ed-0c60b8ad50ff
+
+	column FXKey
+		dataType: string
+		isHidden
+		lineageTag: 76d0e50f-7920-500e-9627-87b352d8b132
+		sourceColumn: FXKey
+
+	column CurrencyCode
+		dataType: string
+		lineageTag: 7cf6b478-378a-5967-a089-6f120dc5bea0
+		sourceColumn: CurrencyCode
+
+	column Month
+		dataType: dateTime
+		formatString: mmm yyyy
+		lineageTag: fa2a6b9f-ce77-59e2-ba3c-083172e7e913
+		summarizeBy: none
+		sourceColumn: Month
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column AvgRate
+		dataType: double
+		formatString: 0.0000
+		lineageTag: 8f165b4d-180c-50f2-b41a-82f6bbd55b9f
+		summarizeBy: none
+		sourceColumn: AvgRate
+
+	column EndRate
+		dataType: double
+		formatString: 0.0000
+		lineageTag: 14d1080d-96ff-57af-b5ed-e384d055b33b
+		summarizeBy: none
+		sourceColumn: EndRate
+
+	column BudgetRate
+		dataType: double
+		formatString: 0.0000
+		lineageTag: 3a192a9e-aecc-5bea-aace-c1709a97b6a0
+		summarizeBy: none
+		sourceColumn: BudgetRate
+
+	column RateStatus
+		dataType: string
+		lineageTag: 2e8b6673-218f-5574-b435-903a2b95d46c
+		sourceColumn: RateStatus
+
+	partition FX = m
+		mode: import
+		source =
+				let
+				    FY = (d as date) as number => Date.Year(d) + (if Date.Month(d) >= 4 then 1 else 0),
+				    Src = fnReadCsv("fx", "FX_Rates.csv"),
+				    Typed = Table.TransformColumnTypes(Src, {{"Month", type date}, {"CurrencyCode", type text}, {"AvgRate", type number}, {"EndRate", type number}}, "en-US"),
+				    Observed = Table.SelectColumns(Typed, {"Month", "CurrencyCode", "AvgRate", "EndRate"}),
+				    LastObserved = List.Max(Observed[Month]),
+				    GridEnd = #date(FY(LastObserved) + 1, 3, 1),
+				    FirstMonth = List.Min(Observed[Month]),
+				    Months = List.Generate(() => FirstMonth, each _ <= GridEnd, each Date.AddMonths(_, 1)),
+				    Currencies = List.Distinct(Observed[CurrencyCode]),
+				    Grid = Table.FromRows(List.TransformMany(Currencies, each Months, (c, m) => {c, m}), type table [CurrencyCode = text, Month = date]),
+				    Joined = Table.NestedJoin(Grid, {"CurrencyCode", "Month"}, Observed, {"CurrencyCode", "Month"}, "R", JoinKind.LeftOuter),
+				    Expanded = Table.ExpandTableColumn(Joined, "R", {"AvgRate", "EndRate"}),
+				    Status = Table.AddColumn(Expanded, "RateStatus", each if [AvgRate] = null then "Carried forward" else "Observed", type text),
+				    EndFallback = Table.AddColumn(Status, "EndRate2", each if [EndRate] = null then [AvgRate] else [EndRate]),
+				    Sorted = Table.Sort(Table.RemoveColumns(EndFallback, {"EndRate"}), {{"CurrencyCode", Order.Ascending}, {"Month", Order.Ascending}}),
+				    Filled = Table.FillDown(Table.RenameColumns(Sorted, {{"EndRate2", "EndRate"}}), {"AvgRate", "EndRate"}),
+				    FYAvg = Table.Group(Table.AddColumn(Table.SelectRows(Filled, each [RateStatus] = "Observed"), "FiscalYear", each FY([Month]), Int64.Type), {"CurrencyCode", "FiscalYear"}, {{"BudgetRate", each List.Average([AvgRate]), type number}}),
+				    WithBY = Table.AddColumn(Filled, "BudgetBaseFY", each FY([Month]) - 1, Int64.Type),
+				    JoinedB = Table.NestedJoin(WithBY, {"CurrencyCode", "BudgetBaseFY"}, FYAvg, {"CurrencyCode", "FiscalYear"}, "B", JoinKind.LeftOuter),
+				    ExpandedB = Table.ExpandTableColumn(JoinedB, "B", {"BudgetRate"}),
+				    SortedB = Table.Sort(ExpandedB, {{"CurrencyCode", Order.Ascending}, {"Month", Order.Ascending}}),
+				    FilledB = Table.FillDown(SortedB, {"BudgetRate"}),
+				    BudgetFix = Table.AddColumn(FilledB, "BudgetRate2", each if [BudgetRate] = null then [AvgRate] else [BudgetRate]),
+				    Keyed = Table.AddColumn(BudgetFix, "FXKey", each [CurrencyCode] & "|" & Date.ToText([Month], "yyyy-MM"), type text),
+				    Final = Table.RenameColumns(Table.SelectColumns(Keyed, {"FXKey", "CurrencyCode", "Month", "AvgRate", "EndRate", "BudgetRate2", "RateStatus"}), {{"BudgetRate2", "BudgetRate"}}),
+				    Typed2 = Table.TransformColumnTypes(Final, {{"AvgRate", type number}, {"EndRate", type number}, {"BudgetRate", type number}})
+				in
+				    Typed2
+
+	annotation PBI_ResultType = Table
+

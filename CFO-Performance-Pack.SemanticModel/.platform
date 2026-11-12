@@ -1,0 +1,11 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/gitIntegration/platformProperties/2.0.0/schema.json",
+  "metadata": {
+    "type": "SemanticModel",
+    "displayName": "CFO-Performance-Pack"
+  },
+  "config": {
+    "version": "2.0",
+    "logicalId": "02d21c97-f699-46f0-93f2-4da177e3816b"
+  }
+}
