@@ -1,5 +1,5 @@
 {
-  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.4.0/schema.json",
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/2.14.0/schema.json",
   "name": "25d5c6195fa75e48b065",
   "position": {
     "x": 680,
@@ -64,7 +64,7 @@
                 }
               }
             },
-            "fontSize": {
+            "textSize": {
               "expr": {
                 "Literal": {
                   "Value": "8D"
@@ -88,7 +88,7 @@
       "items": [
         {
           "properties": {
-            "fontSize": {
+            "textSize": {
               "expr": {
                 "Literal": {
                   "Value": "9D"
@@ -160,6 +160,11 @@
         }
       ]
     },
-    "drillFilterOtherVisuals": true
+    "drillFilterOtherVisuals": true,
+    "syncGroup": {
+      "groupName": "Fiscal Year",
+      "fieldChanges": true,
+      "filterChanges": true
+    }
   }
 }
