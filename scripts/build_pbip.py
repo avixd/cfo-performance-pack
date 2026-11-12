@@ -432,12 +432,10 @@ def page_executive():
              ('Gross Profit Margin %', 'Gross margin', 'Gross Margin Text', 'Gross Margin Var Color'),
              ('EBITDA', 'EBITDA', 'EBITDA vs Budget Text', 'EBITDA Var Color'),
              ('Net Income', 'Net income', 'Net Income vs Budget Text', 'Net Income Var Color'),
-             ('Net Income Outlook FY', 'Full-year net income outlook', 'Insight Outlook', None),
-             ('Cash', 'Cash at month end', None, None)]
+             ('Net Income Outlook FY', 'Full-year net income outlook', 'Net Income Outlook Gap Text', 'Net Income Outlook Gap Color'),
+             ('Cash', 'Cash at month end', 'Cash Change Text', 'Cash Change Color')]
     w = (1248 - 5 * 10) / 6
     for i, (m, lab, sub, col) in enumerate(tiles):
-        if m == 'Net Income Outlook FY':
-            sub = None
         p.kpi(f'k{i}', 16 + i * (w + 10), 128, w, 100, m, lab, sub, col)
     wf = {'sentimentColors': [{'properties': {'increaseFill': solid(C['good']), 'decreaseFill': solid(C['bad']), 'totalFill': solid(C['navy'])}}],
           'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000000), 'labelPrecision': L(1), 'fontSize': L(9)}}],
