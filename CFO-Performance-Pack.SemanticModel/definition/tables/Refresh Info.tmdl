@@ -1,0 +1,16 @@
+/// One row stamped with the UTC time of the last refresh.
+table 'Refresh Info'
+	lineageTag: eee4745b-3f01-51d6-8e33-fbf744fb376a
+	isHidden
+
+	column 'Refreshed At'
+		lineageTag: 42695db6-93fa-5a40-a714-a3a2c86fc176
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Refreshed At]
+
+	partition 'Refresh Info' = calculated
+		mode: import
+		source =
+				ROW ( "Refreshed At", UTCNOW () )
+

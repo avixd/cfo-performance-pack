@@ -32,6 +32,7 @@ ref table 'DQ File Log'
 ref table 'DQ Injection Log'
 ref table 'Theme Mode'
 ref table Story
+ref table 'Refresh Info'
 ref table _Measures
 
 ref cultureInfo en-CA

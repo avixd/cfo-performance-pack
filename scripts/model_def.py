@@ -508,6 +508,12 @@ PALETTE = {  # name: (light, dark)
     'Warn': ('#B26A00', '#F2B35E'), 'Subtotal': ('#EEF1F5', '#1E2B42'), 'Total': ('#DCE3EC', '#26375A'),
     'Button': ('#FFFFFF', '#1E2B42'), 'Selected': ('#1F3A5F', '#8DB3D9'), 'Selected Text': ('#FFFFFF', '#0B1220'),
 }
+PALETTE.update({
+    'Accent': ('#2F5D9F', '#7FB0E6'), 'Accent Soft': ('#E6EEF8', '#1E3350'), 'Track': ('#E5E9F0', '#22314A'),
+    'Page': ('#F1F4F8', '#0B1220'), 'Panel': ('#FFFFFF', '#141D2E'),
+    'Sidebar': ('#0F2340', '#070D1A'), 'Sidebar Text': ('#E8EDF4', '#E8EDF4'), 'Sidebar Muted': ('#8FA3BF', '#7F8EA6'),
+    'Sidebar Active': ('#23497A', '#1E3350'), 'Title': ('#14213D', '#F1F5F9'),
+})
 add('Is Dark', 'SELECTEDVALUE ( \'Theme Mode\'[Mode], "Light" ) = "Dark"', '10 Theme', None, 'True when the Dark tile of the theme toggle is selected.')
 for k, (lt, dk) in PALETTE.items():
     add(f'Col {k}', f'IF ( [Is Dark], "{dk}", "{lt}" )', '10 Theme', None, f'Theme colour "{k}": {lt} light / {dk} dark.')
@@ -525,7 +531,7 @@ RETURN "Hello, " & IF ( LEN ( f ) = 0, "guest", UPPER ( LEFT ( f, 1 ) ) & LOWER 
     'First name only (text before @, \\ or .); never the full sign-in, domain or machine name. Anonymous (Publish to web) viewers see "guest".')
 add('Brand', '"CFO Performance Pack"', '10 Layout')
 LST = lambda col, allx: f'VAR n = COUNTROWS ( VALUES ( {col} ) ) RETURN IF ( NOT ISFILTERED ( {col} ), "{allx}", IF ( n <= 2, CONCATENATEX ( VALUES ( {col} ), {col}, ", " ), n & " selected" ) )'
-add('Ctx Period', '[Selected Fiscal Year] & " · " & SELECTEDVALUE ( \'Period View\'[View], "YTD" ) & " to " & FORMAT ( [Selected Month], "mmm yyyy" )', '10 Layout')
+add('Ctx Period', '[Selected Fiscal Year] & " " & SELECTEDVALUE ( \'Period View\'[View], "YTD" ) & " " & FORMAT ( [Selected Month], "mmm yy" )', '10 Layout')
 add('Ctx Currency', '[Currency Label] & IF ( [Currency Label] = "USD", " (translated via CAD)", "" )', '10 Layout')
 add('Ctx Region', LST('Entity[Region]', 'All regions'), '10 Layout')
 add('Ctx Entity', LST('Entity[EntityName]', 'All entities'), '10 Layout')
@@ -695,3 +701,62 @@ add('Sub Cash Trend', """VAR ms = FILTER ( ALL ( 'Date'[Month] ), 'Date'[Month] 
 VAR t = ADDCOLUMNS ( ms, "@c", VAR m = 'Date'[Month] RETURN CALCULATE ( [Cash Balance (month)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m ) )
 VAR hi = TOPN ( 1, FILTER ( t, NOT ISBLANK ( [@c] ) ), [@c], DESC ) VAR lo = TOPN ( 1, FILTER ( t, NOT ISBLANK ( [@c] ) ), [@c], ASC )
 RETURN "Month-end cash ranged " & """ + MU('MAXX ( lo, [@c] )') + """ & " (" & FORMAT ( MAXX ( lo, 'Date'[Month] ), "mmm yy" ) & ") to " & """ + MU('MAXX ( hi, [@c] )') + """ & " (" & FORMAT ( MAXX ( hi, 'Date'[Month] ), "mmm yy" ) & "); it moves with working capital, not profit." """, SB)
+
+add('Lbl Current View', '"Current view"', '10 Layout')
+for k in ['Period', 'Currency', 'Region', 'Entity', 'Department']:
+    add(f'Ctx Line {k}', f'"{k}: " & [Ctx {k}]', '10 Layout')
+
+
+# ======================================================================== v3: reference-style frame and KPI cards
+# refresh timestamp: a one-row calculated table re-evaluated on every refresh
+TABLES.insert(len(TABLES) - 1, dict(name='Refresh Info', hidden=1, desc='One row stamped with the UTC time of the last refresh.',
+                                    dax='ROW ( "Refreshed At", UTCNOW () )', cols=[('Refreshed At', 'dateTime', {})]))
+add('Last Refreshed', '"Refreshed " & FORMAT ( MAX ( \'Refresh Info\'[Refreshed At] ), "dd mmm yyyy hh:nn" ) & " UTC · books closed " & FORMAT ( [As Of Month], "mmm yyyy" )', '10 Layout')
+add('Brand Sub', '"Adventure Works Group"', '10 Layout')
+add('Tagline', '"Every number traces back to the ledger."', '10 Layout')
+add('Lbl Filters', '"FILTERS"', '10 Layout')
+add('Year Elapsed %', 'DIVIDE ( [Fiscal Month Of Selection], 12 )', '1 Period (fiscal)', '0%', 'Share of the fiscal year closed at the selected month.')
+add('Footer Note 1', '"1  One definition per metric: hover a KPI label for its definition; click it for the DAX."', '10 Layout')
+add('Footer Note 2', '"2  Described in the model: every measure has a description (docs/01-semantic-model.md)."', '10 Layout')
+
+# KPI value text (left-aligned cards need text), sparklines and full-year progress
+def kv_expr(name):
+    fmt = next(m.get('fmt') for m in MEAS if m['name'] == name)
+    if fmt == F:
+        return f'VAR v = [{name}] RETURN IF ( NOT ISBLANK ( v ), FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M" )'
+    if fmt in (P, '0%'):
+        return f'FORMAT ( [{name}], "0.0%" )'
+    if fmt == '0.00':
+        return f'FORMAT ( [{name}], "0.00" ) & "x"'
+    return f'FORMAT ( [{name}], "#,0" )'
+KV_LIST = ['Revenue', 'Gross Profit Margin %', 'EBITDA', 'Net Income', 'Net Income Outlook FY', 'Cash', 'Organic Growth %', 'Revenue New Entities',
+           'Entities Reporting', 'Metric Actual', 'Metric Budget', 'Metric PY', 'Metric Outlook FY']
+for n in KV_LIST:
+    add(f'KV {n}', kv_expr(n), '11 KPI Cards')
+SPARK_KEYS = {'Revenue': 3, 'Gross Profit': 5, 'EBITDA': 13, 'Net Income': 20}
+for n, key in SPARK_KEYS.items():
+    add(f'{n} Spark', LINE(key, '[Monthly Actual (Selected FY)]'), '11 KPI Cards', F, f'Monthly {n.lower()} for the selected fiscal year (sparkline).')
+add('Cash Spark', f"VAR fy = {FYS} VAR m = MAX ( 'Date'[Month] ) RETURN IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ) && m <= [Selected Month] && MAX ( 'Date'[Fiscal Year Number] ) = fy, [Cash Balance (month)] )", '11 KPI Cards', F)
+add('Gross Margin Spark', "DIVIDE ( [Gross Profit Spark], [Revenue Spark] )", '11 KPI Cards', P)
+for n in ('Revenue', 'EBITDA', 'Net Income'):
+    key = KPI[n]
+    add(f'{n} FY Progress', 'DIVIDE ( ' + LINE(key, '[Actual YTD]') + ', ' + LINE(key, '[Budget FY]') + ' )', '11 KPI Cards', '0%',
+        f'{n} year to date as a share of the full-year budget.')
+    add(f'{n} Progress Text', f'FORMAT ( [{n} FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"', '11 KPI Cards')
+add('Net Income Outlook Progress', 'DIVIDE ( [Net Income Outlook FY], [Net Income Budget FY] )', '11 KPI Cards', '0%')
+add('Net Income Outlook Progress Text', 'FORMAT ( [Net Income Outlook Progress], "0%" ) & " of FY budget"', '11 KPI Cards')
+add('Metric FY Progress', 'DIVIDE ( ' + MET('[Actual YTD]') + ', [Metric Budget FY] )', '11 KPI Cards', '0%')
+add('Metric Progress Text', 'FORMAT ( [Metric FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"', '11 KPI Cards')
+add('Metric Outlook Progress', 'DIVIDE ( [Metric Outlook FY], [Metric Budget FY] )', '11 KPI Cards', '0%')
+add('Metric Outlook Progress Text', 'FORMAT ( [Metric Outlook Progress], "0%" ) & " of FY budget (outlook)"', '11 KPI Cards')
+add('Gross Margin Progress Text', '"Budget " & FORMAT ( [Gross Profit Margin % Budget], "0.0%" ) & " · PY " & FORMAT ( DIVIDE ( [Gross Profit PY], [Revenue PY] ), "0.0%" )', '11 KPI Cards')
+add('Cash Progress Text', '"Year end " & ' + MU(LINE(101, '[Prior Year-End Balance]')) + ' & " · " & [DSO (days)] & "d DSO"', '11 KPI Cards')
+for n in ('Revenue', 'EBITDA', 'Net Income', 'Net Income Outlook', 'Metric', 'Metric Outlook'):
+    src = f'{n} FY Progress' if n in ('Revenue', 'EBITDA', 'Net Income', 'Metric') else f'{n} Progress'
+    add(f'{n} Progress Bar', f'MIN ( MAX ( [{src}], 0 ), 1 )', '11 KPI Cards', '0%', 'Progress capped to 0-100% for the bar.')
+redefine('Cash Spark', desc='Month-end cash for closed months of the selected fiscal year (sparkline).')
+
+add('Entity Budget Status Summary', 'VAR t = FILTER ( ADDCOLUMNS ( VALUES ( Entity[EntityName] ), "@s", [Entity Budget Status] ), [@s] = "Not budgeted" ) RETURN IF ( COUNTROWS ( t ) > 0, "Unbudgeted: " & CONCATENATEX ( t, Entity[EntityName], ", " ), "All entities budgeted" )', '11 KPI Cards')
+add('Sub Entities Short', 'VAR t = FILTER ( ADDCOLUMNS ( VALUES ( Entity[EntityName] ), "@s", [Entity Budget Status] ), NOT ISBLANK ( [@s] ) ) RETURN COUNTROWS ( FILTER ( t, [@s] <> "Budgeted" ) ) + 0 & " without a credible budget"', '11 KPI Cards')
+add('Metric Budget FY Text', '"FY budget " & ' + MU('[Metric Budget FY]'), '11 KPI Cards')
+add('Revenue Growth Short', '"Total growth " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & " vs PY"', '11 KPI Cards')
