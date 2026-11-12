@@ -6,6 +6,8 @@ The whole Power BI project (semantic model **and** report pages) is generated fr
 
 > **Report preview:** [PDF of all six pages](docs/CFO-Performance-Pack.pdf) · page images below. A public Publish-to-web link is not provided; see [docs/02-startup-guide.md](docs/02-startup-guide.md) for why (licensing).
 
+![Executive Summary](docs/images/02-executive-summary.png)
+
 ---
 
 ## The business question
@@ -17,7 +19,7 @@ Adventure Works Group (fictional; Canadian parent, reports in CAD, fiscal year 1
 | **Is growth organic or bought?** | Revenue +29.8% vs prior year, of which **+23.1% organic**. CAD 1.9M comes from an Australian joint venture that has **no budget**; on budgeted entities only, revenue is +15.8% vs budget. |
 | **Is cost growth eating the upside?** | Operating expenses ran **CAD 3.3M over budget**, absorbing 83% of the gross-profit upside. EBITDA beat budget by only 6.9%, and gross margin is 2.0 pts below budget. |
 | **Where will the year land?** | Rolling outlook (7 months actual + 5 months budget): net income **CAD 11.1M vs 10.5M budget**. |
-| **Is the balance sheet funding growth?** | Cash CAD 3.7M, current ratio 3.0x, debt/equity 0.12x; DSO 53, DIO 71, DPO 50 days. |
+| **Is the balance sheet funding growth?** | Not yet in cash: cash **fell CAD 1.2M** since the March year end while receivables **rose CAD 1.7M**, so growth is being financed through customer credit (DSO 53 days). Liquidity is not at risk: current ratio 3.0x, debt/equity 0.12x. |
 
 Full narrative: [docs/00-company-and-thesis.md](docs/00-company-and-thesis.md).
 
@@ -34,6 +36,14 @@ Full narrative: [docs/00-company-and-thesis.md](docs/00-company-and-thesis.md).
 
 Every page responds to **fiscal year, month, MTD/QTD/YTD and CAD/USD** selectors; titles and narrative text are DAX measures, so they rewrite themselves for every selection. Colour is used only to carry meaning: dark = actual, grey dashed = budget, light blue = outlook, **green/red = favourable/unfavourable** (sign-normalised, so green is always good).
 
+| | |
+|---|---|
+| ![Company Overview](docs/images/01-company-overview.png) **Company Overview** | ![Budget vs Actual](docs/images/03-budget-vs-actual.png) **Budget vs Actual** |
+| ![Income Statement](docs/images/04-income-statement.png) **Income Statement** | ![Balance Sheet & Cash](docs/images/05-balance-sheet-cash.png) **Balance Sheet & Cash** |
+| ![Data Quality](docs/images/06-data-quality.png) **Data Quality** | ![Executive Summary](docs/images/02-executive-summary.png) **Executive Summary** |
+
+Images are rendered from the PDF export at the October 2026 close (YTD, CAD).
+
 ## What is in the repo
 
 ```
@@ -44,6 +54,8 @@ data/                                   reference, actuals, budget, fx, inbox (d
 docs/00-company-and-thesis.md           company story and reporting thesis
 docs/01-semantic-model.md               model reference (generated: tables, relationships, every measure with DAX)
 docs/02-startup-guide.md                free tenant, security and Publish to web, step by step
+docs/CFO-Performance-Pack.pdf           PDF export of all six pages
+docs/images/                            page images used in this README
 docs/eda/                               data-quality and exploratory analysis report + charts
 scripts/build_data.py                   builds data/ from AdventureWorksDW (seeded, deterministic)
 scripts/eda.py                          data-quality checks and EDA -> docs/eda/

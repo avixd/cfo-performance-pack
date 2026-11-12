@@ -574,8 +574,8 @@ def page_dq():
     p.add('inj', 'tableEx', 16, 174, 620, 210,
           roles={'Values': [('DQ Injection Log[Month]', 'Month'), ('DQ Injection Log[Issue]', 'Issue injected'), ('DQ Injection Log[RowsAffected]', 'Rows'),
                             ('DQ Injection Log[Treatment]', 'How the model handles it')]},
-          objects=dict(tbl, columnWidth=[{'properties': {'value': L(52)}, 'selector': {'metadata': 'DQ Injection Log.Month'}},
-                                          {'properties': {'value': L(150)}, 'selector': {'metadata': 'DQ Injection Log.Issue'}},
+          objects=dict(tbl, columnWidth=[{'properties': {'value': L(66)}, 'selector': {'metadata': 'DQ Injection Log.Month'}},
+                                          {'properties': {'value': L(140)}, 'selector': {'metadata': 'DQ Injection Log.Issue'}},
                                           {'properties': {'value': L(42)}, 'selector': {'metadata': 'DQ Injection Log.RowsAffected'}},
                                           {'properties': {'value': L(330)}, 'selector': {'metadata': 'DQ Injection Log.Treatment'}}]),
           title='What the data generator deliberately broke (reconcile with the counts above)')

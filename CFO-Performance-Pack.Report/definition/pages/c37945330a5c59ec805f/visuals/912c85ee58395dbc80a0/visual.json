@@ -165,7 +165,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "52D"
+                  "Value": "66D"
                 }
               }
             }
@@ -179,7 +179,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "150D"
+                  "Value": "140D"
                 }
               }
             }
