@@ -65,7 +65,7 @@ Every page shares one frame: sidebar (numbered page navigation, filters, Reset a
 ## 7 · Data Dictionary
 **Purpose.** Explore the model without downloading it.
 **On the page.** Counts of tables, columns, measures and relationships; five slicers (object type tiles, searchable Table, Folder and Name dropdowns, and a free-text "contains" search); one table with type, table, name, description, expression and folder.
-**How it works.** The calculated table `Data Dictionary` unions `INFO.VIEW.TABLES`, `COLUMNS`, `MEASURES` and `RELATIONSHIPS`, so it is rebuilt from the model on every refresh and cannot drift.
+**How it works.** The calculated table `Data Dictionary` unions `INFO.VIEW.TABLES`, `COLUMNS`, `MEASURES` and `RELATIONSHIPS` (one variable per object type, as in the INFO.VIEW documentation technique), so it is rebuilt from the model on every refresh and cannot drift. Hidden objects are left out, and the table leaves itself out.
 **Walkthrough.** 1) Click *Measure*. 2) Type "cash" in the name search. 3) Read the description and the DAX of `Cash Bridge Value`. 4) Click *Relationship* to see the star schema as rows.
 **Key measures.** `DD Objects`, `DD Documented %`.
 
@@ -88,6 +88,6 @@ Every page shares one frame: sidebar (numbered page navigation, filters, Reset a
 
 ## H3 · Rolling Forecast (hidden)
 **Purpose.** Will we reach the target? Same components as the Goodly Budget vs Actual page: an "Actuals Until" selector and a month matrix showing actuals up to that month and budget after it.
-**On the page.** Actuals Until and Metric selectors; four cards (rolling forecast, target, required per remaining month, run-rate projection); entity by month matrix (blue = actual, red tint = budget, Total = rolling forecast); target table per entity (gap, attainment, required vs average per month, status); method notes.
+**On the page.** Actuals Until and Metric selectors; four cards (rolling forecast, target, required per remaining month, average-month projection); entity by month matrix (blue = actual, red tint = budget, Total = rolling forecast); target table per entity (gap, attainment, required vs average per month, status); method notes.
 **Walkthrough.** 1) Move Actuals Until back to June and watch blue months turn red. 2) Compare "required per month" with "average so far". 3) Sort the table by gap to find entities that will miss.
 **Method and limits.** See [04-methodology.md](04-methodology.md).

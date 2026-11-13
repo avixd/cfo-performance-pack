@@ -87,7 +87,7 @@ table Story
 				        {"RF Method", 3, "Assumptions", "Remaining months land exactly on budget. Target = original full-year budget. Actual and budget share the same grain (month x entity x account), so no allocation is needed."},
 				        {"RF Method", 4, "Strengths", "Simple, auditable and replayable: move the slicer to see what the forecast said at any month end. No statistical model to explain or maintain."},
 				        {"RF Method", 5, "Limits", "It carries the year-to-date variance forward but assumes it stops growing. Seasonality lives only in the budget. Entities without a budget have no target and show blank."},
-				        {"RF Method", 6, "Cross-check", "The run-rate column assumes the average month so far repeats. When the two methods disagree, the truth is usually between them: read Required per month against the average so far."},
+				        {"RF Method", 6, "Cross-check", "The average-month projection assumes the average month so far repeats (tab 3 uses a different run-rate: remaining budget scaled by the year-to-date beat). When the two methods disagree, the truth is usually between them: read Required per month against the average so far."},
 				        {"RF Method", 7, "If grains differ", "If budget were yearly or by region only, allocate it to months with a seasonality key (prior-year share) before using this page; never compare a monthly actual with an unallocated annual budget."}
 				    })
 				in

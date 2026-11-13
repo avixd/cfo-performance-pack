@@ -32,59 +32,43 @@ table 'Data Dictionary'
 		isNameInferred
 		sourceColumn: [Expression]
 
-	/// Data type, table kind or cardinality.
-	column Type
-		lineageTag: e12401ee-edf4-55c2-a48f-1dff104ea14c
-		isNameInferred
-		sourceColumn: [Type]
-
-	/// Format string.
-	column Format
-		lineageTag: 9d836b53-2f47-5fed-a436-8dfb7e5c9ee6
-		isNameInferred
-		sourceColumn: [Format]
-
 	/// Display folder.
 	column Folder
 		lineageTag: c0db1786-5e41-5623-a74f-2cdbf9ab4524
 		isNameInferred
 		sourceColumn: [Folder]
 
-	/// Yes when hidden from report authors.
-	column Hidden
-		lineageTag: f902f469-ae16-50f4-8c3b-44cd16c95f88
-		isNameInferred
-		sourceColumn: [Hidden]
-
 	partition 'Data Dictionary' = calculated
 		mode: import
 		source =
-				-- One row per model object. INFO.VIEW functions read the model's own metadata, so the dictionary can never drift from the model.
-				UNION (
+				-- Data dictionary (pattern from the INFO.VIEW documentation technique): one VAR per object type, UNION at the end.
+				-- INFO.VIEW functions read the model's own metadata on every refresh, so the dictionary cannot drift from the model.
+				-- Hidden objects are left out (they are plumbing, not something a reader should use), and the dictionary leaves itself out.
+				VAR __Tables =
 				    SELECTCOLUMNS (
-				        FILTER ( INFO.VIEW.TABLES (), NOT [IsPrivate] ),
+				        FILTER ( INFO.VIEW.TABLES (), [IsHidden] = FALSE () && NOT [IsPrivate] && [Name] <> "Data Dictionary" ),
 				        "Object Type", "Table", "Table", [Name], "Name", [Name], "Description", [Description],
-				        "Expression", [Expression], "Type", IF ( ISBLANK ( [Expression] ), "Power Query table", "Calculated table" ),
-				        "Format", BLANK (), "Folder", BLANK (), "Hidden", IF ( [IsHidden], "Yes", "No" )
-				    ),
+				        "Expression", [Expression], "Folder", BLANK ()
+				    )
+				VAR __Columns =
 				    SELECTCOLUMNS (
-				        FILTER ( INFO.VIEW.COLUMNS (), [Type] <> "RowNumber" ),
+				        FILTER ( INFO.VIEW.COLUMNS (), [IsHidden] = FALSE () && [Table] <> "Data Dictionary" ),
 				        "Object Type", "Column", "Table", [Table], "Name", [Name], "Description", [Description],
-				        "Expression", [Expression], "Type", [DataType] & IF ( NOT ISBLANK ( [Expression] ), " (calculated)" ),
-				        "Format", [FormatString], "Folder", [DisplayFolder], "Hidden", IF ( [IsHidden], "Yes", "No" )
-				    ),
+				        "Expression", [Expression], "Folder", [DisplayFolder]
+				    )
+				VAR __Measures =
 				    SELECTCOLUMNS (
-				        INFO.VIEW.MEASURES (),
+				        FILTER ( INFO.VIEW.MEASURES (), [IsHidden] = FALSE () ),
 				        "Object Type", "Measure", "Table", [Table], "Name", [Name], "Description", [Description],
-				        "Expression", [Expression], "Type", [DataType],
-				        "Format", [FormatString], "Folder", [DisplayFolder], "Hidden", IF ( [IsHidden], "Yes", "No" )
-				    ),
+				        "Expression", [Expression], "Folder", [DisplayFolder]
+				    )
+				VAR __Relationships =
 				    SELECTCOLUMNS (
 				        INFO.VIEW.RELATIONSHIPS (),
-				        "Object Type", "Relationship", "Table", [FromTable], "Name", [FromTable] & " > " & [ToTable],
-				        "Description", [FromCardinality] & " to " & LOWER ( [ToCardinality] ) & ", " & IF ( [IsActive], "active", "inactive" ) & ", filter direction: " & [CrossFilteringBehavior],
-				        "Expression", [Relationship], "Type", [FromCardinality] & " to " & LOWER ( [ToCardinality] ),
-				        "Format", BLANK (), "Folder", BLANK (), "Hidden", "No"
+				        "Object Type", "Relationship", "Table", [FromTable], "Name", [Relationship],
+				        "Description", "From " & [FromTable] & " to " & [ToTable] & IF ( [IsActive], "", " (inactive)" ),
+				        "Expression", [Relationship], "Folder", BLANK ()
 				    )
-				)
+				RETURN
+				    UNION ( __Tables, __Columns, __Measures, __Relationships )
 

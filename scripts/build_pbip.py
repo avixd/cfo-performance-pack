@@ -889,7 +889,7 @@ def page_rf():
     for i, (m, lab, sub, col) in enumerate([('RF Total', 'Rolling forecast (actual + remaining budget)', 'RF Total Text', 'RF Status Color'),
                                             ('RF Target', 'Target', 'RF Target Text', None),
                                             ('RF Required per Month', 'Required per remaining month', 'RF Required Text', 'RF Required Color'),
-                                            ('RF Run-Rate Total', 'Run-rate projection (cross-check)', 'RF Run-Rate Text', 'RF Run-Rate Color')]):
+                                            ('RF Run-Rate Total', 'Average-month projection (cross-check)', 'RF Run-Rate Text', 'RF Run-Rate Color')]):
         p.kpi(f'k{i}', 16 + i * (w + 10), 136, w, 92, m, lab, sub, col)
     obj = matrix_objects(p, ['RF Value'], back={'_Measures.RF Value': 'RF Cell Color'})
     p.add('matrix', 'pivotTable', 16, 234, 1248, 250, roles={'Rows': [('Entity[EntityName]', 'Entity')], 'Columns': ['Date[Month Name]'], 'Values': [('RF Value', 'Value')]},
