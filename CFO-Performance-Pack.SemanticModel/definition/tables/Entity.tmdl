@@ -2,12 +2,14 @@
 table Entity
 	lineageTag: e7b63dec-7693-5f87-8875-49bea325e9e8
 
+	/// Surrogate key of the reporting entity; joins to GL.
 	column EntityKey
 		dataType: int64
 		lineageTag: 33a2729b-61da-5c94-b59d-ed514405096c
 		summarizeBy: none
 		sourceColumn: EntityKey
 
+	/// Parent in the group hierarchy (group > region > entity).
 	column ParentEntityKey
 		dataType: int64
 		isHidden
@@ -15,11 +17,13 @@ table Entity
 		summarizeBy: none
 		sourceColumn: ParentEntityKey
 
+	/// Entity name.
 	column EntityName
 		dataType: string
 		lineageTag: 56c5011a-ab18-53c1-b5ca-dfc1eb4dc117
 		sourceColumn: EntityName
 
+	/// Share of this entity owned by its direct parent.
 	column OwnershipPct
 		dataType: double
 		formatString: 0%
@@ -27,6 +31,7 @@ table Entity
 		summarizeBy: none
 		sourceColumn: OwnershipPct
 
+	/// Local (functional) currency of the entity.
 	column CurrencyCode
 		dataType: string
 		lineageTag: 5d09ed28-facf-52dd-b6ea-81755528d26c
@@ -53,7 +58,9 @@ table Entity
 
 	partition Entity = m
 		mode: import
+		queryGroup: Dimensions
 		source =
+				// Reporting entities with local currency and ownership %.
 				let
 				    Src = fnReadCsv("reference", "Entity.csv"),
 				    Typed = Table.TransformColumnTypes(Src, {{"EntityKey", Int64.Type}, {"ParentEntityKey", Int64.Type}, {"EntityName", type text}, {"OwnershipPct", type number}, {"CurrencyCode", type text}}, "en-US")

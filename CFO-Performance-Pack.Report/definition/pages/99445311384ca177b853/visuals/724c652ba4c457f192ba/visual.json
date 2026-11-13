@@ -3,11 +3,11 @@
   "name": "724c652ba4c457f192ba",
   "position": {
     "x": 1134.1,
-    "y": 128.0,
-    "z": 60000,
+    "y": 126.0,
+    "z": 61000,
     "height": 20,
     "width": 129.6,
-    "tabOrder": 60000
+    "tabOrder": 61000
   },
   "visual": {
     "visualType": "actionButton",
@@ -224,7 +224,7 @@
             "tooltip": {
               "expr": {
                 "Literal": {
-                  "Value": "'Entities reporting'"
+                  "Value": "'Number of entities with actuals in the selected month.'"
                 }
               }
             }

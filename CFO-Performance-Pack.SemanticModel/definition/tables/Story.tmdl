@@ -2,12 +2,14 @@
 table Story
 	lineageTag: 027dfa61-9329-5e95-9dec-bed79d06d844
 
+	/// Page the row belongs to (Overview, DQ, Notes, Defs).
 	column Page
 		dataType: string
 		isHidden
 		lineageTag: d483c579-8d7e-59ea-862a-52ce634f5082
 		sourceColumn: Page
 
+	/// Display order within the page.
 	column Sort
 		dataType: int64
 		isHidden
@@ -15,12 +17,14 @@ table Story
 		summarizeBy: none
 		sourceColumn: Sort
 
+	/// Topic shown in the first column.
 	column Section
 		dataType: string
 		lineageTag: 817768f0-e479-5267-9e04-6c09f5142b44
 		sourceColumn: Section
 		sortByColumn: Sort
 
+	/// Narrative text.
 	column Text
 		dataType: string
 		lineageTag: e5c52aa1-2b14-5a2c-baf1-f4b82502a456
@@ -28,7 +32,9 @@ table Story
 
 	partition Story = m
 		mode: import
+		queryGroup: 'Report helpers'
 		source =
+				// Static narrative shown in themed tables (text boxes cannot change colour with the theme).
 				let
 				    Source = #table(type table [Page = text, Sort = Int64.Type, Section = text, Text = text], {
 				        {"Overview", 1, "Who we are", "Designs and sells performance bicycles, components and riding apparel through dealers and its own online store. Canadian parent: reports in CAD; fiscal year 1 April to 31 March."},
@@ -41,7 +47,35 @@ table Story
 				        {"DQ", 2, "Correlation", "Revenue and cost of sales move almost one-for-one (Spearman 0.94); operating expenses less so (0.66), so margin is decided below gross profit."},
 				        {"DQ", 3, "Integrity", "Every injected issue was detected and treated; the balance sheet balances in every month; no rows lack an FX rate."},
 				        {"DQ", 4, "Benford", "First-digit distribution conforms (Nigrini MAD 0.0068, acceptable)."},
-				        {"DQ", 5, "Known gaps", "Equity roll-forward does not reconcile in the source data (retained earnings vs net income); intercompany balances are not eliminated."}
+				        {"DQ", 5, "Known gaps", "Equity roll-forward does not reconcile in the source data (retained earnings vs net income); intercompany balances are not eliminated."},
+				        {"Notes", 1, "Fiscal calendar", "Fiscal year runs 1 April to 31 March and is named by the year it ends (FY2027 = Apr 2026 to Mar 2027). YTD, QTD and MTD are fiscal."},
+				        {"Notes", 2, "Close and as-of month", "The reporting month is the latest month with an actuals file (""books closed""). Selecting a later month falls back to the close."},
+				        {"Notes", 3, "Sign convention", "Revenue is positive and costs are negative, so subtotals add up. Every variance is actual minus budget: positive is favourable, on revenue and on cost lines."},
+				        {"Notes", 4, "Colour", "Green = favourable, red = unfavourable, amber = caution (budget not credible), blue = actual, light blue = outlook, grey = budget or prior year. Arrows show direction only."},
+				        {"Notes", 5, "Number format", "Text and cards: $ with millions to one decimal, thousands whole. Tables: thousands, negatives in brackets. Percentages to one decimal. ""n.m."" or blank = not meaningful."},
+				        {"Notes", 6, "Currency", "Bank of Canada rates, CAD per unit. P&L at monthly average, balance sheet at month end, budget at the prior fiscal-year average. USD view translates the CAD result at the USD rate."},
+				        {"Notes", 7, "Currency effect", "Constant currency = actuals translated at budget rates. The difference to reported actuals is translation, not trading. Rates after the last published month are carried forward."},
+				        {"Notes", 8, "Budget", "FY2026 to FY2028 budgets are synthetic (prior-year actual x growth x seeded noise). Entities that joined after the budget was set have no budget and are flagged."},
+				        {"Notes", 9, "Budget credibility", "Not budgeted = no budget for the period. Under-budgeted = actual revenue above 2x budget. Their favourable variance is a planning gap, not outperformance."},
+				        {"Notes", 10, "Outlook", "Full-year outlook = actuals to the close + budget for the remaining months. The run-rate figure instead assumes the remaining months beat budget by the year-to-date ratio."},
+				        {"Notes", 11, "Organic growth", "Like-for-like revenue counts only entities that also traded in the same period last year. New-entity revenue is the rest."},
+				        {"Notes", 12, "Ownership", "Entities are consolidated at 100%. Effective ownership (multiplied down the hierarchy) splits net income between the group and non-controlling interests."},
+				        {"Notes", 13, "Cash bridge", "Balance-sheet method: each step is the change in a balance since the year end, signed by cash effect, so the steps tie to the cash change. It is not a statutory cash-flow statement."},
+				        {"Notes", 14, "Known gaps", "Retained earnings do not roll forward from net income in the source data; intercompany balances are not eliminated; revenue and cost of sales post to one department."},
+				        {"Notes", 15, "Data", "Fictional company built on Microsoft AdventureWorksDW (MIT licence), re-dated. Source issues are injected on purpose and reconciled on the Data Quality page."},
+				        {"Defs", 1, "Net revenue", "Gross sales less returns and discounts."},
+				        {"Defs", 2, "Gross margin", "Gross profit (net revenue less cost of sales) / net revenue."},
+				        {"Defs", 3, "EBITDA", "Gross profit less operating expenses, before depreciation, amortization, interest, other items and tax."},
+				        {"Defs", 4, "Variance %", "Variance / absolute budget. Shown only when actual and budget share a sign and the result is below 1,000%."},
+				        {"Defs", 5, "Pacing bar", "Year-to-date actual as a share of the full-year budget. The tick marks the share of the year elapsed: a bar beyond the tick is ahead of a straight-line year."},
+				        {"Defs", 6, "Receivable days (DSO)", "Receivables / trailing-twelve-month revenue x 365."},
+				        {"Defs", 7, "Inventory days (DIO)", "Inventory / trailing-twelve-month cost of sales x 365."},
+				        {"Defs", 8, "Payable days (DPO)", "Payables / trailing-twelve-month cost of sales x 365."},
+				        {"Defs", 9, "Cash cycle", "Receivable days + inventory days - payable days."},
+				        {"Defs", 10, "Current ratio", "Current assets / current liabilities."},
+				        {"Defs", 11, "Debt to equity", "Short-term + long-term debt / total equity."},
+				        {"Defs", 12, "Salary cost per head", "Salaries and benefits for the period / closing headcount (statistical account)."},
+				        {"Defs", 13, "Trade working capital", "Receivables + inventory - payables."}
 				    })
 				in
 				    Source

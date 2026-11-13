@@ -3,11 +3,11 @@
   "name": "96fe1c97c8ca5b51ba4c",
   "position": {
     "x": 1134.4,
-    "y": 169.6,
-    "z": 80000,
+    "y": 167.6,
+    "z": 81000,
     "height": 20,
     "width": 127.6,
-    "tabOrder": 80000
+    "tabOrder": 81000
   },
   "visual": {
     "visualType": "actionButton",
@@ -224,7 +224,7 @@
             "tooltip": {
               "expr": {
                 "Literal": {
-                  "Value": "'Cash at month end'"
+                  "Value": "'Cash and cash equivalents at the selected month end.'"
                 }
               }
             }

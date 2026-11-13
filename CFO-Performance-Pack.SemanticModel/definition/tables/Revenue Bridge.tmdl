@@ -2,12 +2,14 @@
 table 'Revenue Bridge'
 	lineageTag: 1f3a9dc6-acab-5e55-b276-f2c8360f6b81
 
+	/// Step shown on the bridge axis.
 	column Step
 		dataType: string
 		lineageTag: 830fcaf8-3109-56a3-849d-62fb249943c9
 		sourceColumn: Step
 		sortByColumn: Sort
 
+	/// Display order.
 	column Sort
 		dataType: int64
 		isHidden
@@ -17,7 +19,9 @@ table 'Revenue Bridge'
 
 	partition 'Revenue Bridge' = m
 		mode: import
+		queryGroup: 'Report helpers'
 		source =
+				// Axis for the prior-year to current-year revenue bridge.
 				let
 				    Source = #table(type table [Step = text, Sort = Int64.Type], {
 				        {"Organic growth", 1},

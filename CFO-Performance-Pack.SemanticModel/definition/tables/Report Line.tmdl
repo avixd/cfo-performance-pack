@@ -2,28 +2,33 @@
 table 'Report Line'
 	lineageTag: 4df457e1-f969-517e-a5fb-5fc81e44f79f
 
+	/// Line number; also the display order. 1-20 income statement, 101-120 balance sheet.
 	column LineKey
 		dataType: int64
 		lineageTag: cc4ba022-4a7a-5139-b269-c204e481ca99
 		summarizeBy: none
 		sourceColumn: LineKey
 
+	/// Line caption shown in statements.
 	column LineName
 		dataType: string
 		lineageTag: 7ab5b70d-3665-544e-89b6-674c67ea43c9
 		sourceColumn: LineName
 		sortByColumn: LineKey
 
+	/// Statement section the line belongs to.
 	column Section
 		dataType: string
 		lineageTag: 94a4c049-4485-506c-ad0a-fd04ec147370
 		sourceColumn: Section
 
+	/// Detail, Subtotal or Total; drives row shading.
 	column LineType
 		dataType: string
 		lineageTag: 97814ac4-c91e-58bb-bf57-b627cda3468f
 		sourceColumn: LineType
 
+	/// Income Statement or Balance Sheet.
 	column Statement
 		dataType: string
 		lineageTag: f871440b-4815-5d5d-ba40-d9fce7a9f1a3
@@ -31,7 +36,9 @@ table 'Report Line'
 
 	partition 'Report Line' = m
 		mode: import
+		queryGroup: Dimensions
 		source =
+				// Management P&L and balance-sheet template (Goodly method). Order follows LineKey.
 				let
 				    Source = #table(type table [LineKey = Int64.Type, LineName = text, Section = text, LineType = text, Statement = text], {
 				        {1, "Gross Sales", "Revenue", "Detail", "Income Statement"},

@@ -3,6 +3,7 @@ table Date
 	lineageTag: 6cde4cd2-fcbd-5f57-a1b1-dcfa89d0aaf7
 	dataCategory: Time
 
+	/// First day of the month; key of the calendar.
 	column Month
 		formatString: mmm yyyy
 		lineageTag: c8717b2f-aa94-597e-bbf4-4b5e030b578d
@@ -10,6 +11,7 @@ table Date
 		isNameInferred
 		sourceColumn: [Month]
 
+	/// Calendar year.
 	column Year
 		formatString: 0
 		lineageTag: 58ed84ee-3f8b-5f46-91b9-e6db21d8a77b
@@ -17,6 +19,7 @@ table Date
 		isNameInferred
 		sourceColumn: [Year]
 
+	/// Fiscal year as a number (the year in which it ends).
 	column 'Fiscal Year Number'
 		isHidden
 		formatString: 0
@@ -25,12 +28,14 @@ table Date
 		isNameInferred
 		sourceColumn: [Fiscal Year Number]
 
+	/// Fiscal year label, e.g. FY2027.
 	column 'Fiscal Year'
 		lineageTag: cd39fcb5-5ae4-51fb-b982-bc9ef3d21556
 		isNameInferred
 		sourceColumn: [Fiscal Year]
 		sortByColumn: 'Fiscal Year Number'
 
+	/// April = 1 ... March = 12.
 	column 'Fiscal Month Number'
 		isHidden
 		lineageTag: 73abb46e-4216-50bb-aa5c-60aea89a9ff6
@@ -38,23 +43,27 @@ table Date
 		isNameInferred
 		sourceColumn: [Fiscal Month Number]
 
+	/// Fiscal quarter, Q1 = April to June.
 	column 'Fiscal Quarter'
 		lineageTag: 81d45df6-626f-5038-9b74-b473d43824f6
 		isNameInferred
 		sourceColumn: [Fiscal Quarter]
 
+	/// Three-letter month, sorted in fiscal order.
 	column 'Month Name'
 		lineageTag: 8907944f-1811-5d76-8713-c264bb5b900f
 		isNameInferred
 		sourceColumn: [Month Name]
 		sortByColumn: 'Fiscal Month Number'
 
+	/// Month and year, e.g. Oct 2026.
 	column 'Year Month'
 		lineageTag: 4c0fe056-2e87-5e96-9501-338f983b2766
 		isNameInferred
 		sourceColumn: [Year Month]
 		sortByColumn: 'Month Index'
 
+	/// Running month number, for sorting.
 	column 'Month Index'
 		isHidden
 		lineageTag: 3905cee4-0148-539b-be78-8f2422cc16d0
@@ -62,11 +71,13 @@ table Date
 		isNameInferred
 		sourceColumn: [Month Index]
 
+	/// True for months up to the latest actuals month.
 	column IsClosed
 		lineageTag: 6cec4b95-a1bb-5c13-b638-3a42d0c21f50
 		isNameInferred
 		sourceColumn: [IsClosed]
 
+	/// Actual for closed months, Outlook for later months.
 	column 'Period Status'
 		lineageTag: 1aa8881e-44d1-551f-bb74-9a3bac09ba94
 		isNameInferred

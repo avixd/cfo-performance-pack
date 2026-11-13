@@ -2,12 +2,14 @@
 table Department
 	lineageTag: 40aaf66a-bbb5-59ff-a163-d089c33a06d7
 
+	/// Surrogate key of the department; 0 = Unassigned.
 	column DepartmentKey
 		dataType: int64
 		lineageTag: f1095fc9-fc8e-5834-b06f-e125d1066c4c
 		summarizeBy: none
 		sourceColumn: DepartmentKey
 
+	/// Parent department group.
 	column ParentDepartmentKey
 		dataType: int64
 		isHidden
@@ -15,6 +17,7 @@ table Department
 		summarizeBy: none
 		sourceColumn: ParentDepartmentKey
 
+	/// Department name.
 	column DepartmentName
 		dataType: string
 		lineageTag: ef7699e5-c3d9-5d13-bb48-ff4317a78c87
@@ -22,7 +25,9 @@ table Department
 
 	partition Department = m
 		mode: import
+		queryGroup: Dimensions
 		source =
+				// Department groups; 0 = Unassigned (blank department in source).
 				let
 				    Src = fnReadCsv("reference", "Department.csv"),
 				    Typed = Table.TransformColumnTypes(Src, {{"DepartmentKey", Int64.Type}, {"ParentDepartmentKey", Int64.Type}, {"DepartmentName", type text}}, "en-US"),

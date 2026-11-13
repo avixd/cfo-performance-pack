@@ -150,7 +150,7 @@ LINES = [
 
 def m_table(cols, rows):
     head = ', '.join(f'{n} = {t}' for n, t in cols)
-    def lit(v): return f'"{v}"' if isinstance(v, str) else str(v)
+    def lit(v): return '"' + v.replace('"', '""') + '"' if isinstance(v, str) else str(v)   # M escapes a quote by doubling it
     body = ',\n        '.join('{' + ', '.join(lit(v) for v in r) + '}' for r in rows)
     return f'let\n    Source = #table(type table [{head}], {{\n        {body}\n    }})\nin\n    Source'
 
@@ -241,6 +241,19 @@ RELATIONSHIPS = [('GL', 'Month', 'Date', 'Month'), ('GL', 'EntityKey', 'Entity',
                  ('GL', 'DepartmentKey', 'Department', 'DepartmentKey'), ('GL', 'AccountKey', 'Account', 'AccountKey')]
 
 # ---------------------------------------------------------------- measures
+# Number-format standard (one place, used by every text measure and KPI card):
+#   money      $ prefix; one decimal in millions (>= 1M), whole thousands (>= 1K), whole units below; negatives in brackets
+#   variances  explicit sign (+$0.6M / -$1.2M) or arrow (▲ $0.6M / ▼ $1.2M); colour, not sign, says favourable/unfavourable
+#   counts     #,0      percentages 0.0%      percentage points 0.0 pts      ratios 0.00x      days #,0
+MONEY_FMT = {'plain': ('"$#,0.0\\M;($#,0.0\\M)"', '"$#,0\\K;($#,0\\K)"', '"$#,0;($#,0)"'),
+             'signed': ('"+$#,0.0\\M;-$#,0.0\\M;$0.0\\M"', '"+$#,0\\K;-$#,0\\K;$0\\K"', '"+$#,0;-$#,0;$0"'),
+             'arrow': ('"▲ $#,0.0\\M;▼ $#,0.0\\M;$0.0\\M"', '"▲ $#,0\\K;▼ $#,0\\K;$0\\K"', '"▲ $#,0;▼ $#,0;$0"')}
+def money(x, style='plain'):
+    """DAX text for a currency amount, scaled to M / K / units (see the number-format standard above)."""
+    fm, fk, fu = MONEY_FMT[style]
+    return (f'( VAR _x = {x} RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, {fm} ), '
+            f'ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, {fk} ), FORMAT ( _x, {fu} ) ) ) )')
+
 F, P, PTS = '#,0;(#,0);-', '0.0%;-0.0%;-', '+0.0%;-0.0%;-'
 MEAS = []
 def add(name, expr, folder, fmt=None, desc=None): MEAS.append(dict(name=name, expr=expr, folder=folder, fmt=fmt, desc=desc))
@@ -398,7 +411,7 @@ add('DIO (days)', f'DIVIDE ( {B(103)}, -[Cost of Sales TTM] ) * 365', '4 Balance
 add('Cash Conversion Cycle (days)', '[DSO (days)] + [DIO (days)] - [DPO (days)]', '4 Balance Sheet KPIs', '0')
 
 # 6 Narrative
-M_ = lambda x: f'FORMAT ( {x} / 1e6, "#,0.0" ) & "M"'
+M_ = lambda x: money(x)
 add('Title Overview', '"Adventure Works Group · FY" & ' + FYN('[Selected Month]') + ' & " month " & [Fiscal Month Of Selection] & " of 12 (closed " & FORMAT ( [As Of Month], "mmm yyyy" ) & ") · " & [Currency Label]', '6 Narrative')
 add('Title Executive', '"Executive summary · " & [Selected Fiscal Year] & " " & [Period Label]', '6 Narrative')
 add('Headline',
@@ -472,8 +485,8 @@ def redefine(name, expr=None, fmt=None, desc=None, folder=None):
     raise KeyError(name)
 
 FK = '#,0,;(#,0,);-'          # thousands: board packs read K, not 8-digit units
-MT = lambda x: 'FORMAT ( ( ' + x + ' ) / 1e6, "+#,0.0;-#,0.0" ) & "M"'      # signed millions text
-MU = lambda x: 'FORMAT ( ( ' + x + ' ) / 1e6, "#,0.0" ) & "M"'              # unsigned millions text
+MT = lambda x: money(x, 'signed')     # variance / delta text: +$0.6M, -$1.2M
+MU = lambda x: money(x)               # value text: $36.2M, ($1.2M)
 
 # ---- new tables: theme selector, narrative text, extra insight topics
 M_THEME = m_table([('Mode', 'text'), ('Sort', 'Int64.Type')], [('Light', 1), ('Dark', 2)])
@@ -721,10 +734,10 @@ add('Footer Note 2', '"2  Described in the model: every measure has a descriptio
 
 # KPI value text (left-aligned cards need text), sparklines and full-year progress
 def kv_expr(name):
+    """KPI card value as text, formatted by the measure's own format string (money, percentage, ratio or count)."""
     fmt = next(m.get('fmt') for m in MEAS if m['name'] == name)
     if fmt == F:
-        return (f'VAR v = [{name}] RETURN IF ( NOT ISBLANK ( v ), IF ( ABS ( v ) >= 1e6, FORMAT ( v / 1e6, "#,0.0;(#,0.0)" ) & "M", '
-                f'FORMAT ( v / 1e3, "#,0.0;(#,0.0)" ) & "K" ) )')
+        return money(f'[{name}]')
     if fmt in (P, '0%'):
         return f'FORMAT ( [{name}], "0.0%" )'
     if fmt == '0.00':
@@ -800,3 +813,433 @@ for n in ('Revenue', 'EBITDA', 'Net Income', 'Metric'):
     svg_bar(f'SVG Bar {n}', f'[{n} FY Progress]')
 svg_bar('SVG Bar Net Income Outlook', '[Net Income Outlook Progress]')
 svg_bar('SVG Bar Metric Outlook', '[Metric Outlook Progress]')
+
+
+# ======================================================================== v4: formatting standard, CFO additions
+import re as _re
+
+# ---- 4.1 every remaining inline "x / 1e6 ... M" text now goes through money(), so all text follows one standard
+_INLINE_M = _re.compile(r'FORMAT \( (\( \[[^\]]+\] - \[[^\]]+\] \)|\[[^\]]+\]|[A-Za-z_]\w*) / 1e6, "(\+#,0\.0;-#,0\.0|▲ \+#,0\.0;▼ -#,0\.0)" \) & "M')
+for _m in MEAS:
+    _m['expr'] = _INLINE_M.sub(lambda g: money(g.group(1), 'arrow' if g.group(2).startswith('▲') else 'signed') + ' & "', _m['expr'])
+assert not any('/ 1e6' in _m['expr'] and 'money' not in _m['name'].lower() and '_x / 1e6' not in _m['expr'] for _m in MEAS if _m['name'] != 'Revenue (M)'), 'inline millions left'
+
+# percentages that are not meaningful (tiny base) show blank instead of four-digit noise
+redefine('Line Var % vs Budget', 'VAR p = IF ( [Line Actual] * [Line Budget] > 0, DIVIDE ( [Line Actual] - [Line Budget], ABS ( [Line Budget] ) ) ) RETURN IF ( ABS ( p ) < 10, p )',
+         desc='Budget variance %. Blank (n.m.) when actual and budget have different signs or the variance exceeds 1,000% (base too small to be meaningful).')
+redefine('Line Growth %', 'VAR p = IF ( [Line Actual] * [Line Prior Year] > 0, DIVIDE ( [Line Actual] - [Line Prior Year], ABS ( [Line Prior Year] ) ) ) RETURN IF ( ABS ( p ) < 10, p )',
+         desc='Growth vs the same period last year. Blank (n.m.) when the signs differ or the change exceeds 1,000%.')
+
+# ---- 4.2 conditional formatting: one rule everywhere. Green = favourable to the business, red = unfavourable, amber = caution,
+#      neutral text = information only. Arrows show direction; colour shows whether that direction is good.
+def tone(name, expr_good, desc):
+    """Colour measure: [Col Good] when expr_good is true, [Col Bad] when false, neutral when blank."""
+    add(name, f'VAR g = {expr_good} RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )', '8 Formatting', None, desc)
+redefine('Balance Change Color', '[Col Text]',
+         desc='Balance-sheet movements are shown neutral: a rise in receivables or debt is not good or bad by itself. The cash bridge colours them by cash effect instead.')
+tone('Metric Growth Color', 'IF ( NOT ISBLANK ( [Metric Growth %] ), [Metric Actual] >= [Metric PY] )', 'Green when the selected metric is at or above the same period last year.')
+tone('Revenue Growth Color', 'IF ( NOT ISBLANK ( [Revenue Growth %] ), [Revenue Growth %] >= 0 )', 'Green when revenue grew versus the same period last year.')
+add('EBITDA Margin Text', 'FORMAT ( [EBITDA Margin pts vs Budget] * 100, "▲ 0.0;▼ 0.0;0.0" ) & " pts vs budget"', '3 KPIs\\Margins', None, 'EBITDA margin versus budget margin, in percentage points.')
+tone('EBITDA Margin Var Color', 'IF ( NOT ISBLANK ( [EBITDA Margin pts vs Budget] ), [EBITDA Margin pts vs Budget] >= 0 )', 'Green when EBITDA margin is at or above the budget margin.')
+add('OpEx % of Revenue Budget', 'DIVIDE ( -[Operating Expenses Budget], [Revenue Budget] )', '3 KPIs\\Margins', P, 'Budgeted operating expenses as a share of budgeted revenue.')
+add('OpEx Ratio Text', 'FORMAT ( ( [OpEx % of Revenue] - [OpEx % of Revenue Budget] ) * 100, "▲ 0.0;▼ 0.0;0.0" ) & " pts vs budget"', '3 KPIs\\Margins', None,
+    'Operating-expense ratio versus the budget ratio, in percentage points (a rise is unfavourable).')
+tone('OpEx Ratio Var Color', 'IF ( NOT ISBLANK ( [OpEx % of Revenue Budget] ), [OpEx % of Revenue] <= [OpEx % of Revenue Budget] )', 'Green when operating expenses take a smaller share of revenue than budgeted.')
+add('Salary per Head Text', 'VAR g = DIVIDE ( [Salary Cost per Head], [Salary Cost per Head PY] ) - 1 RETURN IF ( NOT ISBLANK ( [Salary Cost per Head PY] ), FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs PY · headcount " & FORMAT ( [Headcount], "#,0" ) )',
+    '3 KPIs\\People', None, 'Change in salary cost per head versus last year, with closing headcount.')
+tone('Salary per Head Color', 'IF ( NOT ISBLANK ( [Salary Cost per Head PY] ), [Salary Cost per Head] <= [Salary Cost per Head PY] )', 'Green when salary cost per head is at or below last year.')
+
+# ---- 4.3 balance-sheet KPIs compared with the last year end (the balance-sheet comparative used on the page)
+BY = lambda key: LINE(key, '[Prior Year-End Balance]')
+_YE = f'DATE ( {FYS} - 1, 3, 1 )'
+BSF = '4 Balance Sheet KPIs\\Year-end comparatives'
+add('Year-End Label', f'FORMAT ( {_YE}, "mmm yyyy" )', BSF, None, 'Month of the previous fiscal year end (March), used as the balance-sheet comparative.')
+for _n, _k in (('Revenue', 3), ('Cost of Sales', 4)):
+    add(f'{_n} TTM (year end)', f"VAR ye = {_YE}\nRETURN CALCULATE ( {LINE(_k, '[Actual]')}, REMOVEFILTERS ( 'Date' ), 'Date'[Month] > EDATE ( ye, -12 ) && 'Date'[Month] <= ye )", BSF, F,
+        f'{_n} for the twelve months ending at the previous fiscal year end; denominator for the year-end working-capital days.')
+add('DSO (year end)', f'DIVIDE ( {BY(102)}, [Revenue TTM (year end)] ) * 365', BSF, '0', 'Receivable days at the previous fiscal year end.')
+add('DIO (year end)', f'DIVIDE ( {BY(103)}, -[Cost of Sales TTM (year end)] ) * 365', BSF, '0', 'Inventory days at the previous fiscal year end.')
+add('DPO (year end)', f'DIVIDE ( {BY(109)}, -[Cost of Sales TTM (year end)] ) * 365', BSF, '0', 'Payable days at the previous fiscal year end.')
+add('Cash Conversion Cycle (year end)', '[DSO (year end)] + [DIO (year end)] - [DPO (year end)]', BSF, '0', 'Cash conversion cycle at the previous fiscal year end.')
+add('Current Ratio (year end)', f'DIVIDE ( {BY(105)}, {BY(113)} )', BSF, '0.00', 'Current assets / current liabilities at the previous fiscal year end.')
+add('Debt to Equity (year end)', f'DIVIDE ( {BY(111)} + {BY(114)}, {BY(119)} )', BSF, '0.00', 'Short- and long-term debt / total equity at the previous fiscal year end.')
+def bs_delta(short, cur, base, fmt, unit, good_when_down, neutral=False):
+    add(f'{short} Change Text', f'VAR d = [{cur}] - [{base}] RETURN IF ( NOT ISBLANK ( [{base}] ), FORMAT ( d, "▲ {fmt};▼ {fmt};{fmt}" ) & "{unit} vs " & [Year-End Label] )', BSF, None,
+        f'Change in {cur} since the previous fiscal year end.')
+    if neutral:
+        add(f'{short} Change Color', '[Col Muted]', '8 Formatting', None, 'Neutral: longer payment terms help cash but can strain suppliers, so no good/bad colour is applied.')
+    else:
+        op = '<=' if good_when_down else '>='
+        tone(f'{short} Change Color', f'IF ( NOT ISBLANK ( [{base}] ), [{cur}] {op} [{base}] )', f'Green when {cur} moved in the favourable direction since the year end.')
+bs_delta('DSO', 'DSO (days)', 'DSO (year end)', '#,0', ' days', True)
+bs_delta('DIO', 'DIO (days)', 'DIO (year end)', '#,0', ' days', True)
+bs_delta('DPO', 'DPO (days)', 'DPO (year end)', '#,0', ' days', True, neutral=True)
+bs_delta('CCC', 'Cash Conversion Cycle (days)', 'Cash Conversion Cycle (year end)', '#,0', ' days', True)
+bs_delta('Current Ratio', 'Current Ratio', 'Current Ratio (year end)', '0.00', 'x', False)
+bs_delta('Debt to Equity', 'Debt to Equity', 'Debt to Equity (year end)', '0.00', 'x', True)
+redefine('Cash Change Text', 'VAR c = [Cash] - ' + CASH_PYE + ' RETURN ' + money('c', 'arrow') + ' & " vs " & [Year-End Label]')
+
+# pass / fail text for integrity checks (data-quality tiles and the balance check)
+def check(name, measure, ok_text, fail_text):
+    add(f'{name} Check Text', f'IF ( [{measure}] = 0, "✓ {ok_text}", "✗ {fail_text}" )', '9 Data Quality', None, f'Pass/fail label for [{measure}]: it must be 0.')
+    tone(f'{name} Check Color', f'[{measure}] = 0', f'Green when [{measure}] is 0 (check passed).')
+check('Balance', 'DQ Balance Sheet Difference', 'assets = liabilities + equity', 'out of balance')
+check('FX', 'DQ Rows Missing FX Rate', 'every row has a rate', 'rows without a rate')
+check('Chart', 'DQ Accounts Missing From Chart', 'all accounts known', 'unknown accounts')
+add('DQ Detected Text', '"✓ detected and treated in Power Query"', '9 Data Quality', None, 'Static label under the injected-issue counts.')
+
+# ---- 4.4 cash bridge: why cash moved since the year end, from the balance-sheet identity (always ties to the cash change)
+M_CASH_BRIDGE = m_table([('Step', 'text'), ('Sort', 'Int64.Type')],
+                        [('Receivables', 1), ('Inventory', 2), ('Other assets', 3), ('Payables', 4), ('Other liabilities', 5), ('Debt', 6), ('Equity', 7)])
+TABLES.insert(len(TABLES) - 1, dict(name='Cash Bridge', desc='Axis for the cash bridge on the Balance Sheet page: one step per balance-sheet group.', m=M_CASH_BRIDGE,
+                                    cols=[('Step', 'string', {'sortBy': 'Sort'}), ('Sort', 'int64', {'hidden': 1})]))
+_chg = lambda keys: ' + '.join(f'( {LINE(k, "[Closing Balance]")} - {LINE(k, "[Prior Year-End Balance]")} )' for k in keys)
+add('Cash Bridge Value', f'''SWITCH ( SELECTEDVALUE ( 'Cash Bridge'[Step] ),
+    -- assets: an increase ties up cash, so the sign is reversed
+    "Receivables", - ( {_chg([102])} ),
+    "Inventory", - ( {_chg([103])} ),
+    "Other assets", - ( {_chg([104, 106, 107])} ),
+    -- liabilities and equity: an increase is a source of cash
+    "Payables", {_chg([109])},
+    "Other liabilities", {_chg([110, 112, 115])},
+    "Debt", {_chg([111, 114])},
+    "Equity", {_chg([117, 118])} )''', '4 Balance Sheet KPIs', F,
+    'Cash effect of each balance-sheet group since the previous fiscal year end. Because assets = liabilities + equity, the steps add up exactly to the change in cash. Equity includes profit, distributions and the unreconciled retained-earnings movement in the source data.')
+add('VT Cash Bridge', '"What moved cash since " & [Year-End Label] & ": " & ' + money('[Cash] - ' + CASH_PYE, 'signed') + ' & " · green = source, red = use"', VT)
+add('Sub Cash Bridge', '''VAR t = ADDCOLUMNS ( VALUES ( 'Cash Bridge'[Step] ), "@v", [Cash Bridge Value] )
+VAR topUse = TOPN ( 1, t, [@v], ASC ) VAR topSrc = TOPN ( 1, t, [@v], DESC )
+RETURN "Largest use: " & MAXX ( topUse, 'Cash Bridge'[Step] ) & " (" & ''' + money('MAXX ( topUse, [@v] )', 'signed') + ''' & "); largest source: " & MAXX ( topSrc, 'Cash Bridge'[Step] ) & " (" & ''' + money('MAXX ( topSrc, [@v] )', 'signed') + ''' & "). Balance-sheet method, so it ties to the cash change."''', SB)
+
+# ---- 4.5 currency effect: how much of the result is translation (actual rates) rather than trading (budget rates)
+for _t in TABLES:
+    if _t['name'] == 'GL':
+        _t['cols'] += [
+            ('Amount CAD (budget rate)', 'double', {'hidden': 1, 'fmt': '#,0', 'desc': 'Local-currency amount translated to CAD at the budget rate (prior fiscal-year average) instead of the actual rate: the constant-currency view of P&L rows.',
+                'expr': 'VAR k = RELATED ( Entity[CurrencyCode] ) & "|" & FORMAT ( GL[Month], "yyyy-MM" )\nRETURN GL[AmountLC] * LOOKUPVALUE ( FX[BudgetRate], FX[FXKey], k ) * RELATED ( Account[Sign] )'}),
+            ('Amount USD (budget rate)', 'double', {'hidden': 1, 'fmt': '#,0', 'desc': 'Constant-currency amount expressed in USD, using the budget USD/CAD rate.',
+                'expr': 'VAR k = "USD|" & FORMAT ( GL[Month], "yyyy-MM" )\nRETURN DIVIDE ( GL[Amount CAD (budget rate)], LOOKUPVALUE ( FX[BudgetRate], FX[FXKey], k ) )'})]
+FXF = '3 KPIs\\Currency effect'
+add('Actual at Budget Rate', 'CALCULATE ( IF ( SELECTEDVALUE ( \'Reporting Currency\'[Currency], "CAD" ) = "USD", SUM ( GL[Amount USD (budget rate)] ), SUM ( GL[Amount CAD (budget rate)] ) ), GL[Scenario] = "Actual" )',
+    FXF, F, 'Actuals translated at the budget exchange rate (constant currency). P&L only.')
+add('Actual at Budget Rate (Period)', f'''VAR m = [Selected Month]
+VAR winStart = SWITCH ( SELECTEDVALUE ( 'Period View'[View], "YTD" ),
+    "MTD", m,
+    "QTD", DATE ( YEAR ( m ), INT ( ( MONTH ( m ) - 1 ) / 3 ) * 3 + 1, 1 ),
+    DATE ( {FYN('m')} - 1, 4, 1 ) )
+RETURN CALCULATE ( [Actual at Budget Rate], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= winStart && 'Date'[Month] <= m )''', FXF, F,
+    'Constant-currency actuals for the period chosen in the Period slicer (MTD, QTD or YTD).')
+for _n in ('Revenue', 'EBITDA'):
+    add(f'{_n} at Budget Rate', LINE(KPI[_n], '[Actual at Budget Rate (Period)]'), FXF, F, f'{_n} for the period, translated at budget exchange rates.')
+    add(f'{_n} FX Effect', f'[{_n}] - [{_n} at Budget Rate]', FXF, F, f'Part of {_n.lower()} that comes from exchange rates differing from the budget rate (translation effect). Positive = currencies moved in the group\'s favour.')
+    add(f'{_n} Var vs Budget (constant currency)', f'[{_n} at Budget Rate] - [{_n} Budget]', FXF, F, f'{_n} variance to budget with the currency effect removed: the trading variance.')
+add('Revenue Var % vs Budget (constant currency)', 'DIVIDE ( [Revenue Var vs Budget (constant currency)], ABS ( [Revenue Budget] ) )', FXF, P, 'Revenue variance % to budget at constant currency.')
+add('Insight Currency', '''VAR fr = [Revenue FX Effect] VAR fe = [EBITDA FX Effect] VAR rv = [Revenue Var vs Budget]
+RETURN IF ( ISBLANK ( fr ), "No foreign-currency activity in this selection.",
+    "Exchange rates versus budget rates " & IF ( fr >= 0, "added ", "removed " ) & ''' + money('ABS ( fr )') + ''' & " of revenue (" & FORMAT ( DIVIDE ( fr, rv ), "0%" ) & " of the variance) and "
+        & IF ( fe >= 0, "added ", "removed " ) & ''' + money('ABS ( fe )') + ''' & " of EBITDA. At constant currency revenue is " & FORMAT ( [Revenue Var % vs Budget (constant currency)], "+0.0%;-0.0%" ) & " vs budget." )''',
+    '6 Narrative', None, 'Narrative: how much of the revenue and EBITDA result is exchange-rate translation rather than trading.')
+for _t in TABLES:
+    if _t['name'] == 'Insight':
+        _t['m'] = m_table([('Key', 'Int64.Type'), ('Topic', 'text')],
+                          [(1, 'Growth quality'), (2, 'Cost absorption'), (3, 'Full-year outlook'), (4, 'People cost'), (5, 'Currency effect')])
+redefine('Insight Text', "SWITCH ( SELECTEDVALUE ( Insight[Key] ), 1, [Insight Perimeter], 2, [Insight Cost Absorption], 3, [Insight Outlook], 4, [Insight People Cost], 5, [Insight Currency] )")
+
+# ---- 4.6 KPI card values for every tile in the report (same text formatting on every page)
+for _n in ['EBITDA Margin %', 'OpEx % of Revenue', 'Salary Cost per Head', 'Current Ratio', 'Debt to Equity', 'Cash Conversion Cycle (days)', 'DSO (days)', 'DIO (days)',
+           'DPO (days)', 'DQ Files Loaded', 'DQ Duplicates Removed', 'DQ Blank Departments Fixed', 'DQ Files With Schema Drift', 'DQ Balance Sheet Difference',
+           'DQ Rows Missing FX Rate', 'DQ Accounts Missing From Chart', 'DQ Synthetic Budget Share']:
+    add(f'KV {_n}', kv_expr(_n), '11 KPI Cards')
+redefine('Metric Budget FY Text', '"FY budget " & ' + money('[Metric Budget FY]'))
+
+# ---- 4.7 notes page: assumptions, policies and definitions a reader needs before quoting a number
+NOTES = [
+    ('Notes', 1, 'Fiscal calendar', 'Fiscal year runs 1 April to 31 March and is named by the year it ends (FY2027 = Apr 2026 to Mar 2027). YTD, QTD and MTD are fiscal.'),
+    ('Notes', 2, 'Close and as-of month', 'The reporting month is the latest month with an actuals file ("books closed"). Selecting a later month falls back to the close.'),
+    ('Notes', 3, 'Sign convention', 'Revenue is positive and costs are negative, so subtotals add up. Every variance is actual minus budget: positive is favourable, on revenue and on cost lines.'),
+    ('Notes', 4, 'Colour', 'Green = favourable, red = unfavourable, amber = caution (budget not credible), blue = actual, light blue = outlook, grey = budget or prior year. Arrows show direction only.'),
+    ('Notes', 5, 'Number format', 'Text and cards: $ with millions to one decimal, thousands whole. Tables: thousands, negatives in brackets. Percentages to one decimal. "n.m." or blank = not meaningful.'),
+    ('Notes', 6, 'Currency', 'Bank of Canada rates, CAD per unit. P&L at monthly average, balance sheet at month end, budget at the prior fiscal-year average. USD view translates the CAD result at the USD rate.'),
+    ('Notes', 7, 'Currency effect', 'Constant currency = actuals translated at budget rates. The difference to reported actuals is translation, not trading. Rates after the last published month are carried forward.'),
+    ('Notes', 8, 'Budget', 'FY2026 to FY2028 budgets are synthetic (prior-year actual x growth x seeded noise). Entities that joined after the budget was set have no budget and are flagged.'),
+    ('Notes', 9, 'Budget credibility', 'Not budgeted = no budget for the period. Under-budgeted = actual revenue above 2x budget. Their favourable variance is a planning gap, not outperformance.'),
+    ('Notes', 10, 'Outlook', 'Full-year outlook = actuals to the close + budget for the remaining months. The run-rate figure instead assumes the remaining months beat budget by the year-to-date ratio.'),
+    ('Notes', 11, 'Organic growth', 'Like-for-like revenue counts only entities that also traded in the same period last year. New-entity revenue is the rest.'),
+    ('Notes', 12, 'Ownership', 'Entities are consolidated at 100%. Effective ownership (multiplied down the hierarchy) splits net income between the group and non-controlling interests.'),
+    ('Notes', 13, 'Cash bridge', 'Balance-sheet method: each step is the change in a balance since the year end, signed by cash effect, so the steps tie to the cash change. It is not a statutory cash-flow statement.'),
+    ('Notes', 14, 'Known gaps', 'Retained earnings do not roll forward from net income in the source data; intercompany balances are not eliminated; revenue and cost of sales post to one department.'),
+    ('Notes', 15, 'Data', 'Fictional company built on Microsoft AdventureWorksDW (MIT licence), re-dated. Source issues are injected on purpose and reconciled on the Data Quality page.'),
+    ('Defs', 1, 'Net revenue', 'Gross sales less returns and discounts.'),
+    ('Defs', 2, 'Gross margin', 'Gross profit (net revenue less cost of sales) / net revenue.'),
+    ('Defs', 3, 'EBITDA', 'Gross profit less operating expenses, before depreciation, amortization, interest, other items and tax.'),
+    ('Defs', 4, 'Variance %', 'Variance / absolute budget. Shown only when actual and budget share a sign and the result is below 1,000%.'),
+    ('Defs', 5, 'Pacing bar', 'Year-to-date actual as a share of the full-year budget. The tick marks the share of the year elapsed: a bar beyond the tick is ahead of a straight-line year.'),
+    ('Defs', 6, 'Receivable days (DSO)', 'Receivables / trailing-twelve-month revenue x 365.'),
+    ('Defs', 7, 'Inventory days (DIO)', 'Inventory / trailing-twelve-month cost of sales x 365.'),
+    ('Defs', 8, 'Payable days (DPO)', 'Payables / trailing-twelve-month cost of sales x 365.'),
+    ('Defs', 9, 'Cash cycle', 'Receivable days + inventory days - payable days.'),
+    ('Defs', 10, 'Current ratio', 'Current assets / current liabilities.'),
+    ('Defs', 11, 'Debt to equity', 'Short-term + long-term debt / total equity.'),
+    ('Defs', 12, 'Salary cost per head', 'Salaries and benefits for the period / closing headcount (statistical account).'),
+    ('Defs', 13, 'Trade working capital', 'Receivables + inventory - payables.'),
+]
+STORY_ROWS += NOTES
+for _t in TABLES:
+    if _t['name'] == 'Story':
+        _t['m'] = m_table([('Page', 'text'), ('Sort', 'Int64.Type'), ('Section', 'text'), ('Text', 'text')], STORY_ROWS)
+add('PT Notes', '"Notes & Assumptions · read before quoting a number"', PH)
+add('PS Notes', '"Policies, assumptions and definitions behind every page · books closed " & FORMAT ( [As Of Month], "mmm yyyy" ) & " · " & [Currency Label]', PH)
+add('VT Notes', '"Assumptions and policies"', VT)
+add('Sub Notes', '"What the numbers assume. Each item applies to every page unless stated."', SB)
+add('VT Defs', '"Definitions"', VT)
+add('Sub Defs', '"One definition per metric, identical in every visual. Full DAX: docs/01-semantic-model.md."', SB)
+add('Footer Notes', FOOT + ' & " · Notes apply to all pages"', '10 Layout')
+redefine('Footer Note 1', '"1  One definition per metric: hover a KPI label for its definition; assumptions and policies are on the Notes page."')
+
+# net income belonging to the group vs minority partners (three entities are partly owned)
+add('KV Net Income Attributable to Group', kv_expr('Net Income Attributable to Group'), '11 KPI Cards')
+add('NCI Text', '"Minority partners (NCI) " & ' + money('[Net Income Attributable to NCI]') + ' & " · " & FORMAT ( DIVIDE ( [Net Income Attributable to NCI], [Net Income] ), "0%" ) & " of net income"',
+    '3 KPIs\\Ownership', None, 'Net income belonging to non-controlling interests, as an amount and a share of total net income.')
+
+
+# ======================================================================== v5: documentation pass (TOM descriptions, DAX and M comments, query groups, diagram)
+# ---- 5.1 remove presentation leftovers that no visual or measure uses (analytical KPI measures are kept as reusable building blocks)
+DROP = [r' Spark$', r' Progress Bar$', r'^Title (Overview|Executive|Income Statement|Balance Sheet|Overview Revenue|DQ)$', r'^Lbl Current View$',
+        r'^Col (Selected|Selected Text|Side)$', r'^DQ Detected Text$', r'^(Cost of Sales|EBIT|Gross Profit|Operating Expenses) vs Budget Text$',
+        r'^(Cost of Sales|EBIT|Gross Profit) Var Color$', r'^(Revenue|Cost of Sales|Gross Profit|Operating Expenses|EBITDA|EBIT|Net Income) Monthly Actual$']
+MEAS[:] = [m for m in MEAS if not (any(_re.search(p, m['name']) for p in DROP) and not m['name'].startswith('SVG '))]
+
+# ---- 5.2 a description for every measure. Families share one sentence pattern; everything else is written out.
+_KPI_DEF = {'Revenue': 'Net revenue (gross sales less returns and discounts)', 'Cost of Sales': 'Cost of sales (negative)', 'Gross Profit': 'Gross profit (net revenue less cost of sales)',
+            'Operating Expenses': 'Total operating expenses (negative)', 'EBITDA': 'EBITDA (gross profit less operating expenses)', 'EBIT': 'Operating profit (EBITDA less depreciation and amortization)',
+            'Net Income': 'Net income after interest, other items and tax'}
+_PERIOD = 'for the period chosen in the Period slicer (MTD, QTD or YTD) ending at the selected month'
+_WINDOW = {'MTD': 'the selected month only', 'QTD': 'the calendar quarter to the selected month', 'YTD': 'the fiscal year (from 1 April) to the selected month'}
+_PAGE = {'Overview': 'Overview', 'Executive': 'Executive', 'BvA': 'Budget vs Actual', 'IS': 'P&L', 'BS': 'Balance Sheet', 'DQ': 'Data Quality', 'Notes': 'Notes'}
+_MANUAL = {
+    'Currency Label': 'Reporting currency code chosen in the Currency slicer (CAD when nothing is selected).',
+    'Selected Fiscal Year': 'Fiscal-year label of the selected month, e.g. FY2027.',
+    'Fiscal Month Of Selection': 'Fiscal month number of the selected month (April = 1, March = 12).',
+    'Period Label': 'Text such as "YTD Oct 2026 · CAD" used in titles.',
+    'Actual': 'Amount for the Actual scenario. Base of every actual measure.',
+    'Budget': 'Amount for the Budget scenario. Base of every budget measure.',
+    'Actual (Period)': f'Actual {_PERIOD}.', 'Budget (Period)': f'Budget {_PERIOD}.', 'Prior Year (Period)': f'Actual for the same period one year earlier ({_PERIOD}).',
+    'Monthly Budget (Selected FY)': 'Month-axis charts: budget for each fiscal month of the selected year.',
+    'Monthly Prior Year (Selected FY)': 'Month-axis charts: actual for the same fiscal month one year earlier.',
+    'Cumulative Actual (Selected FY)': 'Month-axis charts: actual accumulated from 1 April to each month, up to the selected month.',
+    'Cumulative Budget (Selected FY)': 'Month-axis charts: budget accumulated from 1 April to each month.',
+    'Line Budget': 'Budget for the report line on the row, for the Period view.', 'Line Prior Year': 'Same period last year for the report line on the row.',
+    'Line Var vs Prior Year': 'Line actual minus the same period last year.', 'Line % of Revenue': 'Report line as a share of net revenue (common-size P&L).',
+    'Line Outlook FY': 'Full-year outlook (actual to date + remaining budget) for the report line.', 'Line Budget FY': 'Full fiscal-year budget for the report line.',
+    'Line Closing Balance': 'Balance at the selected month end for the balance-sheet line on the row.',
+    'Line Prior Year-End Balance': 'Balance at the previous fiscal year end (31 March) for the balance-sheet line.',
+    'Line Balance Change': 'Closing balance minus the previous year-end balance.',
+    'Line Var Color': 'Text colour for line variances: green when favourable (variance >= 0), red when unfavourable.',
+    'Line Row Background': 'Row shading for statement tables: subtotal and total rows are tinted, detail rows use the panel colour.',
+    'Line Growth Color': 'Text colour for growth vs prior year on statement lines: green when favourable.',
+    'Metric Var Color': 'Green when the selected metric is favourable to budget, red when unfavourable.',
+    'Metric Gap Color': 'Green when the full-year outlook for the selected metric is at or above the full-year budget.',
+    'Gross Margin Var Color': 'Green when gross margin is at or above the budget margin.',
+    'Net Income Outlook Gap Color': 'Green when the full-year net income outlook is at or above the full-year budget.',
+    'Cash Change Color': 'Green when cash is at or above the previous year-end balance, red when it fell.',
+    'Exception Color': 'Text colour in the top-5 exception table: green favourable, red unfavourable.',
+    'Entity Budget Status Color': 'Red for entities with no budget, amber for under-budgeted entities, neutral otherwise.',
+    'OpEx % of Revenue': 'Operating expenses as a share of net revenue (shown positive).',
+    'Gross Margin Text': 'Gross margin versus budget margin, in percentage points.',
+    'Organic Growth %': 'Growth of like-for-like revenue versus the same period last year (entities that traded in both periods).',
+    'Revenue Var vs Budget (Budgeted Entities)': 'Revenue variance to budget counting only entities that have a budget for the period.',
+    'Revenue Var % vs Budget (Budgeted Entities)': 'Revenue variance % to budget counting only entities that have a budget.',
+    'Entities Reporting': 'Number of entities with actuals in the selected month.',
+    'Revenue TTM': 'Net revenue for the twelve months ending at the selected month (denominator for receivable days).',
+    'Entity Joined FY': 'Fiscal year in which the entity first reported actuals.',
+    'Revenue Var Core': 'Revenue variance to budget for the core region only.', 'Revenue Var % Core': 'Revenue variance % to budget for the core region only.',
+    'EBITDA Var Core': 'EBITDA variance to budget for the core region only.', 'EBITDA Var % Core': 'EBITDA variance % to budget for the core region only.',
+    'Net Income Attributable to Group': 'Net income multiplied by the group\'s effective ownership of each entity: the share belonging to the parent.',
+    'Metric Name': 'Name of the P&L measure picked in the Metric slicer (Revenue when nothing is selected).',
+    'Metric Outlook Gap': 'Full-year outlook minus full-year budget for the selected metric.',
+    'Metric Actual (in context)': 'Selected metric, actual, for whatever dates are in filter context (used inside iterators over months).',
+    'Metric Budget (in context)': 'Selected metric, budget, for whatever dates are in filter context.',
+    'Cash': 'Cash and cash equivalents at the selected month end.', 'Total Assets': 'Total assets at the selected month end.', 'Total Equity': 'Total equity at the selected month end.',
+    'Current Ratio': 'Current assets / current liabilities at the selected month end.', 'Debt to Equity': 'Short- and long-term debt / total equity at the selected month end.',
+    'Cost of Sales TTM': 'Cost of sales for the twelve months ending at the selected month (denominator for inventory and payable days).',
+    'Cash Conversion Cycle (days)': 'Receivable days + inventory days - payable days: days of trading the group must finance.',
+    'Insight Perimeter': 'Narrative: revenue from new entities, revenue without a budget, and the variance excluding unbudgeted entities.',
+    'Insight Cost Absorption': 'Narrative: how much of the gross-profit upside the operating-expense overrun absorbed.',
+    'Insight Outlook': 'Narrative: full-year net income outlook versus budget.',
+    'Insight People Cost': 'Narrative: salaries versus budget, share of the opex overrun, headcount and cost per head versus last year.',
+    'Title BvA': 'Subtitle of the Budget vs Actual page: selected metric, amount and variance % to budget.',
+    'Title BvA Trend': 'Title of the monthly actual / outlook / budget chart.', 'Title BvA Outlook': 'Title of the cumulative chart: full-year outlook versus budget.',
+    'Title Variance by Entity': 'Title of the variance-by-entity bar chart.', 'Title Revenue Bridge': 'Title of the revenue growth bridge: total and organic growth.',
+    'Title EBITDA Bridge': 'Title of the EBITDA variance bridge.',
+    'Metric Var Text': 'Card text: variance of the selected metric to budget, amount and %.', 'Metric Gap Text': 'Card text: full-year outlook minus full-year budget.',
+    'Metric Growth Text': 'Card text: growth of the selected metric versus last year.', 'Metric Budget FY Text': 'Card text: full-year budget for the selected metric.',
+    'Net Income Outlook Gap Text': 'Card text: full-year net income outlook minus budget.', 'Cash Change Text': 'Card text: change in cash since the previous fiscal year end.',
+    'DQ Unmapped Accounts With Activity': 'Accounts with postings that no report line includes (excluding statistical accounts). Must be 0.',
+    'DQ Accounts Missing From Chart': 'Account keys in the ledger that are not in the chart of accounts. Must be 0.',
+    'DQ Rows Missing FX Rate': 'Ledger rows for which no exchange rate was found. Must be 0.',
+    'DQ Duplicates Removed': 'Exact duplicate rows found in source files and removed by Power Query.',
+    'DQ Blank Departments Fixed': 'Rows with a blank department in the source, mapped to department 0 "Unassigned".',
+    'DQ Files With Schema Drift': 'Source files whose columns were reordered or extended; columns are matched by name.',
+    'DQ Files Loaded': 'Number of ledger files (actuals and budget) currently loaded.',
+    'DQ Synthetic Budget Share': 'Share of budget rows generated synthetically rather than taken from the source ledger.',
+    'Brand': 'Report name shown at the top of the sidebar.', 'Brand Sub': 'Company name shown under the report name.', 'Tagline': 'Tagline at the bottom of the sidebar.',
+    'Lbl Filters': 'Heading above the slicers in the sidebar.', 'Last Refreshed': 'Refresh time (UTC) and the close month, shown top right on every page.',
+    'Footer Note 1': 'Numbered footer note 1 (same on every page).', 'Footer Note 2': 'Numbered footer note 2 (same on every page).',
+    'Ctx Period': 'Fiscal year, period view and month currently in effect.', 'Ctx Currency': 'Reporting currency currently in effect.',
+    'Ctx Region': 'Regions selected: "All regions", the names (up to two) or a count.', 'Ctx Entity': 'Entities selected: all, the names (up to two) or a count.',
+    'Ctx Department': 'Departments selected: all, the names (up to two) or a count.',
+    'Exception Var': 'Budget variance for rows ranked in the top 5 exceptions; blank otherwise, which keeps the table to five rows.',
+    'Exception Var %': 'Budget variance % for the top-5 exception rows.', 'Exception Actual': 'Actual for the top-5 exception rows.',
+    'Exception Rank Shown': 'Rank 1 to 5 for the exception rows; blank for everything else.',
+    'Headcount PY': 'Closing headcount twelve months before the selected month.', 'Salaries Var vs Budget': 'Salaries and benefits: actual minus budget (negative = over budget).',
+    'Salary Cost per Head PY': 'Salary cost per head for the same period last year.',
+    'Net Income Outlook Progress': 'Full-year net income outlook as a share of the full-year budget.', 'Metric FY Progress': 'Selected metric year to date as a share of its full-year budget.',
+    'Metric Outlook Progress': 'Full-year outlook of the selected metric as a share of its full-year budget.',
+    'Gross Margin Progress Text': 'Card text: budget and prior-year gross margin for reference.', 'Cash Progress Text': 'Card text: previous year-end cash and receivable days.',
+    'Entity Budget Status Summary': 'Card text listing entities without a budget.', 'Sub Entities Short': 'Card text: number of entities without a credible budget.',
+    'Revenue Growth Short': 'Card text: total revenue growth versus last year.',
+    'Net Income Outlook Progress Text': 'Card text: full-year net income outlook as a share of the full-year budget.',
+}
+def describe(m):
+    n = m['name']
+    if n in _MANUAL: return _MANUAL[n]
+    g = _re.match(r'^(Actual|Budget|Prior Year) (MTD|QTD|YTD)$', n)
+    if g:
+        what = {'Actual': 'Actual', 'Budget': 'Budget', 'Prior Year': 'Actual one year earlier'}[g.group(1)]
+        return f'{what} for {_WINDOW[g.group(2)]}. Ignores the date slicer except to find the selected month.'
+    for k, d in _KPI_DEF.items():
+        if n == k: return f'{d} {_PERIOD}.'
+        if n == f'{k} Budget': return f'Budget for {k.lower()}, {_PERIOD}.'
+        if n == f'{k} PY': return f'{k} for the same period one year earlier.'
+        if n == f'{k} Var vs Budget': return f'{k}: actual minus budget. Positive = favourable (costs are stored negative).'
+        if n == f'{k} Var % vs Budget': return f'{k} variance as % of absolute budget. Blank when actual and budget have different signs.'
+        if n == f'{k} Growth %': return f'{k} growth versus the same period last year. Blank when the signs differ.'
+        if n == f'{k} Outlook FY': return f'{k} full-year outlook: actual to the selected month + budget for the remaining months.'
+        if n == f'{k} Budget FY': return f'{k} budget for the full fiscal year of the selected month.'
+        if n == f'{k} vs Budget Text': return f'Card text for {k.lower()}: variance % to budget and growth % versus last year, with direction arrows.'
+        if n == f'{k} Var Color': return f'Green when {k.lower()} is favourable to budget, red when unfavourable.'
+        if n == f'{k} Margin %': return f'{k} as a share of net revenue.'
+        if n == f'{k} Margin % Budget': return f'Budgeted {k.lower()} as a share of budgeted net revenue.'
+        if n == f'{k} Margin pts vs Budget': return f'{k} margin minus budget margin, in percentage points.'
+        if n == f'{k} Progress Text': return f'Card text: {k.lower()} year to date as a share of the full-year budget, next to the share of the year elapsed.'
+    g = _re.match(r'^Metric (Actual|Budget|PY|Var vs Budget|Var % vs Budget|Growth %|Outlook FY|Budget FY|Monthly Actual|Monthly Budget|Monthly Outlook|Monthly Prior Year|Cumulative Actual|Cumulative Outlook|Cumulative Budget|Progress Text|Outlook Progress Text)$', n)
+    if g: return f'"{g.group(1)}" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).'
+    if n.startswith('KV '): return f'KPI card value: [{n[3:]}] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).'
+    if n.startswith('VT '): return 'Dynamic visual title: updates with the period, currency and selection.'
+    if n.startswith('Sub '): return 'Insight subtitle: one sentence computed from the data behind the visual; rewrites itself with every filter.'
+    if n.startswith('PT '): return f'Page title of the {_PAGE.get(n[3:], n[3:])} page.'
+    if n.startswith('PS '): return f'Page subtitle of the {_PAGE.get(n[3:], n[3:])} page: the key figures in one line.'
+    if n.startswith('Footer '): return f'Footer of the {_PAGE.get(n[7:], n[7:])} page: sources, exchange-rate policy, close month and page-specific caveats.'
+    if n.startswith('Ctx Line '): return f'Header chip text: "{n[9:]}: <current selection>".'
+    return None
+for _m in MEAS:
+    if not _m.get('desc'):
+        _m['desc'] = describe(_m)
+_missing = [m['name'] for m in MEAS if not m['desc']]
+assert not _missing, f'measures without a description: {_missing}'
+
+# ---- 5.3 a description for every column
+COL_DESC = {
+    'Account': {'AccountKey': 'Surrogate key of the account; joins to GL.', 'ParentAccountKey': 'Parent account in the chart-of-accounts hierarchy.', 'AccountCode': 'Account code as used in the ledger.',
+                'AccountName': 'Account name.', 'AccountType': 'Revenue, Expenditures, Assets, Liabilities or Statistical; drives the sign.', 'UnaryOperator': 'Roll-up operator from the source chart (not used by the measures).',
+                'Statement': 'Income Statement, Balance Sheet or Statistical; decides which exchange rate applies.'},
+    'Entity': {'EntityKey': 'Surrogate key of the reporting entity; joins to GL.', 'ParentEntityKey': 'Parent in the group hierarchy (group > region > entity).', 'EntityName': 'Entity name.',
+               'OwnershipPct': 'Share of this entity owned by its direct parent.', 'CurrencyCode': 'Local (functional) currency of the entity.'},
+    'Department': {'DepartmentKey': 'Surrogate key of the department; 0 = Unassigned.', 'ParentDepartmentKey': 'Parent department group.', 'DepartmentName': 'Department name.'},
+    'GL': {'Month': 'First day of the posting month.', 'EntityKey': 'Entity that posted the amount.', 'DepartmentKey': 'Department; 0 when blank in the source.', 'AccountKey': 'Account posted to.',
+           'AmountLC': 'Amount in the entity\'s local currency, as posted (always positive in the source; closing balance for balance-sheet accounts).', 'Scenario': 'Actual or Budget.',
+           'BudgetSource': 'Ledger (from the source data) or Synthetic (generated budget).', 'SourceFile': 'CSV file the row came from; used for data-quality counts.',
+           'Rate Type': 'Which exchange rate the row uses: End (balance sheet), Budget (budget rows) or Avg (P&L actuals).', 'Rate to CAD': 'CAD per unit of the entity currency for the row\'s month and rate type.',
+           'Rate USD to CAD': 'CAD per USD for the row\'s month and rate type; used to present results in USD.', 'Amount CAD': 'Amount in CAD with the reporting sign applied (costs negative). Base of [Amount].',
+           'Amount USD': 'Amount in USD: the CAD amount divided by the USD rate.'},
+    'FX': {'FXKey': 'Currency code | yyyy-MM; lookup key used by the GL rate columns.', 'CurrencyCode': 'Currency the rate converts from.', 'Month': 'First day of the month.',
+           'AvgRate': 'Monthly average rate, CAD per unit (P&L actuals).', 'EndRate': 'Month-end rate, CAD per unit (balance sheet).', 'BudgetRate': 'Average rate of the previous fiscal year (budget and constant currency).',
+           'RateStatus': 'Observed (published by the Bank of Canada) or Carried forward (after the last published month).'},
+    'Report Line': {'LineKey': 'Line number; also the display order. 1-20 income statement, 101-120 balance sheet.', 'LineName': 'Line caption shown in statements.', 'Section': 'Statement section the line belongs to.',
+                    'LineType': 'Detail, Subtotal or Total; drives row shading.', 'Statement': 'Income Statement or Balance Sheet.'},
+    'Report Line Map': {'LineKey': 'Report line.', 'AccountKey': 'Account included in that line.'},
+    'Date': {'Month': 'First day of the month; key of the calendar.', 'Year': 'Calendar year.', 'Fiscal Year Number': 'Fiscal year as a number (the year in which it ends).', 'Fiscal Year': 'Fiscal year label, e.g. FY2027.',
+             'Fiscal Month Number': 'April = 1 ... March = 12.', 'Fiscal Quarter': 'Fiscal quarter, Q1 = April to June.', 'Month Name': 'Three-letter month, sorted in fiscal order.', 'Year Month': 'Month and year, e.g. Oct 2026.',
+             'Month Index': 'Running month number, for sorting.', 'IsClosed': 'True for months up to the latest actuals month.', 'Period Status': 'Actual for closed months, Outlook for later months.'},
+    'DQ File Log': {'Name': 'Source file name.', 'Folder': 'actuals or budget.', 'RawRows': 'Rows in the file before cleaning.', 'DuplicateRows': 'Exact duplicate rows found (and removed).',
+                    'MissingDepartmentRows': 'Rows with a blank department.', 'SchemaDrift': 'True when the columns differ from the expected order or set.', 'Columns': 'Column names found in the file.'},
+    'DQ Injection Log': {'Month': 'Month or range the injected issue affects.', 'Issue': 'Type of issue injected by the data generator.', 'RowsAffected': 'Rows affected.',
+                         'Cause': 'Realistic cause the issue imitates.', 'Treatment': 'How the model handles it.'},
+    'Story': {'Page': 'Page the row belongs to (Overview, DQ, Notes, Defs).', 'Sort': 'Display order within the page.', 'Section': 'Topic shown in the first column.', 'Text': 'Narrative text.'},
+    'Refresh Info': {'Refreshed At': 'UTC time of the last refresh.'},
+    'Insight': {'Key': 'Topic number; selects the narrative measure in [Insight Text].', 'Topic': 'Topic caption.'},
+    'Metric': {'Metric': 'P&L measure offered by the Metric slicer.', 'LineKey': 'Report line the metric maps to.', 'Sort': 'Display order.'},
+    '_Measures': {'Placeholder': 'Empty column: a table needs one column to exist.'},
+}
+_GENERIC = {'Sort': 'Display order.', 'Step': 'Step shown on the bridge axis.', 'Currency': 'Presentation currency.', 'View': 'Period view: YTD, QTD or MTD.', 'Mode': 'Light or Dark.'}
+for _t in TABLES:
+    for _c in _t['cols']:
+        if not _c[2].get('desc'):
+            _c[2]['desc'] = COL_DESC.get(_t['name'], {}).get(_c[0]) or _GENERIC[_c[0]]
+
+# ---- 5.4 comments inside the DAX: each recurring pattern is explained once, at the top of every measure that uses it
+PATTERN_NOTES = [
+    ("TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] )", 'Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.'),
+    ("TREATAS ( accts, Account[AccountKey] )", 'Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.'),
+    ("REMOVEFILTERS ( 'Date' )", 'Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.'),
+    ('_x / 1e6', 'Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.'),
+    ('data:image/svg+xml', 'SVG pattern: the measure returns an image as text (data category Image URL); # is written %23 so colours survive URL encoding.'),
+    ('[Col ', 'Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.'),
+    ('SUMX ( VALUES ( Entity[EntityKey] )', 'Per-entity pattern: evaluated entity by entity and then summed, because the rule applies to each entity separately.'),
+]
+for _m in MEAS:
+    _notes = [txt for key, txt in PATTERN_NOTES if key in _m['expr']]
+    if _notes and ('\n' in _m['expr'] or len(_m['expr']) > 110):
+        _m['expr'] = '\n'.join('// ' + t for t in _notes) + '\n' + _m['expr']
+
+# ---- 5.5 Power Query: step comments, and query groups so the Queries pane reads like the model
+def _mnote(code, notes):
+    """Insert a // comment line above each named step of an M query (keeps the step's indentation)."""
+    for step, text in notes.items():
+        hit = _re.search(r'^(\s*)' + _re.escape(step) + r' = ', code, _re.M)
+        assert hit, f'M step {step!r} not found'
+        code = code[:hit.start()] + f'{hit.group(1)}// {text}\n' + code[hit.start():]
+    return code
+FN_READ_CSV = _mnote(FN_READ_CSV, {
+    'Target': 'Folder path to match, lower-cased. An empty subfolder means DataRoot itself.',
+    'Hit': 'One static source for the whole model (Folder.Files(DataRoot)), filtered to the file: no gateway or privacy prompt.',
+    'Source': 'Parse as UTF-8 CSV (65001).', 'Blanks': 'Empty strings become null so type conversion and null checks behave.'})
+FN_LOAD_LEDGER = _mnote(FN_LOAD_LEDGER, {
+    'Target': 'Folder to load, e.g. DataRoot\\actuals\\.', 'Csvs': 'Only ledger files: GL_*.csv. Dropping a file in adds a period; removing it removes the period.',
+    'Parsed': 'Per file: promote headers, pick the six columns BY NAME (survives reordered or extra columns; a missing column becomes null), drop exact duplicate rows.',
+    'DeptFixed': 'Blank department (ERP migration gap) is mapped to key 0 = "Unassigned" so no row is lost in the Department relationship.',
+    'WithScenario': 'Tag every row with the scenario of the folder it came from (Actual or Budget).'})
+M_GL = _mnote(M_GL, {'Actuals': 'One file per month in actuals\\, one file per fiscal year in budget\\.',
+                     'Source': 'Rows from the source ledger have no BudgetSource: label them "Ledger" (synthetic budget rows already say "Synthetic").',
+                     'Typed': 'Types are set with the en-US culture because the files use a point as the decimal separator.'})
+M_FX = _mnote(M_FX, {
+    'FY': 'Fiscal year of a date: April to March, named by the year it ends.', 'Observed': 'Rates published by the Bank of Canada (CAD per unit).',
+    'GridEnd': 'Build a complete currency x month grid to the end of the fiscal year after the last published rate, so budget months always find a rate.',
+    'Status': 'Months with no published rate are flagged, then filled with the last published rate (FillDown below).',
+    'FYAvg': 'Budget rate = average of the PREVIOUS fiscal year, so budget variances are not distorted by currency moves.',
+    'BudgetFix': 'First fiscal year has no previous year: fall back to the month\'s average rate.',
+    'Keyed': 'Text key "CCY|yyyy-MM" used by LOOKUPVALUE in the GL rate columns.'})
+M_DQ_FILES = _mnote(M_DQ_FILES, {
+    'Expected': 'Column order of a clean export. Anything else is reported as schema drift.',
+    'Profile': 'Profile every ledger file in one subfolder: raw rows, exact duplicates, blank departments and schema drift, measured BEFORE cleaning.',
+    'Combined': 'Profile both folders so the Data Quality page can reconcile detected issues with the injection log.'})
+for _t in TABLES:   # the helper tables above were captured before the comments were added
+    _t.update({k: v for k, v in (('m', {'GL': M_GL, 'FX': M_FX, 'DQ File Log': M_DQ_FILES}.get(_t['name'])),) if v})
+    if 'm' in _t and not _t['m'].lstrip().startswith('//'):
+        _t['m'] = f"// {_t['desc']}\n" + _t['m']
+QUERY_GROUPS = ['Parameters and functions', 'Dimensions', 'Facts', 'Report helpers', 'Data quality']
+QUERY_GROUP_OF = {'Account': 'Dimensions', 'Entity': 'Dimensions', 'Department': 'Dimensions', 'Report Line': 'Dimensions', 'Report Line Map': 'Dimensions',
+                  'GL': 'Facts', 'FX': 'Facts', 'DQ File Log': 'Data quality', 'DQ Injection Log': 'Data quality'}
+for _t in TABLES:
+    if 'm' in _t:
+        _t['group'] = QUERY_GROUP_OF.get(_t['name'], 'Report helpers')
+
+# ---- 5.6 model diagram: fact in the middle, dimensions around it, lookups beside the tables they serve, helpers in rows below
+DIAGRAM = {  # table: (x, y, width, height)
+    'GL': (620, 300, 250, 330), 'Date': (620, 20, 250, 250), 'Entity': (260, 300, 250, 220), 'Account': (980, 300, 250, 250), 'Department': (620, 660, 250, 150),
+    'FX': (260, 20, 250, 220), 'Report Line Map': (1340, 300, 220, 120), 'Report Line': (1340, 450, 220, 190), '_Measures': (980, 20, 250, 250),
+    'Reporting Currency': (0, 880, 200, 110), 'Period View': (220, 880, 200, 110), 'Metric': (440, 880, 200, 130), 'Theme Mode': (660, 880, 200, 110),
+    'Revenue Bridge': (880, 880, 200, 110), 'EBITDA Bridge': (1100, 880, 200, 110), 'Cash Bridge': (1320, 880, 200, 110),
+    'Insight': (0, 1040, 200, 110), 'Story': (220, 1040, 200, 150), 'Refresh Info': (440, 1040, 200, 100),
+    'DQ File Log': (880, 1040, 220, 210), 'DQ Injection Log': (1120, 1040, 220, 170),
+}
+assert set(DIAGRAM) == {t['name'] for t in TABLES}, set(DIAGRAM) ^ {t['name'] for t in TABLES}

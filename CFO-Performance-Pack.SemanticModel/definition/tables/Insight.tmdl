@@ -2,6 +2,7 @@
 table Insight
 	lineageTag: 48a5a841-244b-51c6-811a-e1f9fa4e13fa
 
+	/// Topic number; selects the narrative measure in [Insight Text].
 	column Key
 		dataType: int64
 		isHidden
@@ -9,6 +10,7 @@ table Insight
 		summarizeBy: none
 		sourceColumn: Key
 
+	/// Topic caption.
 	column Topic
 		dataType: string
 		lineageTag: c5767106-572b-5e00-8216-27534d42a269
@@ -17,13 +19,16 @@ table Insight
 
 	partition Insight = m
 		mode: import
+		queryGroup: 'Report helpers'
 		source =
+				// Rows for the insight tables: each topic shows one narrative measure.
 				let
 				    Source = #table(type table [Key = Int64.Type, Topic = text], {
 				        {1, "Growth quality"},
 				        {2, "Cost absorption"},
 				        {3, "Full-year outlook"},
-				        {4, "People cost"}
+				        {4, "People cost"},
+				        {5, "Currency effect"}
 				    })
 				in
 				    Source

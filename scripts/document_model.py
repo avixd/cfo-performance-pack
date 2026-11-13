@@ -26,6 +26,17 @@ L += ['```', '',
       '| Function | Purpose |', '|---|---|',
       '| `fnReadCsv(subfolder, fileName)` | One UTF-8 CSV; blank strings become null |',
       '| `fnLoadLedgerFolder(subfolder, scenario)` | Every `GL_*.csv` in a folder: columns matched by name (handles schema drift), exact duplicates removed, blank department mapped to 0 "Unassigned" |', '',
+      '<details><summary>fnReadCsv</summary>', '', '```powerquery', M.FN_READ_CSV, '```', '', '</details>', '',
+      '<details><summary>fnLoadLedgerFolder</summary>', '', '```powerquery', M.FN_LOAD_LEDGER, '```', '', '</details>', '',
+      'Queries are organised in groups: ' + ', '.join(M.QUERY_GROUPS) + '.', '',
+      '## How to read the model (start here)', '',
+      '1. **One fact, four dimensions.** `GL` holds every posting (actual and budget) in local currency; `Date`, `Entity`, `Department` and `Account` filter it.',
+      '2. **Amounts.** `[Amount]` picks the CAD or USD column; `[Actual]` and `[Budget]` split it by scenario. Everything else builds on these three.',
+      '3. **Periods.** `[Selected Month]` is the reporting month. Period measures (`... MTD/QTD/YTD`, `... (Period)`) replace the date slicer with an explicit fiscal window.',
+      '4. **Report lines.** A P&L or balance-sheet line is a row in `Report Line`; `Report Line Map` lists its accounts. Measures apply that list with `TREATAS`.',
+      '5. **KPIs.** Folder `3 KPIs` has one sub-folder per KPI with the same eight measures (actual, budget, PY, variance, variance %, growth %, outlook, FY budget).',
+      '6. **Text, colour and layout.** Folders 6 and 8 to 11 only format: titles, narrative sentences, theme colours and KPI card text. They never change a number.',
+      '7. **Number format.** Money text: $ with one decimal in millions, whole thousands below 1M; tables in thousands; percentages to one decimal.', '',
       '## Tables', '']
 for t in M.TABLES:
     kind = 'calculated (DAX)' if 'dax' in t else 'Power Query'
@@ -39,6 +50,8 @@ for t in M.TABLES:
         if p.get('desc'): notes.append(p['desc'])
         L.append(f"| {cn} | {dt} | {'; '.join(notes)} |")
     L.append('')
+    src, lang = (t['dax'], 'dax') if 'dax' in t else (t['m'], 'powerquery')
+    L += ['<details><summary>' + ('DAX' if lang == 'dax' else f"Power Query (group: {t.get('group', '')})") + '</summary>', '', f'```{lang}', src, '```', '', '</details>', '']
     if t['name'] == 'Report Line':
         L += ['| Key | Line | Type | Accounts |', '|---|---|---|---|']
         for key, name, sec, typ, stmt, accts in M.LINES:

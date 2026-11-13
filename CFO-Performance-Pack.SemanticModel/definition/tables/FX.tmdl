@@ -2,17 +2,20 @@
 table FX
 	lineageTag: 7632a779-3e03-5d8f-b6ed-0c60b8ad50ff
 
+	/// Currency code | yyyy-MM; lookup key used by the GL rate columns.
 	column FXKey
 		dataType: string
 		isHidden
 		lineageTag: 76d0e50f-7920-500e-9627-87b352d8b132
 		sourceColumn: FXKey
 
+	/// Currency the rate converts from.
 	column CurrencyCode
 		dataType: string
 		lineageTag: 7cf6b478-378a-5967-a089-6f120dc5bea0
 		sourceColumn: CurrencyCode
 
+	/// First day of the month.
 	column Month
 		dataType: dateTime
 		formatString: mmm yyyy
@@ -22,6 +25,7 @@ table FX
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Monthly average rate, CAD per unit (P&L actuals).
 	column AvgRate
 		dataType: double
 		formatString: 0.0000
@@ -29,6 +33,7 @@ table FX
 		summarizeBy: none
 		sourceColumn: AvgRate
 
+	/// Month-end rate, CAD per unit (balance sheet).
 	column EndRate
 		dataType: double
 		formatString: 0.0000
@@ -36,6 +41,7 @@ table FX
 		summarizeBy: none
 		sourceColumn: EndRate
 
+	/// Average rate of the previous fiscal year (budget and constant currency).
 	column BudgetRate
 		dataType: double
 		formatString: 0.0000
@@ -43,6 +49,7 @@ table FX
 		summarizeBy: none
 		sourceColumn: BudgetRate
 
+	/// Observed (published by the Bank of Canada) or Carried forward (after the last published month).
 	column RateStatus
 		dataType: string
 		lineageTag: 2e8b6673-218f-5574-b435-903a2b95d46c
@@ -50,13 +57,18 @@ table FX
 
 	partition FX = m
 		mode: import
+		queryGroup: Facts
 		source =
+				// Bank of Canada rates (CAD per unit): monthly average for P&L, month-end for balance sheet, budget rate = prior fiscal-year average. Months after the last observed rate carry it forward.
 				let
+				    // Fiscal year of a date: April to March, named by the year it ends.
 				    FY = (d as date) as number => Date.Year(d) + (if Date.Month(d) >= 4 then 1 else 0),
 				    Src = fnReadCsv("fx", "FX_Rates.csv"),
 				    Typed = Table.TransformColumnTypes(Src, {{"Month", type date}, {"CurrencyCode", type text}, {"AvgRate", type number}, {"EndRate", type number}}, "en-US"),
+				    // Rates published by the Bank of Canada (CAD per unit).
 				    Observed = Table.SelectColumns(Typed, {"Month", "CurrencyCode", "AvgRate", "EndRate"}),
 				    LastObserved = List.Max(Observed[Month]),
+				    // Build a complete currency x month grid to the end of the fiscal year after the last published rate, so budget months always find a rate.
 				    GridEnd = #date(FY(LastObserved) + 1, 3, 1),
 				    FirstMonth = List.Min(Observed[Month]),
 				    Months = List.Generate(() => FirstMonth, each _ <= GridEnd, each Date.AddMonths(_, 1)),
@@ -64,17 +76,21 @@ table FX
 				    Grid = Table.FromRows(List.TransformMany(Currencies, each Months, (c, m) => {c, m}), type table [CurrencyCode = text, Month = date]),
 				    Joined = Table.NestedJoin(Grid, {"CurrencyCode", "Month"}, Observed, {"CurrencyCode", "Month"}, "R", JoinKind.LeftOuter),
 				    Expanded = Table.ExpandTableColumn(Joined, "R", {"AvgRate", "EndRate"}),
+				    // Months with no published rate are flagged, then filled with the last published rate (FillDown below).
 				    Status = Table.AddColumn(Expanded, "RateStatus", each if [AvgRate] = null then "Carried forward" else "Observed", type text),
 				    EndFallback = Table.AddColumn(Status, "EndRate2", each if [EndRate] = null then [AvgRate] else [EndRate]),
 				    Sorted = Table.Sort(Table.RemoveColumns(EndFallback, {"EndRate"}), {{"CurrencyCode", Order.Ascending}, {"Month", Order.Ascending}}),
 				    Filled = Table.FillDown(Table.RenameColumns(Sorted, {{"EndRate2", "EndRate"}}), {"AvgRate", "EndRate"}),
+				    // Budget rate = average of the PREVIOUS fiscal year, so budget variances are not distorted by currency moves.
 				    FYAvg = Table.Group(Table.AddColumn(Table.SelectRows(Filled, each [RateStatus] = "Observed"), "FiscalYear", each FY([Month]), Int64.Type), {"CurrencyCode", "FiscalYear"}, {{"BudgetRate", each List.Average([AvgRate]), type number}}),
 				    WithBY = Table.AddColumn(Filled, "BudgetBaseFY", each FY([Month]) - 1, Int64.Type),
 				    JoinedB = Table.NestedJoin(WithBY, {"CurrencyCode", "BudgetBaseFY"}, FYAvg, {"CurrencyCode", "FiscalYear"}, "B", JoinKind.LeftOuter),
 				    ExpandedB = Table.ExpandTableColumn(JoinedB, "B", {"BudgetRate"}),
 				    SortedB = Table.Sort(ExpandedB, {{"CurrencyCode", Order.Ascending}, {"Month", Order.Ascending}}),
 				    FilledB = Table.FillDown(SortedB, {"BudgetRate"}),
+				    // First fiscal year has no previous year: fall back to the month's average rate.
 				    BudgetFix = Table.AddColumn(FilledB, "BudgetRate2", each if [BudgetRate] = null then [AvgRate] else [BudgetRate]),
+				    // Text key "CCY|yyyy-MM" used by LOOKUPVALUE in the GL rate columns.
 				    Keyed = Table.AddColumn(BudgetFix, "FXKey", each [CurrencyCode] & "|" & Date.ToText([Month], "yyyy-MM"), type text),
 				    Final = Table.RenameColumns(Table.SelectColumns(Keyed, {"FXKey", "CurrencyCode", "Month", "AvgRate", "EndRate", "BudgetRate2", "RateStatus"}), {{"BudgetRate2", "BudgetRate"}}),
 				    Typed2 = Table.TransformColumnTypes(Final, {{"AvgRate", type number}, {"EndRate", type number}, {"BudgetRate", type number}})

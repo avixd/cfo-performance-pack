@@ -2,12 +2,14 @@
 table Metric
 	lineageTag: 5ff3a22c-43a3-513d-b134-6a6f20cb08b6
 
+	/// P&L measure offered by the Metric slicer.
 	column Metric
 		dataType: string
 		lineageTag: f5c574e8-8efc-5260-98a5-29ab8dda66ea
 		sourceColumn: Metric
 		sortByColumn: Sort
 
+	/// Report line the metric maps to.
 	column LineKey
 		dataType: int64
 		isHidden
@@ -15,6 +17,7 @@ table Metric
 		summarizeBy: none
 		sourceColumn: LineKey
 
+	/// Display order.
 	column Sort
 		dataType: int64
 		isHidden
@@ -24,7 +27,9 @@ table Metric
 
 	partition Metric = m
 		mode: import
+		queryGroup: 'Report helpers'
 		source =
+				// Slicer: which P&L measure the Budget vs Actual page analyses.
 				let
 				    Source = #table(type table [Metric = text, LineKey = Int64.Type, Sort = Int64.Type], {
 				        {"Revenue", 3, 1},

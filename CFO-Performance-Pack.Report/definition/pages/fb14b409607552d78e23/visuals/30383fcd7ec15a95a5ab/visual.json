@@ -3,11 +3,11 @@
   "name": "30383fcd7ec15a95a5ab",
   "position": {
     "x": 778.2,
-    "y": 169.6,
-    "z": 65000,
+    "y": 167.6,
+    "z": 66000,
     "height": 20,
     "width": 127.6,
-    "tabOrder": 65000
+    "tabOrder": 66000
   },
   "visual": {
     "visualType": "actionButton",
@@ -224,7 +224,7 @@
             "tooltip": {
               "expr": {
                 "Literal": {
-                  "Value": "'Net income'"
+                  "Value": "'Net income after interest, other items and tax for the period chosen in the Period slicer (MTD, QTD or YTD) ending at the selected month.'"
                 }
               }
             }

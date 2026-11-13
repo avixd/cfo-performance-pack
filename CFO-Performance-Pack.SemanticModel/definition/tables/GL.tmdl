@@ -2,6 +2,7 @@
 table GL
 	lineageTag: b23f94e1-9ba8-5689-a2ff-f6a4f3156d70
 
+	/// First day of the posting month.
 	column Month
 		dataType: dateTime
 		formatString: mmm yyyy
@@ -11,6 +12,7 @@ table GL
 
 		annotation UnderlyingDateTimeDataType = Date
 
+	/// Entity that posted the amount.
 	column EntityKey
 		dataType: int64
 		isHidden
@@ -18,6 +20,7 @@ table GL
 		summarizeBy: none
 		sourceColumn: EntityKey
 
+	/// Department; 0 when blank in the source.
 	column DepartmentKey
 		dataType: int64
 		isHidden
@@ -25,6 +28,7 @@ table GL
 		summarizeBy: none
 		sourceColumn: DepartmentKey
 
+	/// Account posted to.
 	column AccountKey
 		dataType: int64
 		isHidden
@@ -32,6 +36,7 @@ table GL
 		summarizeBy: none
 		sourceColumn: AccountKey
 
+	/// Amount in the entity's local currency, as posted (always positive in the source; closing balance for balance-sheet accounts).
 	column AmountLC
 		dataType: double
 		isHidden
@@ -40,26 +45,31 @@ table GL
 		summarizeBy: none
 		sourceColumn: AmountLC
 
+	/// Actual or Budget.
 	column Scenario
 		dataType: string
 		lineageTag: fe878f0b-8816-5984-a508-4ff2b2a47274
 		sourceColumn: Scenario
 
+	/// Ledger (from the source data) or Synthetic (generated budget).
 	column BudgetSource
 		dataType: string
 		lineageTag: f59ad1d5-df20-5951-9f5e-c5f4cda7b2c0
 		sourceColumn: BudgetSource
 
+	/// CSV file the row came from; used for data-quality counts.
 	column SourceFile
 		dataType: string
 		isHidden
 		lineageTag: 8cd1a9ec-354f-57a6-baae-dc921c33fe52
 		sourceColumn: SourceFile
 
+	/// Which exchange rate the row uses: End (balance sheet), Budget (budget rows) or Avg (P&L actuals).
 	column 'Rate Type' = IF ( RELATED ( Account[Statement] ) = "Balance Sheet", "End", IF ( GL[Scenario] = "Budget", "Budget", "Avg" ) )
 		isHidden
 		lineageTag: b8359cb2-1fc9-5f81-8f75-3dac04e315a0
 
+	/// CAD per unit of the entity currency for the row's month and rate type.
 	column 'Rate to CAD' =
 			VAR k = RELATED ( Entity[CurrencyCode] ) & "|" & FORMAT ( GL[Month], "yyyy-MM" )
 			RETURN
@@ -73,6 +83,7 @@ table GL
 		lineageTag: 2b579d5b-43a4-55a9-b568-5a87e3907794
 		summarizeBy: none
 
+	/// CAD per USD for the row's month and rate type; used to present results in USD.
 	column 'Rate USD to CAD' =
 			VAR k = "USD|" & FORMAT ( GL[Month], "yyyy-MM" )
 			RETURN
@@ -86,27 +97,52 @@ table GL
 		lineageTag: b88a6597-f683-585f-bdaf-35e3db495ba4
 		summarizeBy: none
 
+	/// Amount in CAD with the reporting sign applied (costs negative). Base of [Amount].
 	column 'Amount CAD' = GL[AmountLC] * GL[Rate to CAD] * RELATED ( Account[Sign] )
 		isHidden
 		formatString: #,0
 		lineageTag: aeef14f8-b7d5-5c27-aa95-c74b39da5dd8
 		summarizeBy: none
 
+	/// Amount in USD: the CAD amount divided by the USD rate.
 	column 'Amount USD' = DIVIDE ( GL[Amount CAD], GL[Rate USD to CAD] )
 		isHidden
 		formatString: #,0
 		lineageTag: f5e559a8-bd4b-57a4-8042-87b6ed6e43ac
 		summarizeBy: none
 
+	/// Local-currency amount translated to CAD at the budget rate (prior fiscal-year average) instead of the actual rate: the constant-currency view of P&L rows.
+	column 'Amount CAD (budget rate)' =
+			VAR k = RELATED ( Entity[CurrencyCode] ) & "|" & FORMAT ( GL[Month], "yyyy-MM" )
+			RETURN GL[AmountLC] * LOOKUPVALUE ( FX[BudgetRate], FX[FXKey], k ) * RELATED ( Account[Sign] )
+		isHidden
+		formatString: #,0
+		lineageTag: 8775e706-4216-5db8-ad76-0799e6c7f40b
+		summarizeBy: none
+
+	/// Constant-currency amount expressed in USD, using the budget USD/CAD rate.
+	column 'Amount USD (budget rate)' =
+			VAR k = "USD|" & FORMAT ( GL[Month], "yyyy-MM" )
+			RETURN DIVIDE ( GL[Amount CAD (budget rate)], LOOKUPVALUE ( FX[BudgetRate], FX[FXKey], k ) )
+		isHidden
+		formatString: #,0
+		lineageTag: 396d31e5-abb2-5590-a92c-77455f7c8a4a
+		summarizeBy: none
+
 	partition GL = m
 		mode: import
+		queryGroup: Facts
 		source =
+				// General ledger fact in local currency: actuals one file per month, budgets one file per fiscal year. Grain: month x entity x department x account x scenario.
 				let
+				    // One file per month in actuals\, one file per fiscal year in budget\.
 				    Actuals = fnLoadLedgerFolder("actuals", "Actual"),
 				    Budget = fnLoadLedgerFolder("budget", "Budget"),
 				    Combined = Table.Combine({Actuals, Budget}),
 				    Renamed = Table.RenameColumns(Combined, {{"Name", "SourceFile"}}),
+				    // Rows from the source ledger have no BudgetSource: label them "Ledger" (synthetic budget rows already say "Synthetic").
 				    Source = Table.TransformColumns(Renamed, {{"BudgetSource", each if _ = null or _ = "" then "Ledger" else _}}),
+				    // Types are set with the en-US culture because the files use a point as the decimal separator.
 				    Typed = Table.TransformColumnTypes(Source, {{"Month", type date}, {"EntityKey", Int64.Type}, {"DepartmentKey", Int64.Type}, {"AccountKey", Int64.Type}, {"AmountLC", type number}, {"BudgetSource", type text}, {"SourceFile", type text}}, "en-US")
 				in
 				    Typed

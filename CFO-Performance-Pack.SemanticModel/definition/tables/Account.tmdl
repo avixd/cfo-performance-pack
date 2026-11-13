@@ -2,12 +2,14 @@
 table Account
 	lineageTag: 35deeb7f-ec24-5d77-92c3-8cb1ff9e2c36
 
+	/// Surrogate key of the account; joins to GL.
 	column AccountKey
 		dataType: int64
 		lineageTag: 39c61cb1-4e18-525c-abef-d6d883020612
 		summarizeBy: none
 		sourceColumn: AccountKey
 
+	/// Parent account in the chart-of-accounts hierarchy.
 	column ParentAccountKey
 		dataType: int64
 		isHidden
@@ -15,27 +17,32 @@ table Account
 		summarizeBy: none
 		sourceColumn: ParentAccountKey
 
+	/// Account code as used in the ledger.
 	column AccountCode
 		dataType: string
 		lineageTag: 50266f7a-29a4-5826-8d13-528eefe81acb
 		sourceColumn: AccountCode
 
+	/// Account name.
 	column AccountName
 		dataType: string
 		lineageTag: b3a288ce-13b3-5a0e-b6cb-be45257ef3f2
 		sourceColumn: AccountName
 
+	/// Revenue, Expenditures, Assets, Liabilities or Statistical; drives the sign.
 	column AccountType
 		dataType: string
 		lineageTag: fa36c2d2-2325-5656-8037-65c64376d119
 		sourceColumn: AccountType
 
+	/// Roll-up operator from the source chart (not used by the measures).
 	column UnaryOperator
 		dataType: string
 		isHidden
 		lineageTag: 5c537652-9a40-59f3-a285-35e491512c96
 		sourceColumn: UnaryOperator
 
+	/// Income Statement, Balance Sheet or Statistical; decides which exchange rate applies.
 	column Statement
 		dataType: string
 		lineageTag: 096202e6-8375-51c0-a1bc-cb4e7e884994
@@ -49,7 +56,9 @@ table Account
 
 	partition Account = m
 		mode: import
+		queryGroup: Dimensions
 		source =
+				// Chart of accounts (parent-child) with statement type.
 				let
 				    Src = fnReadCsv("reference", "Account.csv"),
 				    Typed = Table.TransformColumnTypes(Src, {{"AccountKey", Int64.Type}, {"ParentAccountKey", Int64.Type}, {"AccountCode", type text}, {"AccountName", type text}, {"AccountType", type text}, {"UnaryOperator", type text}, {"Statement", type text}}, "en-US")

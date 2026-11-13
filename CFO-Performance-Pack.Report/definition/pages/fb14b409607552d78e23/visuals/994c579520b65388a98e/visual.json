@@ -3,11 +3,11 @@
   "name": "994c579520b65388a98e",
   "position": {
     "x": 956.3,
-    "y": 169.6,
-    "z": 73000,
+    "y": 167.6,
+    "z": 74000,
     "height": 20,
     "width": 127.6,
-    "tabOrder": 73000
+    "tabOrder": 74000
   },
   "visual": {
     "visualType": "actionButton",
@@ -224,7 +224,7 @@
             "tooltip": {
               "expr": {
                 "Literal": {
-                  "Value": "'FY net income outlook'"
+                  "Value": "'Net Income full-year outlook: actual to the selected month + budget for the remaining months.'"
                 }
               }
             }

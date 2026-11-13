@@ -4,10 +4,10 @@
   "position": {
     "x": 911.3,
     "y": 265.7,
-    "z": 86000,
+    "z": 87000,
     "height": 171.9,
     "width": 356.7,
-    "tabOrder": 86000
+    "tabOrder": 87000
   },
   "visual": {
     "visualType": "tableEx",
@@ -552,7 +552,7 @@
                     [
                       {
                         "Literal": {
-                          "Value": "'People cost'"
+                          "Value": "'Currency effect'"
                         }
                       }
                     ]

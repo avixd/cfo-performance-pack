@@ -3,11 +3,11 @@
   "name": "7d184db31eac5f71b2a6",
   "position": {
     "x": 742.0,
-    "y": 152.0,
-    "z": 51000,
+    "y": 148.0,
+    "z": 52000,
     "height": 22,
     "width": 163.6,
-    "tabOrder": 51000
+    "tabOrder": 52000
   },
   "visual": {
     "visualType": "actionButton",
@@ -61,7 +61,7 @@
                           "Entity": "_Measures"
                         }
                       },
-                      "Property": "Col Muted"
+                      "Property": "Revenue Growth Color"
                     }
                   }
                 }
