@@ -1250,7 +1250,7 @@ VAR r3 = CALCULATE ( [Revenue], KEEPFILTERS ( Entity[Region] = "Pacific" ) ) + 0
 VAR ok = rev > 0 && gp > 0 && eb > 0 && ni > 0 && cgs >= 0 && ox >= 0 && bl >= 0 && r1 >= 0 && r2 >= 0 && r3 >= 0
 -- layout: 330 px of height for net revenue; every other node uses the same scale, so widths are comparable
 VAR k = DIVIDE ( 330, rev ) VAR y0 = 56 VAR vgap = 16
-VAR hR1 = r1 * k VAR hR2 = r2 * k VAR yR1 = y0 VAR yR2 = yR1 + hR1 + vgap VAR yR3 = yR2 + hR2 + gap
+VAR hR1 = r1 * k VAR hR2 = r2 * k VAR yR1 = y0 VAR yR2 = yR1 + hR1 + vgap VAR yR3 = yR2 + hR2 + vgap
 VAR yC = y0 + gp * k + 30 VAR yO = y0 + eb * k + 30 VAR yB = y0 + ni * k + 30
 VAR svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 470'>"
     & {body}
