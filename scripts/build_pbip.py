@@ -358,10 +358,12 @@ class Page:
         return self.add(key, 'actionButton', x, y, w, h, objects=obj, content=content, background=False, header=False)
 
     def button(self, key, x, y, w, h, label, link_type=None, url=None, tooltip=None, fill='Button', text='Text', outline='Line',
-               size=8.5, align='center', page=None, round_=4, measure=None, content=False, bold=False):
+               size=8.5, align='center', page=None, round_=4, measure=None, content=False, bold=False, valign=None):
         sel = {'id': 'default'}
         txt = {'text': {'expr': mfield(measure)} if measure else L(label), 'fontColor': T(text), 'fontSize': L(size), 'horizontalAlignment': L(align),
                'bold': L(bold), 'leftMargin': L(6), 'rightMargin': L(4), 'topMargin': L(0), 'bottomMargin': L(0)}
+        if valign:
+            txt['verticalAlignment'] = L(valign)
         obj = {'icon': [{'properties': {'show': L(False)}}],
                'text': [{'properties': {'show': L(True)}}, {'properties': txt, 'selector': sel}],
                'fill': [{'properties': {'show': L(fill is not None)}}] + ([{'properties': {'fillColor': T(fill), 'transparency': L(0)}, 'selector': sel}] if fill else []),
@@ -404,7 +406,7 @@ class Page:
         for pid, name, glyph in PAGES_NAV:
             on = pid == self.pid
             self.button(f'nav_{pid}', 8, y, PANEL_W - 16, 22, f'{glyph}   {name}', 'PageNavigation', page=pid, fill='Sidebar Active' if on else 'Sidebar',
-                        text='Sidebar Text' if on else 'Sidebar Muted', outline=None, size=9, align='left', bold=on, round_=6)
+                        text='Sidebar Text' if on else 'Sidebar Muted', outline=None, size=8.5, align='left', bold=on, round_=6, valign='middle')
             y += 24
         self.textline('lbl_f', 8, y, PANEL_W - 16, 16, 'Lbl Filters', 7.5, 'Sidebar Muted', bold=True)
         y += 17
