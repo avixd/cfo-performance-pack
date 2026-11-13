@@ -44,7 +44,7 @@ Three pages are hidden from report readers and exist to show technique. This doc
 - `RF Value` returns, per fiscal month, actual when the month is on or before the cut-off and budget otherwise. Summed over twelve months it is the rolling forecast (`RF Total`).
 - Target = full-year budget of the cut-off's fiscal year (`RF Target`). `RF Gap` = forecast - target; `RF Attainment %` = forecast / target.
 - `RF Required per Month` = (target - actual to date) / months left. Compare it with `RF Average per Month`.
-- Cross-check: `RF Run-Rate Total` assumes the remaining months repeat the year-to-date average instead of the budget.
+- Cross-check: `RF Run-Rate Total` (shown as *average-month projection*) assumes the remaining months repeat the year-to-date average month. It is deliberately different from the run-rate on tab 3, which scales the remaining budget by the year-to-date beat and so keeps seasonality.
 
 The three levels in the reference video and how they map here:
 
@@ -57,6 +57,6 @@ The three levels in the reference video and how they map here:
 | | |
 |---|---|
 | **Assumptions** | Remaining months land exactly on budget. The target is the original budget, not a reforecast. Cost metrics are negative, so a positive gap is always "on track". |
-| **Strengths** | Simple and auditable; no statistical model to maintain. Replayable: move the selector to see what the forecast said at any month end. Two methods side by side show the range. |
+| **Strengths** | Simple and auditable; no statistical model to maintain. Replayable: move the selector to see what the forecast said at any month end. Two methods side by side show the range; with a seasonal business the average-month projection overstates or understates depending on where the peak months fall. |
 | **Weaknesses** | The year-to-date variance is carried forward but assumed to stop growing. Seasonality exists only in the budget. The run-rate method ignores seasonality entirely. Entities without a budget have no target and show blank. |
 | **Considerations** | When forecast and run-rate disagree, the answer usually lies between them. In this data three entities have no or a non-credible budget, so their "on track" status reflects a planning gap; read tab 1's budget status first. A driver-based or statistical forecast is the next step if more accuracy is needed. |

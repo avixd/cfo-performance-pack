@@ -1029,34 +1029,36 @@ DAX_ACTUALS_UNTIL = """SELECTCOLUMNS (
     "Label", 'Date'[Year Month],
     "Index", 'Date'[Month Index]
 )"""
-DAX_DICTIONARY = """-- One row per model object. INFO.VIEW functions read the model's own metadata, so the dictionary can never drift from the model.
-UNION (
+DAX_DICTIONARY = """-- Data dictionary (pattern from the INFO.VIEW documentation technique): one VAR per object type, UNION at the end.
+-- INFO.VIEW functions read the model's own metadata on every refresh, so the dictionary cannot drift from the model.
+-- Hidden objects are left out (they are plumbing, not something a reader should use), and the dictionary leaves itself out.
+VAR __Tables =
     SELECTCOLUMNS (
-        FILTER ( INFO.VIEW.TABLES (), NOT [IsPrivate] ),
+        FILTER ( INFO.VIEW.TABLES (), [IsHidden] = FALSE () && NOT [IsPrivate] && [Name] <> "Data Dictionary" ),
         "Object Type", "Table", "Table", [Name], "Name", [Name], "Description", [Description],
-        "Expression", [Expression], "Type", IF ( ISBLANK ( [Expression] ), "Power Query table", "Calculated table" ),
-        "Format", BLANK (), "Folder", BLANK (), "Hidden", IF ( [IsHidden], "Yes", "No" )
-    ),
+        "Expression", [Expression], "Folder", BLANK ()
+    )
+VAR __Columns =
     SELECTCOLUMNS (
-        FILTER ( INFO.VIEW.COLUMNS (), [Type] <> "RowNumber" ),
+        FILTER ( INFO.VIEW.COLUMNS (), [IsHidden] = FALSE () && [Table] <> "Data Dictionary" ),
         "Object Type", "Column", "Table", [Table], "Name", [Name], "Description", [Description],
-        "Expression", [Expression], "Type", [DataType] & IF ( NOT ISBLANK ( [Expression] ), " (calculated)" ),
-        "Format", [FormatString], "Folder", [DisplayFolder], "Hidden", IF ( [IsHidden], "Yes", "No" )
-    ),
+        "Expression", [Expression], "Folder", [DisplayFolder]
+    )
+VAR __Measures =
     SELECTCOLUMNS (
-        INFO.VIEW.MEASURES (),
+        FILTER ( INFO.VIEW.MEASURES (), [IsHidden] = FALSE () ),
         "Object Type", "Measure", "Table", [Table], "Name", [Name], "Description", [Description],
-        "Expression", [Expression], "Type", [DataType],
-        "Format", [FormatString], "Folder", [DisplayFolder], "Hidden", IF ( [IsHidden], "Yes", "No" )
-    ),
+        "Expression", [Expression], "Folder", [DisplayFolder]
+    )
+VAR __Relationships =
     SELECTCOLUMNS (
         INFO.VIEW.RELATIONSHIPS (),
-        "Object Type", "Relationship", "Table", [FromTable], "Name", [FromTable] & " > " & [ToTable],
-        "Description", [FromCardinality] & " to " & LOWER ( [ToCardinality] ) & ", " & IF ( [IsActive], "active", "inactive" ) & ", filter direction: " & [CrossFilteringBehavior],
-        "Expression", [Relationship], "Type", [FromCardinality] & " to " & LOWER ( [ToCardinality] ),
-        "Format", BLANK (), "Folder", BLANK (), "Hidden", "No"
+        "Object Type", "Relationship", "Table", [FromTable], "Name", [Relationship],
+        "Description", "From " & [FromTable] & " to " & [ToTable] & IF ( [IsActive], "", " (inactive)" ),
+        "Expression", [Relationship], "Folder", BLANK ()
     )
-)"""
+RETURN
+    UNION ( __Tables, __Columns, __Measures, __Relationships )"""
 _ins = len(TABLES) - 1
 TABLES[_ins:_ins] = [
     dict(name='PL Focus', desc='Slicer on the Income Statement Explorer page: which headline line the summary and the trend describe.', m=M_FOCUS,
@@ -1072,8 +1074,7 @@ TABLES[_ins:_ins] = [
          cols=[('Object Type', 'string', {'desc': 'Table, Column, Measure or Relationship.'}), ('Table', 'string', {'desc': 'Table the object belongs to (for a relationship: the many side).'}),
                ('Name', 'string', {'desc': 'Object name.'}), ('Description', 'string', {'desc': 'Business description stored on the object.'}),
                ('Expression', 'string', {'desc': 'DAX of a measure, calculated column or calculated table; the join for a relationship.'}),
-               ('Type', 'string', {'desc': 'Data type, table kind or cardinality.'}), ('Format', 'string', {'desc': 'Format string.'}),
-               ('Folder', 'string', {'desc': 'Display folder.'}), ('Hidden', 'string', {'desc': 'Yes when hidden from report authors.'})]),
+               ('Folder', 'string', {'desc': 'Display folder.'})]),
 ]
 
 # ---- 6.3 data dictionary counts
@@ -1188,21 +1189,21 @@ add('RF Months Elapsed', "VAR cut = [RF Cutoff] RETURN MOD ( MONTH ( cut ) + 8, 
 add('RF Months Left', '12 - [RF Months Elapsed]', RFF, '0', 'Fiscal months after the cut-off.')
 add('RF Required per Month', 'IF ( NOT ISBLANK ( [RF Target] ), DIVIDE ( [RF Target] - [RF Actual to Date], [RF Months Left] ) )', RFF, F, 'What each remaining month must deliver to land exactly on target.')
 add('RF Average per Month', 'DIVIDE ( [RF Actual to Date], [RF Months Elapsed] )', RFF, F, 'Average actual per closed month.')
-add('RF Run-Rate Total', '[RF Actual to Date] + [RF Average per Month] * [RF Months Left]', RFF, F, 'Second method: the year if the remaining months repeat the year-to-date average instead of the budget.')
-add('RF Run-Rate Gap', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Total] - [RF Target] )', RFF, F, 'Run-rate projection minus target.')
+add('RF Run-Rate Total', '[RF Actual to Date] + [RF Average per Month] * [RF Months Left]', RFF, F, 'Cross-check (average-month projection): the year if the remaining months repeat the year-to-date average month. Not the same as the run-rate on tab 3, which scales the remaining budget by the year-to-date beat.')
+add('RF Run-Rate Gap', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Total] - [RF Target] )', RFF, F, 'Average-month projection minus target.')
 add('RF Status', 'IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Gap] >= 0, "✓ On track", "✗ Short" ), "No target" )', RFF, None, 'On track when the rolling forecast is at or above target.')
 tone('RF Status Color', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Gap] >= 0 )', 'Green when the rolling forecast reaches the target.')
-add('RF Run-Rate Status', 'IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" )', RFF, None, 'Whether the run-rate projection reaches the target.')
-tone('RF Run-Rate Color', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Gap] >= 0 )', 'Green when the run-rate projection reaches the target.')
+add('RF Run-Rate Status', 'IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" )', RFF, None, 'Whether the average-month projection reaches the target.')
+tone('RF Run-Rate Color', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Gap] >= 0 )', 'Green when the average-month projection reaches the target.')
 for _n in ('RF Total', 'RF Target', 'RF Required per Month', 'RF Run-Rate Total'):
     add(f'KV {_n}', kv_expr(_n), '11 KPI Cards')
 add('RF Total Text', '[RF Status] & " · " & ' + money('[RF Gap]', 'signed') + ' & " vs target (" & FORMAT ( [RF Attainment %], "0%" ) & ")"', RFF, None, 'Card text: status, gap and attainment of the rolling forecast.')
 add('RF Target Text', '"Full-year budget FY" & ' + FYN('[RF Cutoff]') + ' & " · " & [Metric Name]', RFF, None, 'Card text: which target is used.')
 add('RF Required Text', '"needed in each of " & [RF Months Left] & " months · average so far " & ' + money('[RF Average per Month]'), RFF, None, 'Card text: required monthly amount next to the average achieved so far.')
 tone('RF Required Color', 'IF ( [RF Months Left] > 0 && NOT ISBLANK ( [RF Target] ), [RF Average per Month] >= [RF Required per Month] )', 'Green when the average month so far is at least what the remaining months require.')
-add('RF Run-Rate Text', '[RF Run-Rate Status] & " target · " & ' + money('[RF Run-Rate Gap]', 'signed') + ' & " if the average month repeats"', RFF, None, 'Card text: verdict of the run-rate method.')
+add('RF Run-Rate Text', '[RF Run-Rate Status] & " target · " & ' + money('[RF Run-Rate Gap]', 'signed') + ' & " if the average month repeats"', RFF, None, 'Card text: verdict of the average-month projection.')
 add('PT RF', '"Rolling Forecast · " & [Metric Name] & " · actuals until " & FORMAT ( [RF Cutoff], "mmm yyyy" )', PH)
-add('PS RF', '"Will we reach the target? Rolling forecast " & ' + money('[RF Total]') + ' & " vs target " & ' + money('[RF Target]') + ' & ": " & [RF Status] & " (" & ' + money('[RF Gap]', 'signed') + ' & "). Run-rate view: " & [RF Run-Rate Status] & "."', PH)
+add('PS RF', '"Will we reach the target? Rolling forecast " & ' + money('[RF Total]') + ' & " vs target " & ' + money('[RF Target]') + ' & ": " & [RF Status] & " (" & ' + money('[RF Gap]', 'signed') + ' & "). Average-month view: " & [RF Run-Rate Status] & "."', PH)
 add('VT RF Matrix', '[Metric Name] & " by entity and month · blue = actual, red tint = budget · " & [Currency Label] & " thousands"', VT)
 add('Sub RF Matrix', '"Move the Actuals Until slicer to replay any month end: months up to it show actuals, later months show budget, and Total is the rolling forecast."', SB)
 add('VT RF Table', '"Can each entity reach its target?"', VT)
@@ -1279,7 +1280,7 @@ STORY_ROWS += [
     ('RF Method', 3, 'Assumptions', 'Remaining months land exactly on budget. Target = original full-year budget. Actual and budget share the same grain (month x entity x account), so no allocation is needed.'),
     ('RF Method', 4, 'Strengths', 'Simple, auditable and replayable: move the slicer to see what the forecast said at any month end. No statistical model to explain or maintain.'),
     ('RF Method', 5, 'Limits', 'It carries the year-to-date variance forward but assumes it stops growing. Seasonality lives only in the budget. Entities without a budget have no target and show blank.'),
-    ('RF Method', 6, 'Cross-check', 'The run-rate column assumes the average month so far repeats. When the two methods disagree, the truth is usually between them: read Required per month against the average so far.'),
+    ('RF Method', 6, 'Cross-check', 'The average-month projection assumes the average month so far repeats (tab 3 uses a different run-rate: remaining budget scaled by the year-to-date beat). When the two methods disagree, the truth is usually between them: read Required per month against the average so far.'),
     ('RF Method', 7, 'If grains differ', 'If budget were yearly or by region only, allocate it to months with a seasonality key (prior-year share) before using this page; never compare a monthly actual with an unallocated annual budget.'),
 ]
 for _t in TABLES:

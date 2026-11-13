@@ -42,7 +42,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Run-rate projection (cross-check)  ⓘ'"
+                  "Value": "'Average-month projection (cross-check)  ⓘ'"
                 }
               }
             },
@@ -224,7 +224,7 @@
             "tooltip": {
               "expr": {
                 "Literal": {
-                  "Value": "'Second method: the year if the remaining months repeat the year-to-date average instead of the budget.'"
+                  "Value": "'Cross-check (average-month projection): the year if the remaining months repeat the year-to-date average month. Not the same as the run-rate on tab 3, which scales the remaining budget by the year-to-date beat.'"
                 }
               }
             }

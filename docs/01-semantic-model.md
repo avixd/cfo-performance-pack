@@ -1044,7 +1044,7 @@ let
         {"RF Method", 3, "Assumptions", "Remaining months land exactly on budget. Target = original full-year budget. Actual and budget share the same grain (month x entity x account), so no allocation is needed."},
         {"RF Method", 4, "Strengths", "Simple, auditable and replayable: move the slicer to see what the forecast said at any month end. No statistical model to explain or maintain."},
         {"RF Method", 5, "Limits", "It carries the year-to-date variance forward but assumes it stops growing. Seasonality lives only in the budget. Entities without a budget have no target and show blank."},
-        {"RF Method", 6, "Cross-check", "The run-rate column assumes the average month so far repeats. When the two methods disagree, the truth is usually between them: read Required per month against the average so far."},
+        {"RF Method", 6, "Cross-check", "The average-month projection assumes the average month so far repeats (tab 3 uses a different run-rate: remaining budget scaled by the year-to-date beat). When the two methods disagree, the truth is usually between them: read Required per month against the average so far."},
         {"RF Method", 7, "If grains differ", "If budget were yearly or by region only, allocate it to months with a seasonality key (prior-year share) before using this page; never compare a monthly actual with an unallocated annual budget."}
     })
 in
@@ -1186,42 +1186,41 @@ Self-documenting catalogue of the model: every table, column, measure and relati
 | Name | string | Object name. |
 | Description | string | Business description stored on the object. |
 | Expression | string | DAX of a measure, calculated column or calculated table; the join for a relationship. |
-| Type | string | Data type, table kind or cardinality. |
-| Format | string | Format string. |
 | Folder | string | Display folder. |
-| Hidden | string | Yes when hidden from report authors. |
 
 <details><summary>DAX</summary>
 
 ```dax
--- One row per model object. INFO.VIEW functions read the model's own metadata, so the dictionary can never drift from the model.
-UNION (
+-- Data dictionary (pattern from the INFO.VIEW documentation technique): one VAR per object type, UNION at the end.
+-- INFO.VIEW functions read the model's own metadata on every refresh, so the dictionary cannot drift from the model.
+-- Hidden objects are left out (they are plumbing, not something a reader should use), and the dictionary leaves itself out.
+VAR __Tables =
     SELECTCOLUMNS (
-        FILTER ( INFO.VIEW.TABLES (), NOT [IsPrivate] ),
+        FILTER ( INFO.VIEW.TABLES (), [IsHidden] = FALSE () && NOT [IsPrivate] && [Name] <> "Data Dictionary" ),
         "Object Type", "Table", "Table", [Name], "Name", [Name], "Description", [Description],
-        "Expression", [Expression], "Type", IF ( ISBLANK ( [Expression] ), "Power Query table", "Calculated table" ),
-        "Format", BLANK (), "Folder", BLANK (), "Hidden", IF ( [IsHidden], "Yes", "No" )
-    ),
+        "Expression", [Expression], "Folder", BLANK ()
+    )
+VAR __Columns =
     SELECTCOLUMNS (
-        FILTER ( INFO.VIEW.COLUMNS (), [Type] <> "RowNumber" ),
+        FILTER ( INFO.VIEW.COLUMNS (), [IsHidden] = FALSE () && [Table] <> "Data Dictionary" ),
         "Object Type", "Column", "Table", [Table], "Name", [Name], "Description", [Description],
-        "Expression", [Expression], "Type", [DataType] & IF ( NOT ISBLANK ( [Expression] ), " (calculated)" ),
-        "Format", [FormatString], "Folder", [DisplayFolder], "Hidden", IF ( [IsHidden], "Yes", "No" )
-    ),
+        "Expression", [Expression], "Folder", [DisplayFolder]
+    )
+VAR __Measures =
     SELECTCOLUMNS (
-        INFO.VIEW.MEASURES (),
+        FILTER ( INFO.VIEW.MEASURES (), [IsHidden] = FALSE () ),
         "Object Type", "Measure", "Table", [Table], "Name", [Name], "Description", [Description],
-        "Expression", [Expression], "Type", [DataType],
-        "Format", [FormatString], "Folder", [DisplayFolder], "Hidden", IF ( [IsHidden], "Yes", "No" )
-    ),
+        "Expression", [Expression], "Folder", [DisplayFolder]
+    )
+VAR __Relationships =
     SELECTCOLUMNS (
         INFO.VIEW.RELATIONSHIPS (),
-        "Object Type", "Relationship", "Table", [FromTable], "Name", [FromTable] & " > " & [ToTable],
-        "Description", [FromCardinality] & " to " & LOWER ( [ToCardinality] ) & ", " & IF ( [IsActive], "active", "inactive" ) & ", filter direction: " & [CrossFilteringBehavior],
-        "Expression", [Relationship], "Type", [FromCardinality] & " to " & LOWER ( [ToCardinality] ),
-        "Format", BLANK (), "Folder", BLANK (), "Hidden", "No"
+        "Object Type", "Relationship", "Table", [FromTable], "Name", [Relationship],
+        "Description", "From " & [FromTable] & " to " & [ToTable] & IF ( [IsActive], "", " (inactive)" ),
+        "Expression", [Relationship], "Folder", BLANK ()
     )
-)
+RETURN
+    UNION ( __Tables, __Columns, __Measures, __Relationships )
 ```
 
 </details>
@@ -1888,7 +1887,7 @@ VAR g = IF ( NOT ISBLANK ( [RF Target] ), [RF Gap] >= 0 ) RETURN IF ( ISBLANK ( 
 ```
 
 **RF Run-Rate Color**  
-Green when the run-rate projection reaches the target.
+Green when the average-month projection reaches the target.
 ```dax
 // Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
 VAR g = IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Gap] >= 0 ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
@@ -3927,7 +3926,7 @@ Page title of the RF page.
 Page subtitle of the RF page: the key figures in one line.
 ```dax
 // Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-"Will we reach the target? Rolling forecast " & ( VAR _x = [RF Total] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " vs target " & ( VAR _x = [RF Target] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & ": " & [RF Status] & " (" & ( VAR _x = [RF Gap] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "). Run-rate view: " & [RF Run-Rate Status] & "."
+"Will we reach the target? Rolling forecast " & ( VAR _x = [RF Total] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " vs target " & ( VAR _x = [RF Target] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & ": " & [RF Status] & " (" & ( VAR _x = [RF Gap] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "). Average-month view: " & [RF Run-Rate Status] & "."
 ```
 
 **PT Sankey**  
@@ -5145,13 +5144,13 @@ DIVIDE ( [RF Actual to Date], [RF Months Elapsed] )
 ```
 
 **RF Run-Rate Total** · format `#,0;(#,0);-`  
-Second method: the year if the remaining months repeat the year-to-date average instead of the budget.
+Cross-check (average-month projection): the year if the remaining months repeat the year-to-date average month. Not the same as the run-rate on tab 3, which scales the remaining budget by the year-to-date beat.
 ```dax
 [RF Actual to Date] + [RF Average per Month] * [RF Months Left]
 ```
 
 **RF Run-Rate Gap** · format `#,0;(#,0);-`  
-Run-rate projection minus target.
+Average-month projection minus target.
 ```dax
 IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Total] - [RF Target] )
 ```
@@ -5163,7 +5162,7 @@ IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Gap] >= 0, "✓ On track", "✗ Short
 ```
 
 **RF Run-Rate Status**  
-Whether the run-rate projection reaches the target.
+Whether the average-month projection reaches the target.
 ```dax
 IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" )
 ```
@@ -5189,7 +5188,7 @@ Card text: required monthly amount next to the average achieved so far.
 ```
 
 **RF Run-Rate Text**  
-Card text: verdict of the run-rate method.
+Card text: verdict of the average-month projection.
 ```dax
 // Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
 [RF Run-Rate Status] & " target · " & ( VAR _x = [RF Run-Rate Gap] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " if the average month repeats"
