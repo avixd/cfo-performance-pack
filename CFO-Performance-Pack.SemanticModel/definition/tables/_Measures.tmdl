@@ -1328,7 +1328,7 @@ table _Measures
 	/// Subtitle of the Budget vs Actual page: selected metric, amount and variance % to budget.
 	measure 'Title BvA' =
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			[Metric Name] & " · " & [Period Label] & ": " & [Currency Label] & " " & ( VAR _x = [Metric Actual] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & ", " & FORMAT ( ABS ( [Metric Var % vs Budget] ), "0.0%" ) & IF ( [Metric Var vs Budget] >= 0, " favourable", " unfavourable" ) & " to budget"
+			[Metric Name] & " · " & [Period Label] & ": " & ( VAR _x = [Metric Actual] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & ", " & FORMAT ( ABS ( [Metric Var % vs Budget] ), "0.0%" ) & IF ( [Metric Var vs Budget] >= 0, " favourable", " unfavourable" ) & " to budget"
 		displayFolder: 6 Narrative
 		lineageTag: 0d12a3fb-1ec7-5261-875b-3eed66af936c
 
@@ -1910,7 +1910,8 @@ table _Measures
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
 			VAR t = FILTER ( ADDCOLUMNS ( CROSSJOIN ( VALUES ( Entity[EntityName] ), CALCULATETABLE ( VALUES ( 'Report Line'[LineKey] ), REMOVEFILTERS ( 'Report Line' ), 'Report Line'[LineType] = "Detail", 'Report Line'[Statement] = "Income Statement" ) ), "@v", [Line Var vs Budget] ), NOT ISBLANK ( [@v] ) )
 			VAR top5 = TOPN ( 5, t, ABS ( [@v] ), DESC )
-			RETURN COUNTROWS ( FILTER ( top5, [@v] < 0 ) ) & " of the 5 largest variances are unfavourable; together they total " & ( VAR _x = SUMX ( top5, [@v] ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "."
+			VAR bad = COUNTROWS ( FILTER ( top5, [@v] < 0 ) ) + 0
+			RETURN bad & " of the 5 largest variances " & IF ( bad = 1, "is", "are" ) & " unfavourable; together they total " & ( VAR _x = SUMX ( top5, [@v] ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "."
 		displayFolder: 6 Narrative\Subtitles
 		lineageTag: 7da41253-7aa1-517d-8b3b-1db199d8e40e
 
@@ -2915,7 +2916,7 @@ table _Measures
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
 			VAR fr = [Revenue FX Effect] VAR fe = [EBITDA FX Effect] VAR rv = [Revenue Var vs Budget]
 			RETURN IF ( ISBLANK ( fr ), "No foreign-currency activity in this selection.",
-			    "Exchange rates versus budget rates " & IF ( fr >= 0, "added ", "removed " ) & ( VAR _x = ABS ( fr ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of revenue (" & FORMAT ( DIVIDE ( fr, rv ), "0%" ) & " of the variance) and "
+			    "Exchange rates versus budget rates " & IF ( fr >= 0, "added ", "removed " ) & ( VAR _x = ABS ( fr ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of revenue (equal to " & FORMAT ( ABS ( DIVIDE ( fr, rv ) ), "0%" ) & " of the variance) and "
 			        & IF ( fe >= 0, "added ", "removed " ) & ( VAR _x = ABS ( fe ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of EBITDA. At constant currency revenue is " & FORMAT ( [Revenue Var % vs Budget (constant currency)], "+0.0%;-0.0%" ) & " vs budget." )
 		displayFolder: 6 Narrative
 		lineageTag: 8982f72e-e41b-5552-9093-c33f2cc178ab
