@@ -1225,7 +1225,7 @@ def _sankey():
     def label(x, y, h, anchor, name, val):
         return (f'"<text x=\'{x}\' y=\'" & {N(f"{y} + {h} / 2 - 2")} & "\' text-anchor=\'{anchor}\' font-family=\'DIN, Segoe UI, sans-serif\' font-size=\'13\' font-weight=\'700\' fill=\'" & [Col Title] & "\'>{name}</text>"'
                 f' & "<text x=\'{x}\' y=\'" & {N(f"{y} + {h} / 2 + 13")} & "\' text-anchor=\'{anchor}\' font-family=\'DIN, Segoe UI, sans-serif\' font-size=\'12\' fill=\'" & [Col Muted] & "\'>" & {money(val)} & " (" & FORMAT ( DIVIDE ( {val}, rev ), "0%" ) & ")</text>"')
-    X1, X2, X3, X4, X5 = 170, 400, 630, 860, 1090
+    X1, X2, X3, X4, X5 = 160, 370, 580, 790, 1000   # last column leaves ~260 px for its labels
     A, G, B = '[Col Accent]', '[Col Good]', '[Col Bad]'
     parts = []
     for r, y, tgt, nm in (('r1', 'yR1', 'y0', 'North America'), ('r2', 'yR2', 'y0 + hR1', 'Europe'), ('r3', 'yR3', 'y0 + hR1 + hR2', 'Pacific')):

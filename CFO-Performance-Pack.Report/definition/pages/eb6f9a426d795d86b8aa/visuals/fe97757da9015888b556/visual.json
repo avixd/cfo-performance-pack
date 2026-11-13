@@ -5,7 +5,7 @@
     "x": 208.0,
     "y": 92.0,
     "z": 40000,
-    "height": 50.7,
+    "height": 57.9,
     "width": 186.9,
     "tabOrder": 40000
   },
@@ -31,6 +31,24 @@
             }
           ]
         }
+      },
+      "sortDefinition": {
+        "sort": [
+          {
+            "field": {
+              "Column": {
+                "Expression": {
+                  "SourceRef": {
+                    "Entity": "Actuals Until"
+                  }
+                },
+                "Property": "Label"
+              }
+            },
+            "direction": "Descending"
+          }
+        ],
+        "isDefaultSort": true
       }
     },
     "objects": {

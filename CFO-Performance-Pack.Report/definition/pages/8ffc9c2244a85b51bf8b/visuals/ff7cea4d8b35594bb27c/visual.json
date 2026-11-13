@@ -3,9 +3,9 @@
   "name": "ff7cea4d8b35594bb27c",
   "position": {
     "x": 615.7,
-    "y": 142.7,
+    "y": 155.3,
     "z": 84000,
-    "height": 361.9,
+    "height": 349.2,
     "width": 652.3,
     "tabOrder": 84000
   },
@@ -664,21 +664,7 @@
             "rowSubtotals": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "perRowLevel": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "rowSubtotalsPosition": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Top'"
+                  "Value": "false"
                 }
               }
             },
@@ -689,34 +675,6 @@
                 }
               }
             }
-          }
-        },
-        {
-          "properties": {
-            "rowSubtotals": {
-              "expr": {
-                "Literal": {
-                  "Value": "false"
-                }
-              }
-            }
-          },
-          "selector": {
-            "metadata": "Report Line.Section"
-          }
-        },
-        {
-          "properties": {
-            "rowSubtotals": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            }
-          },
-          "selector": {
-            "metadata": "Report Line.LineName"
           }
         }
       ]
