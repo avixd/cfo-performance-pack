@@ -5158,13 +5158,13 @@ IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Total] - [RF Target] )
 **RF Status**  
 On track when the rolling forecast is at or above target.
 ```dax
-IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Gap] >= 0, "✓ On track", "✗ Short" ), "No target" )
+IF ( NOT ISBLANK ( [RF Total] ), IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Gap] >= 0, "✓ On track", "✗ Short" ), "No target" ) )
 ```
 
 **RF Run-Rate Status**  
 Whether the average-month projection reaches the target.
 ```dax
-IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" )
+IF ( NOT ISBLANK ( [RF Total] ), IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" ) )
 ```
 
 **RF Total Text**  
