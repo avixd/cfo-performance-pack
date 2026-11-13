@@ -767,13 +767,13 @@ def page_notes():
     return p
 
 
-def cslicer(p, key, x, y, w, h, spec, title, mode='Dropdown', single=False, horizontal=False, search=False):
+def cslicer(p, key, x, y, w, h, spec, title, mode='Dropdown', single=False, horizontal=False, search=False, sort=None):
     """Slicer inside the content area (page-specific filters), styled as a panel. search=True adds the slicer's own search box."""
     obj = {'data': [{'properties': {'mode': L(mode)}}], 'header': [{'properties': {'show': L(False)}}],
            'items': [{'properties': {'textSize': L(9), 'fontColor': solid('#1F2A37'), 'background': solid('#FFFFFF')}}],
            'selection': [{'properties': {'singleSelect': L(False), 'strictSingleSelect': L(single), 'selectAllCheckboxEnabled': L(not single)}}],
            'general': [{'properties': dict({'orientation': L(1)} if horizontal else {}, **({'selfFilterEnabled': L(True)} if search else {}))}]}
-    return p.add(key, 'slicer', x, y, w, h, roles={'Values': [spec]}, objects=obj, title=title, header=False,
+    return p.add(key, 'slicer', x, y, w, h, roles={'Values': [spec]}, objects=obj, title=title, header=False, sort=sort,
                  container={'padding': [{'properties': {'top': L(2), 'bottom': L(2), 'left': L(6), 'right': L(6)}}]})
 
 
@@ -800,17 +800,17 @@ def page_dictionary():
     for i, (m, lab) in enumerate([('DD Tables', 'Tables'), ('DD Columns', 'Columns'), ('DD Measures', 'Measures'), ('DD Relationships', 'Relationships')]):
         p.kpi(f'k{i}', 16 + i * (w + 10), 74, w, 74, m, lab)
     # page-specific slicers: tiles, searchable dropdowns and a free-text "contains" search
-    cslicer(p, 'f_type', 16, 156, 330, 62, 'Data Dictionary[Object Type]', 'Object type', mode='Basic', horizontal=True)
-    cslicer(p, 'f_table', 356, 156, 210, 62, 'Data Dictionary[Table]', 'Table (type to search)', search=True)
-    cslicer(p, 'f_folder', 576, 156, 250, 62, 'Data Dictionary[Folder]', 'Display folder (type to search)', search=True)
-    cslicer(p, 'f_name', 836, 156, 210, 62, 'Data Dictionary[Name]', 'Name (type to search)', search=True)
-    p.add('f_text', 'textSlicer', 1056, 156, 208, 62, roles={'Values': ['Data Dictionary[Name]']}, title='Name contains (free text)', header=False)
+    cslicer(p, 'f_type', 16, 156, 330, 66, 'Data Dictionary[Object Type]', 'Object type', mode='Basic', horizontal=True)
+    cslicer(p, 'f_table', 356, 156, 210, 66, 'Data Dictionary[Table]', 'Table (type to search)', search=True)
+    cslicer(p, 'f_folder', 576, 156, 250, 66, 'Data Dictionary[Folder]', 'Display folder (type to search)', search=True)
+    cslicer(p, 'f_name', 836, 156, 210, 66, 'Data Dictionary[Name]', 'Name (type to search)', search=True)
+    p.add('f_text', 'textSlicer', 1056, 156, 208, 66, roles={'Values': ['Data Dictionary[Name]']}, title='Name contains (free text)', header=False)
     fields = ['Data Dictionary[Object Type]', 'Data Dictionary[Table]', 'Data Dictionary[Name]', 'Data Dictionary[Description]', 'Data Dictionary[Expression]',
               'Data Dictionary[Folder]']
     obj = p.table_objects(fields, size=8.5, wrap=True)
     obj['columnWidth'] = [{'properties': {'value': L(wd)}, 'selector': {'metadata': 'Data Dictionary.' + c}}
                           for c, wd in (('Object Type', 76), ('Table', 96), ('Name', 170), ('Description', 250), ('Expression', 330), ('Folder', 110))]
-    p.add('dict', 'tableEx', 16, 226, 1248, 478, roles={'Values': [(f, f.split('[')[1][:-1]) for f in fields]}, objects=obj, title='=VT DD', subtitle='Sub DD',
+    p.add('dict', 'tableEx', 16, 230, 1248, 474, roles={'Values': [(f, f.split('[')[1][:-1]) for f in fields]}, objects=obj, title='=VT DD', subtitle='Sub DD',
           sort=[('Data Dictionary[Object Type]', 'Ascending')])
     return p
 
@@ -837,42 +837,41 @@ def page_isx():
     p.chrome('PT ISX', 'PS ISX')
     X = lambda v: CX + (v - 16) * SX
     Y = lambda v: CY + (v - 74) * SY
-    cslicer(p, 'f_focus', 16, 74, 470, 50, 'PL Focus[Focus]', 'Focus (drives the summary and the trend)', mode='Basic', single=True, horizontal=True)
+    cslicer(p, 'f_focus', 16, 74, 470, 64, 'PL Focus[Focus]', 'Focus (drives the summary and the trend)', mode='Basic', single=True, horizontal=True)
     cards = [('Revenue', 'Revenue ($)'), ('Cost of Sales', 'COGS ($)'), ('Gross Profit', 'Gross Profit ($)'), ('EBITDA', 'EBITDA ($)'), ('EBIT', 'EBIT ($)'), ('Net Income', 'Net Profit ($)')]
     cw = (470 - 2 * 8) / 3
     for i, (n, lab) in enumerate(cards):
-        x0, y0, w0, h0 = X(16 + (i % 3) * (cw + 8)), Y(130 + (i // 3) * 112), cw * SX, 106 * SY
+        x0, y0, w0, h0 = X(16 + (i % 3) * (cw + 8)), Y(144 + (i // 3) * 124), cw * SX, 118 * SY
         p.add(f'c{i}_bg', 'textbox', x0, y0, w0, h0, content=False, header=False, objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]})
-        p.button(f'c{i}_l', x0 + 4, y0 + 4, w0 - 8, 16, lab, fill=None, text='Muted', outline=None, size=8.5, align='center')
-        p.button(f'c{i}_v', x0 + 4, y0 + 19, w0 - 8, 26, '', measure=f'KV {n}', fill=None, text='Title', outline=None, size=14, align='center', bold=True)
-        p.button(f'c{i}_p', x0 + 4, y0 + 47, w0 - 8, 15, '', measure=f'IS {n} PY Text', fill=None, text='Muted', outline=None, size=7.5, align='left')
-        p.button(f'c{i}_c', x0 + 4, y0 + 62, w0 - 8, 15, '', measure=f'IS {n} Chg Text', fill=None, text='Muted', outline=None, size=7.5, align='left')
-        p.button(f'c{i}_g', x0 + 4, y0 + 77, w0 - 8, 15, '', measure=f'IS {n} Pct Text', fill=None, text='Muted', outline=None, size=7.5, align='left')
+        p.button(f'c{i}_l', x0 + 4, y0 + 3, w0 - 8, 18, lab, fill=None, text='Muted', outline=None, size=8.5, align='center', valign='middle')
+        p.button(f'c{i}_v', x0 + 4, y0 + 20, w0 - 8, 26, '', measure=f'KV {n}', fill=None, text='Title', outline=None, size=14, align='center', bold=True, valign='middle')
+        p.button(f'c{i}_p', x0 + 4, y0 + 48, w0 - 8, 18, '', measure=f'IS {n} PY Text', fill=None, text='Muted', outline=None, size=7.5, align='left', valign='middle')
+        p.button(f'c{i}_c', x0 + 4, y0 + 66, w0 - 8, 18, '', measure=f'IS {n} Chg Text', fill=None, text='Muted', outline=None, size=7.5, align='left', valign='middle')
+        p.button(f'c{i}_g', x0 + 4, y0 + 84, w0 - 8, 18, '', measure=f'IS {n} Pct Text', fill=None, text='Muted', outline=None, size=7.5, align='left', valign='middle')
         p.visuals[-1]['visual']['objects']['text'][1]['properties']['fontColor'] = mcolor(f'IS {n} PY Color')
     # rule-based summary for the focus line
-    sx, sy, sw, sh = X(16), Y(354), 470 * SX, 112 * SY
+    sx, sy, sw, sh = X(16), Y(398), 470 * SX, 126 * SY
     p.add('sum_bg', 'textbox', sx, sy, sw, sh, content=False, header=False, title='=VT Focus Summary',
           objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]})
     for i in range(4):
-        p.button(f'sum_{i}', sx + 6, sy + 24 + i * 18, sw - 12, 18, '', measure=f'Focus Bullet {i + 1}', fill=None, text='Text', outline=None, size=8, align='left')
+        p.button(f'sum_{i}', sx + 6, sy + 24 + i * 22, sw - 12, 22, '', measure=f'Focus Bullet {i + 1}', fill=None, text='Text', outline=None, size=8, align='left', valign='middle')
     obj = p.axes({'dataPoint': [{'properties': {'fill': solid(SERIES['actual'])}, 'selector': {'metadata': '_Measures.Focus Monthly CY'}},
                                 {'properties': {'fill': solid(SERIES['py'])}, 'selector': {'metadata': '_Measures.Focus Monthly PY'}}],
                   'lineStyles': [{'properties': {'lineChartType': L('smooth'), 'strokeWidth': L(2), 'showMarker': L(True)}}],
                   'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000), 'labelPrecision': L(0), 'fontSize': L(7.5), 'color': T('Text')}}]}, value_axis=False)
-    p.add('trend', 'lineChart', 16, 472, 470, 232, roles={'Category': ['Date[Month Name]'], 'Y': [('Focus Monthly CY', 'CY'), ('Focus Monthly PY', 'PY')]},
+    p.add('trend', 'lineChart', 16, 530, 470, 174, roles={'Category': ['Date[Month Name]'], 'Y': [('Focus Monthly CY', 'CY'), ('Focus Monthly PY', 'PY')]},
           objects=obj, title='=VT Focus Trend', subtitle='Sub Focus Trend', sort=[('Date[Month Name]', 'Ascending')])
     # right: unit toggle, expandable statement matrix, method notes
-    cslicer(p, 'f_unit', 496, 74, 250, 50, 'Display Unit[Unit]', 'Amounts in', mode='Basic', single=True, horizontal=True)
+    cslicer(p, 'f_unit', 496, 74, 250, 64, 'Display Unit[Unit]', 'Amounts in', mode='Basic', single=True, horizontal=True)
     vals = [('IS CY', 'CY'), ('IS CY % Rev', 'CY % Rev'), ('IS PY', 'PY'), ('IS PY % Rev', 'PY % Rev'), ('IS Chg PY', 'Δ PY'), ('IS Chg % PY', 'Δ% PY'), ('IS Chg Rev bps', 'Δ % Rev (bps)')]
     names = [m for m, _ in vals]
     obj = matrix_objects(p, names, back={'_Measures.' + m: 'IS Row Background' for m in names},
                          colours={'_Measures.IS Chg PY': 'IS Chg Color', '_Measures.IS Chg % PY': 'IS Chg Color'})
-    # section header = the section total (subtotal on top); no grand total, because a P&L has no meaningful sum of all sections
-    obj['subTotals'] = [{'properties': {'rowSubtotals': L(True), 'perRowLevel': L(True), 'rowSubtotalsPosition': L('Top'), 'columnSubtotals': L(False)}},
-                        {'properties': {'rowSubtotals': L(False)}, 'selector': {'metadata': 'Report Line.Section'}},
-                        {'properties': {'rowSubtotals': L(True)}, 'selector': {'metadata': 'Report Line.LineName'}}]
+    # no subtotal or grand-total rows: a collapsed section shows its own total (the measures sum the section's accounts),
+    # and a P&L has no meaningful 'sum of all sections'
+    obj['subTotals'] = [{'properties': {'rowSubtotals': L(False), 'columnSubtotals': L(False)}}]
     obj['rowHeaders'][0]['properties']['steppedLayout'] = L(True)
-    p.add('matrix', 'pivotTable', 496, 130, 768, 400, roles={'Rows': [('Report Line[Section]', 'Heads'), ('Report Line[LineName]', 'Line')], 'Values': vals},
+    p.add('matrix', 'pivotTable', 496, 144, 768, 386, roles={'Rows': [('Report Line[Section]', 'Heads'), ('Report Line[LineName]', 'Line')], 'Values': vals},
           objects=obj, title='=VT ISX', subtitle='Sub ISX',
           filters=[cat_filter(hexid(p.pid, 'matrix', 'f1'), 'Report Line', 'Statement', ['Income Statement']),
                    cat_filter(hexid(p.pid, 'matrix', 'f2'), 'Report Line', 'MatrixRow', ['Yes'])])
@@ -885,25 +884,28 @@ def page_rf():
     month matrix that shows actuals up to that month and budget after it; plus the question it exists to answer: will we reach the target?"""
     p = Page(hexid('page', 'rf'), 'H3 · Rolling Forecast', 'RF', hidden=True)
     p.chrome('PT RF', 'PS RF')
-    cslicer(p, 'f_until', 16, 74, 220, 56, 'Actuals Until[Label]', 'Actuals until', single=True)
-    cslicer(p, 'f_metric', 246, 74, 520, 56, 'Metric[Metric]', 'Metric', mode='Basic', single=True, horizontal=True)
+    # single-select slicers select their first item, so the list runs newest first: the page opens on the latest close
+    cslicer(p, 'f_until', 16, 74, 220, 64, 'Actuals Until[Label]', 'Actuals until', single=True, sort=[('Actuals Until[Label]', 'Descending')])
+    cslicer(p, 'f_metric', 246, 74, 620, 64, 'Metric[Metric]', 'Metric', mode='Basic', single=True, horizontal=True)
     w = (1248 - 3 * 10) / 4
     for i, (m, lab, sub, col) in enumerate([('RF Total', 'Rolling forecast (actual + remaining budget)', 'RF Total Text', 'RF Status Color'),
                                             ('RF Target', 'Target', 'RF Target Text', None),
                                             ('RF Required per Month', 'Required per remaining month', 'RF Required Text', 'RF Required Color'),
                                             ('RF Run-Rate Total', 'Average-month projection (cross-check)', 'RF Run-Rate Text', 'RF Run-Rate Color')]):
-        p.kpi(f'k{i}', 16 + i * (w + 10), 136, w, 92, m, lab, sub, col)
+        p.kpi(f'k{i}', 16 + i * (w + 10), 144, w, 92, m, lab, sub, col)
     obj = matrix_objects(p, ['RF Value'], back={'_Measures.RF Value': 'RF Cell Color'})
-    p.add('matrix', 'pivotTable', 16, 234, 1248, 250, roles={'Rows': [('Entity[EntityName]', 'Entity')], 'Columns': ['Date[Month Name]'], 'Values': [('RF Value', 'Value')]},
+    p.add('matrix', 'pivotTable', 16, 242, 1248, 244, roles={'Rows': [('Entity[EntityName]', 'Entity')], 'Columns': ['Date[Month Name]'], 'Values': [('RF Value', 'Value')]},
           objects=obj, title='=VT RF Matrix', subtitle='Sub RF Matrix')
     fields = ['Entity[EntityName]', 'RF Actual to Date', 'RF Remaining Budget', 'RF Total', 'RF Target', 'RF Gap', 'RF Attainment %', 'RF Required per Month',
               'RF Average per Month', 'RF Status']
     heads = ['Entity', 'Actual to date', 'Remaining budget', 'Rolling forecast', 'Target', 'Gap', 'Attainment', 'Required / month', 'Average / month', 'Status']
     obj = p.table_objects(fields, size=8.5, colours={'_Measures.RF Gap': 'RF Status Color', '_Measures.RF Status': 'RF Status Color', '_Measures.RF Attainment %': 'RF Status Color'})
     obj['total'] = [{'properties': {'totals': L(True)}}]
-    p.add('table', 'tableEx', 16, 490, 760, 214, roles={'Values': list(zip(fields, heads))}, objects=obj, title='=VT RF Table', subtitle='Sub RF Table',
+    obj['columnWidth'] = [{'properties': {'value': L(wd)}, 'selector': {'metadata': m if '[' not in m else m.replace('[', '.').rstrip(']')}}
+                          for m, wd in zip(['Entity.EntityName'] + ['_Measures.' + f for f in fields[1:]], [118, 72, 82, 82, 76, 64, 64, 80, 76, 72])]
+    p.add('table', 'tableEx', 16, 492, 846, 212, roles={'Values': list(zip(fields, heads))}, objects=obj, title='=VT RF Table', subtitle='Sub RF Table',
           sort=[('RF Gap', 'Ascending')])
-    p.story('method', 786, 490, 478, 214, 'RF Method', '=VT RF Method', 'Sub RF Method', size=8, head=('Topic', 'Note'))
+    p.story('method', 872, 492, 392, 212, 'RF Method', '=VT RF Method', 'Sub RF Method', size=8, head=('Topic', 'Note'))
     return p
 
 

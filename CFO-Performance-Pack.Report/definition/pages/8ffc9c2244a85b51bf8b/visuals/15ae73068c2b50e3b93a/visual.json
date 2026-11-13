@@ -3,9 +3,9 @@
   "name": "15ae73068c2b50e3b93a",
   "position": {
     "x": 347.3,
-    "y": 189.7,
+    "y": 203.3,
     "z": 50000,
-    "height": 15,
+    "height": 18,
     "width": 120.5,
     "tabOrder": 50000
   },
@@ -113,6 +113,13 @@
               "expr": {
                 "Literal": {
                   "Value": "0D"
+                }
+              }
+            },
+            "verticalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'middle'"
                 }
               }
             }
