@@ -3,9 +3,9 @@
   "name": "a597fe8a6bfb54dfb6b2",
   "position": {
     "x": 8,
-    "y": 136,
+    "y": 130,
     "z": 8000,
-    "height": 24,
+    "height": 22,
     "width": 180,
     "tabOrder": 8000
   },
@@ -42,7 +42,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'≡   P&L'"
+                  "Value": "'≡   4  P&L'"
                 }
               }
             },

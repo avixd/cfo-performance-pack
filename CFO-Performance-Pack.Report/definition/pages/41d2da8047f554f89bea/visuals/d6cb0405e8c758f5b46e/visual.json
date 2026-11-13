@@ -3,9 +3,9 @@
   "name": "d6cb0405e8c758f5b46e",
   "position": {
     "x": 8,
-    "y": 188,
+    "y": 178,
     "z": 10000,
-    "height": 24,
+    "height": 22,
     "width": 180,
     "tabOrder": 10000
   },
@@ -42,7 +42,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'✓   Data Quality'"
+                  "Value": "'✓   6  Data Quality'"
                 }
               }
             },

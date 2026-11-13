@@ -3057,6 +3057,842 @@ table _Measures
 		displayFolder: 3 KPIs\Ownership
 		lineageTag: 864eb134-3bb4-567b-bbd7-0fca2b593b48
 
+	/// Number of model objects in the current dictionary selection.
+	measure 'DD Objects' = COUNTROWS ( 'Data Dictionary' )
+		formatString: 0
+		displayFolder: 12 Data Dictionary
+		lineageTag: 7899e491-8d2e-59b6-8db7-3e0c689a7e93
+
+	/// Number of tables in the current dictionary selection.
+	measure 'DD Tables' = CALCULATE ( COUNTROWS ( 'Data Dictionary' ), KEEPFILTERS ( 'Data Dictionary'[Object Type] = "Table" ) ) + 0
+		formatString: 0
+		displayFolder: 12 Data Dictionary
+		lineageTag: afb43f4d-f103-5546-9898-b6ef4b510419
+
+	/// KPI card value: [DD Tables] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV DD Tables' = FORMAT ( [DD Tables], "#,0" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 9e860f16-080e-5aa5-8d62-65038fd8f277
+
+	/// Number of columns in the current dictionary selection.
+	measure 'DD Columns' = CALCULATE ( COUNTROWS ( 'Data Dictionary' ), KEEPFILTERS ( 'Data Dictionary'[Object Type] = "Column" ) ) + 0
+		formatString: 0
+		displayFolder: 12 Data Dictionary
+		lineageTag: f5fb1c2d-28d4-5e82-9aa0-7e990d64da09
+
+	/// KPI card value: [DD Columns] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV DD Columns' = FORMAT ( [DD Columns], "#,0" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 8b0d2efe-6945-586a-9957-885163687e48
+
+	/// Number of measures in the current dictionary selection.
+	measure 'DD Measures' = CALCULATE ( COUNTROWS ( 'Data Dictionary' ), KEEPFILTERS ( 'Data Dictionary'[Object Type] = "Measure" ) ) + 0
+		formatString: 0
+		displayFolder: 12 Data Dictionary
+		lineageTag: b459e5fb-1be5-5f06-a5f4-e030527fec9c
+
+	/// KPI card value: [DD Measures] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV DD Measures' = FORMAT ( [DD Measures], "#,0" )
+		displayFolder: 11 KPI Cards
+		lineageTag: f5f04ec3-28d0-567b-9fb3-ce12f02c1d2d
+
+	/// Number of relationships in the current dictionary selection.
+	measure 'DD Relationships' = CALCULATE ( COUNTROWS ( 'Data Dictionary' ), KEEPFILTERS ( 'Data Dictionary'[Object Type] = "Relationship" ) ) + 0
+		formatString: 0
+		displayFolder: 12 Data Dictionary
+		lineageTag: cffba213-8efb-5573-8f4d-6d4ebdc33c6f
+
+	/// KPI card value: [DD Relationships] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV DD Relationships' = FORMAT ( [DD Relationships], "#,0" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 4a58bc4e-f9f5-5e04-9fe3-8a6b5b413228
+
+	/// Share of the selected objects that carry a description.
+	measure 'DD Documented %' = DIVIDE ( COUNTROWS ( FILTER ( 'Data Dictionary', NOT ISBLANK ( 'Data Dictionary'[Description] ) ) ), COUNTROWS ( 'Data Dictionary' ) )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 12 Data Dictionary
+		lineageTag: d2330873-02af-5659-988c-8fe46a3ef361
+
+	/// Card text: documentation coverage of the current selection.
+	measure 'DD Documented Text' = FORMAT ( [DD Documented %], "0%" ) & " of the selection has a description"
+		displayFolder: 12 Data Dictionary
+		lineageTag: 8f246f02-9c01-56a9-b3c8-089fe348f631
+
+	/// Page title of the DD page.
+	measure 'PT DD' = "Data Dictionary · explore the model without opening it"
+		displayFolder: 6 Narrative\Page headers
+		lineageTag: e5f542aa-8ee6-5795-b6c5-4b3b4de4c6be
+
+	/// Page subtitle of the DD page: the key figures in one line.
+	measure 'PS DD' = FORMAT ( [DD Objects], "#,0" ) & " objects in the selection · " & [DD Documented Text] & " · built from the model itself on every refresh"
+		displayFolder: 6 Narrative\Page headers
+		lineageTag: 0f239b7a-1607-5788-9419-598f4bd88b14
+
+	/// Dynamic visual title: updates with the period, currency and selection.
+	measure 'VT DD' = "Model objects: name, description and calculation"
+		displayFolder: 6 Narrative\Visual titles
+		lineageTag: e530e587-5748-5fea-b7df-f028c250fd83
+
+	/// Insight subtitle: one sentence computed from the data behind the visual; rewrites itself with every filter.
+	measure 'Sub DD' = "Type in a slicer search box to find any table, column or measure by part of its name. Clear the slicers to see everything."
+		displayFolder: 6 Narrative\Subtitles
+		lineageTag: 6ebb2e13-6845-5e45-8a0f-5457e4120e1f
+
+	/// Footer of the DD page: sources, exchange-rate policy, close month and page-specific caveats.
+	measure 'Footer DD' = "Source: INFO.VIEW.TABLES, COLUMNS, MEASURES and RELATIONSHIPS, unioned in the calculated table Data Dictionary · refreshed with the model"
+		displayFolder: 10 Layout
+		lineageTag: 168eee43-3cb7-56ef-ac43-bfd33126c7ef
+
+	/// Divisor chosen with the Thousand / Absolute toggle (thousand by default).
+	measure 'Unit Divisor' = SELECTEDVALUE ( 'Display Unit'[Divisor], 1000 )
+		formatString: 0
+		displayFolder: 13 Statement Explorer
+		lineageTag: f9eaa55b-b8bb-5810-b3a9-0346ff5d2e05
+
+	/// Current period for the section or line on the row. A section header shows the union of its lines' accounts, i.e. the section total.
+	measure 'IS CY Raw' =
+			// Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
+			IF ( HASONEVALUE ( 'Report Line'[Section] ),
+			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
+			    RETURN CALCULATE ( [Actual (Period)], TREATAS ( accts, Account[AccountKey] ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 13 Statement Explorer
+		lineageTag: 7545b6fa-95eb-541b-878c-944e5df625b4
+
+	/// Same period last year for the section or line on the row.
+	measure 'IS PY Raw' =
+			// Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
+			IF ( HASONEVALUE ( 'Report Line'[Section] ),
+			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
+			    RETURN CALCULATE ( [Prior Year (Period)], TREATAS ( accts, Account[AccountKey] ) )
+			)
+		formatString: #,0;(#,0);-
+		displayFolder: 13 Statement Explorer
+		lineageTag: 8582c869-2866-559d-ad51-1af33852e9c7
+
+	/// Current period, in the unit chosen with the toggle.
+	measure 'IS CY' = DIVIDE ( [IS CY Raw], [Unit Divisor] )
+		formatString: #,0;(#,0);-
+		displayFolder: 13 Statement Explorer
+		lineageTag: 769921c0-6a55-5e0c-a5fc-d4de84a4952f
+
+	/// Prior year, in the unit chosen with the toggle.
+	measure 'IS PY' = DIVIDE ( [IS PY Raw], [Unit Divisor] )
+		formatString: #,0;(#,0);-
+		displayFolder: 13 Statement Explorer
+		lineageTag: bef1e4f4-70ef-5532-9a91-64e7a60a8920
+
+	/// Current period as a share of net revenue (common size).
+	measure 'IS CY % Rev' =
+			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
+			DIVIDE ( [IS CY Raw], CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ) )
+		formatString: 0.00%
+		displayFolder: 13 Statement Explorer
+		lineageTag: ef165994-ecb9-5ccb-84a6-8392a552449b
+
+	/// Prior year as a share of prior-year net revenue.
+	measure 'IS PY % Rev' =
+			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
+			DIVIDE ( [IS PY Raw], CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ) )
+		formatString: 0.00%
+		displayFolder: 13 Statement Explorer
+		lineageTag: 4bf3c87c-9288-56b0-8a00-5b990198dc59
+
+	/// Change versus prior year, in the chosen unit. Positive = favourable, because costs are stored negative.
+	measure 'IS Chg PY' = DIVIDE ( [IS CY Raw] - [IS PY Raw], [Unit Divisor] )
+		formatString: #,0;(#,0);-
+		displayFolder: 13 Statement Explorer
+		lineageTag: 473050a1-1dbf-5d8b-aac6-53bcf379fbf4
+
+	/// Change versus prior year in %. Blank when the signs differ or the change exceeds 1,000%.
+	measure 'IS Chg % PY' = VAR p = IF ( [IS CY Raw] * [IS PY Raw] > 0, DIVIDE ( [IS CY Raw] - [IS PY Raw], ABS ( [IS PY Raw] ) ) ) RETURN IF ( ABS ( p ) < 10, p )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 13 Statement Explorer
+		lineageTag: bec556db-a04d-5b20-9b7d-5ab5acc4321b
+
+	/// Change in the share of revenue, in basis points (100 bps = 1 percentage point).
+	measure 'IS Chg Rev bps' = ( [IS CY % Rev] - [IS PY % Rev] ) * 10000
+		formatString: #,0.0
+		displayFolder: 13 Statement Explorer
+		lineageTag: d3c7776e-eb56-5976-ae78-ee70639de7d6
+
+	/// Green when the row is favourable to prior year (higher revenue or profit, lower cost).
+	measure 'IS Chg Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR g = IF ( NOT ISBLANK ( [IS CY Raw] ) && NOT ISBLANK ( [IS PY Raw] ), [IS CY Raw] >= [IS PY Raw] ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
+		displayFolder: 8 Formatting
+		lineageTag: 838540aa-4eb5-5010-9fb1-edacf9940a5a
+
+	/// Matrix shading: section headers tinted, detail lines on the panel colour.
+	measure 'IS Row Background' = IF ( ISINSCOPE ( 'Report Line'[LineName] ), [Col Panel], [Col Subtotal] )
+		displayFolder: 8 Formatting
+		lineageTag: ca8a11cb-4738-5808-ba7c-cef23b6cef3d
+
+	/// Date range covered by the current Period view, e.g. 01-Apr-26 to 31-Oct-26.
+	measure 'IS Range' =
+			VAR m = [Selected Month]
+			VAR winStart = SWITCH ( SELECTEDVALUE ( 'Period View'[View], "YTD" ), "MTD", m, "QTD", DATE ( YEAR ( m ), INT ( ( MONTH ( m ) - 1 ) / 3 ) * 3 + 1, 1 ), DATE ( ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) - 1, 4, 1 ) )
+			RETURN FORMAT ( winStart, "dd-mmm-yy" ) & " to " & FORMAT ( EOMONTH ( m, 0 ), "dd-mmm-yy" )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 4e8a5d79-a904-5d61-addb-a59ccc30be41
+
+	/// Card row: Revenue for the same period last year.
+	measure 'IS Revenue PY Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"PY   " & ( VAR _x = [Revenue PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 01c23716-362d-5bd0-a04c-a1ec18023c8e
+
+	/// Card row: Revenue change versus last year, as an amount.
+	measure 'IS Revenue Chg Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"Change ($)   " & ( VAR _x = [Revenue] - [Revenue PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 48dce792-b16a-5435-8a04-9c4eed23d862
+
+	/// Card row: Revenue change versus last year, in %.
+	measure 'IS Revenue Pct Text' = "% Change   " & FORMAT ( DIVIDE ( [Revenue] - [Revenue PY], ABS ( [Revenue PY] ) ), "▲ 0.0%;▼ 0.0%;0.0%" )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 03214dbe-0000-5873-b6f4-58416018be04
+
+	/// Green when Revenue is favourable to last year.
+	measure 'IS Revenue PY Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR g = IF ( NOT ISBLANK ( [Revenue PY] ), [Revenue] >= [Revenue PY] ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
+		displayFolder: 8 Formatting
+		lineageTag: 6ce300ad-fd70-5d1d-b80f-a78d076cc39b
+
+	/// KPI card value: [Cost of Sales] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV Cost of Sales' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			( VAR _x = [Cost of Sales] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 11 KPI Cards
+		lineageTag: a4a88882-dc88-528c-8ca8-84d61361fcd6
+
+	/// Card row: COGS for the same period last year.
+	measure 'IS Cost of Sales PY Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"PY   " & ( VAR _x = [Cost of Sales PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 35cc76b7-e7a0-5726-a07d-bf90cddf1473
+
+	/// Card row: COGS change versus last year, as an amount.
+	measure 'IS Cost of Sales Chg Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"Change ($)   " & ( VAR _x = [Cost of Sales] - [Cost of Sales PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 727de02d-2d7d-5dde-8b71-e09139fc89d0
+
+	/// Card row: COGS change versus last year, in %.
+	measure 'IS Cost of Sales Pct Text' = "% Change   " & FORMAT ( DIVIDE ( [Cost of Sales] - [Cost of Sales PY], ABS ( [Cost of Sales PY] ) ), "▲ 0.0%;▼ 0.0%;0.0%" )
+		displayFolder: 13 Statement Explorer
+		lineageTag: f9cd93d3-08b1-58ed-8c2e-52cc972b5621
+
+	/// Green when COGS is favourable to last year.
+	measure 'IS Cost of Sales PY Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR g = IF ( NOT ISBLANK ( [Cost of Sales PY] ), [Cost of Sales] >= [Cost of Sales PY] ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
+		displayFolder: 8 Formatting
+		lineageTag: c5f8cb64-3c84-58dc-b8f3-aa0574eb6400
+
+	/// KPI card value: [Gross Profit] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV Gross Profit' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			( VAR _x = [Gross Profit] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 11 KPI Cards
+		lineageTag: 93a7bbef-8c58-5062-a2a4-07afaf0bf5a8
+
+	/// Card row: Gross Profit for the same period last year.
+	measure 'IS Gross Profit PY Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"PY   " & ( VAR _x = [Gross Profit PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: c9f6b12a-c4bb-5689-b3d5-ee5270bba8d0
+
+	/// Card row: Gross Profit change versus last year, as an amount.
+	measure 'IS Gross Profit Chg Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"Change ($)   " & ( VAR _x = [Gross Profit] - [Gross Profit PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: fef5ac36-590e-5a57-b44c-a7d289d5c39e
+
+	/// Card row: Gross Profit change versus last year, in %.
+	measure 'IS Gross Profit Pct Text' = "% Change   " & FORMAT ( DIVIDE ( [Gross Profit] - [Gross Profit PY], ABS ( [Gross Profit PY] ) ), "▲ 0.0%;▼ 0.0%;0.0%" )
+		displayFolder: 13 Statement Explorer
+		lineageTag: c6566f42-8f46-5fd0-8151-f04dd1a99117
+
+	/// Green when Gross Profit is favourable to last year.
+	measure 'IS Gross Profit PY Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR g = IF ( NOT ISBLANK ( [Gross Profit PY] ), [Gross Profit] >= [Gross Profit PY] ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
+		displayFolder: 8 Formatting
+		lineageTag: a0e45b89-bc35-5f01-9acf-dd483ae82e30
+
+	/// Card row: EBITDA for the same period last year.
+	measure 'IS EBITDA PY Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"PY   " & ( VAR _x = [EBITDA PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 43c5370e-17dc-5150-8384-9058b7130fb4
+
+	/// Card row: EBITDA change versus last year, as an amount.
+	measure 'IS EBITDA Chg Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"Change ($)   " & ( VAR _x = [EBITDA] - [EBITDA PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 7ced96fd-025e-5d63-9a26-a25daaecd2ec
+
+	/// Card row: EBITDA change versus last year, in %.
+	measure 'IS EBITDA Pct Text' = "% Change   " & FORMAT ( DIVIDE ( [EBITDA] - [EBITDA PY], ABS ( [EBITDA PY] ) ), "▲ 0.0%;▼ 0.0%;0.0%" )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 0b05f190-a899-5de4-98c8-58a785b94dba
+
+	/// Green when EBITDA is favourable to last year.
+	measure 'IS EBITDA PY Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR g = IF ( NOT ISBLANK ( [EBITDA PY] ), [EBITDA] >= [EBITDA PY] ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
+		displayFolder: 8 Formatting
+		lineageTag: 3fc96b9d-1b45-59e5-9541-cd2af124bbe5
+
+	/// KPI card value: [EBIT] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV EBIT' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			( VAR _x = [EBIT] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 11 KPI Cards
+		lineageTag: d7e736d5-3ec0-587d-b40c-84cbfc98a80e
+
+	/// Card row: EBIT for the same period last year.
+	measure 'IS EBIT PY Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"PY   " & ( VAR _x = [EBIT PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 51889771-1f59-5f29-bd44-3b4e368930e6
+
+	/// Card row: EBIT change versus last year, as an amount.
+	measure 'IS EBIT Chg Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"Change ($)   " & ( VAR _x = [EBIT] - [EBIT PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: c84ac70d-b7f7-55bf-bc72-d46560027b88
+
+	/// Card row: EBIT change versus last year, in %.
+	measure 'IS EBIT Pct Text' = "% Change   " & FORMAT ( DIVIDE ( [EBIT] - [EBIT PY], ABS ( [EBIT PY] ) ), "▲ 0.0%;▼ 0.0%;0.0%" )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 05a9803e-9c5e-5cf7-9923-f410c9c339b1
+
+	/// Green when EBIT is favourable to last year.
+	measure 'IS EBIT PY Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR g = IF ( NOT ISBLANK ( [EBIT PY] ), [EBIT] >= [EBIT PY] ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
+		displayFolder: 8 Formatting
+		lineageTag: a27f3c27-b6a6-526a-9f16-f46f77ac4570
+
+	/// Card row: Net Profit for the same period last year.
+	measure 'IS Net Income PY Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"PY   " & ( VAR _x = [Net Income PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: c711f8ab-161d-5448-ac60-b706a20899de
+
+	/// Card row: Net Profit change versus last year, as an amount.
+	measure 'IS Net Income Chg Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"Change ($)   " & ( VAR _x = [Net Income] - [Net Income PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 71d1f0c2-c5ec-5439-8f96-b52fcb842689
+
+	/// Card row: Net Profit change versus last year, in %.
+	measure 'IS Net Income Pct Text' = "% Change   " & FORMAT ( DIVIDE ( [Net Income] - [Net Income PY], ABS ( [Net Income PY] ) ), "▲ 0.0%;▼ 0.0%;0.0%" )
+		displayFolder: 13 Statement Explorer
+		lineageTag: febd4919-294f-5d0d-bf3f-66cef6e7fe9b
+
+	/// Green when Net Profit is favourable to last year.
+	measure 'IS Net Income PY Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR g = IF ( NOT ISBLANK ( [Net Income PY] ), [Net Income] >= [Net Income PY] ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
+		displayFolder: 8 Formatting
+		lineageTag: ff757f80-4e73-554b-ad3f-557a27ce11f5
+
+	/// Headline line picked in the Focus slicer (Revenue by default).
+	measure 'Focus Name' = SELECTEDVALUE ( 'PL Focus'[Focus], "Revenue" )
+		displayFolder: 13 Statement Explorer
+		lineageTag: c627bb37-86b8-5f1e-bc6a-80a7da838a01
+
+	/// Trend chart: focus line by fiscal month, current year, up to the selected month.
+	measure 'Focus Monthly CY' =
+			// Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
+			VAR lk = SELECTEDVALUE ( 'PL Focus'[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			VAR flip = IF ( lk = 4, -1, 1 )   -- cost of sales is stored negative; the trend shows its size
+			RETURN flip * CALCULATE ( [Monthly Actual (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 13 Statement Explorer
+		lineageTag: 1072e62e-2c3d-55d7-addf-14b8bdbd7f9b
+
+	/// Trend chart: focus line by fiscal month, prior year.
+	measure 'Focus Monthly PY' =
+			// Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
+			VAR lk = SELECTEDVALUE ( 'PL Focus'[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			VAR flip = IF ( lk = 4, -1, 1 )   -- cost of sales is stored negative; the trend shows its size
+			RETURN flip * CALCULATE ( [Monthly Prior Year (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 13 Statement Explorer
+		lineageTag: 78cc5826-924c-5f66-afce-d98b29f37d23
+
+	/// Focus line for whatever dates are in filter context (used inside the summary iterators).
+	measure 'Focus Actual (in context)' =
+			// Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
+			VAR lk = SELECTEDVALUE ( 'PL Focus'[LineKey], 3 )
+			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
+			VAR flip = IF ( lk = 4, -1, 1 )   -- cost of sales is stored negative; the trend shows its size
+			RETURN flip * CALCULATE ( [Actual], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 13 Statement Explorer
+		lineageTag: b55b010a-940b-54be-8e43-42be7741a540
+
+	/// Summary bullet 1: direction toward period end (average of the last three months versus the three before; within 2% counts as steady).
+	measure 'Focus Bullet 1' =
+			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = FILTER ( ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) ), [@d] <= sel )
+			VAR t2 = ADDCOLUMNS ( t, "@cy", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ),
+			                         "@py", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) ) )
+			VAR n = COUNTROWS ( t2 )
+			VAR last3 = AVERAGEX ( FILTER ( t2, [Value] > n - 3 ), [@cy] ) VAR prev3 = AVERAGEX ( FILTER ( t2, [Value] > n - 6 && [Value] <= n - 3 ), [@cy] )
+			VAR chg = DIVIDE ( last3 - prev3, ABS ( prev3 ) )
+			RETURN "• " & IF ( n < 6, "Fewer than six months closed: no trend statement yet.",
+			    [Focus Name] & IF ( chg >= 0.02, " strengthened", IF ( chg <= -0.02, " softened", " held steady" ) ) & " toward period end: last 3 months " & FORMAT ( chg, "+0%;-0%" ) & " vs the 3 before." )
+		displayFolder: 13 Statement Explorer
+		lineageTag: 5e612997-708f-5788-9a44-8aff2a4888a0
+
+	/// Summary bullet 2: month with the highest value in the year to date.
+	measure 'Focus Bullet 2' =
+			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = FILTER ( ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) ), [@d] <= sel )
+			VAR t2 = ADDCOLUMNS ( t, "@cy", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ),
+			                         "@py", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) ) )
+			VAR n = COUNTROWS ( t2 )
+			VAR pk = TOPN ( 1, t2, [@cy], DESC )
+			RETURN "• Peak month was " & FORMAT ( MAXX ( pk, [@d] ), "mmm yyyy" ) & " (" & ( VAR _x = MAXX ( pk, [@cy] ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & ")." 
+		displayFolder: 13 Statement Explorer
+		lineageTag: bed742fa-08cc-5d59-b250-cca370ea724f
+
+	/// Summary bullet 3: year to date versus prior year, and how many months beat their prior-year month.
+	measure 'Focus Bullet 3' =
+			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = FILTER ( ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) ), [@d] <= sel )
+			VAR t2 = ADDCOLUMNS ( t, "@cy", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ),
+			                         "@py", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) ) )
+			VAR n = COUNTROWS ( t2 )
+			VAR cy = SUMX ( t2, [@cy] ) VAR py = SUMX ( t2, [@py] ) VAR g = DIVIDE ( cy - py, ABS ( py ) )
+			RETURN "• Year to date " & IF ( ISBLANK ( py ), "has no prior-year comparison.", IF ( cy >= py, "is above", "is below" ) & " prior year by " & FORMAT ( ABS ( g ), "0.0%" ) & "; "
+			    & COUNTROWS ( FILTER ( t2, [@cy] >= [@py] ) ) + 0 & " of " & n & " months beat their prior-year month." )
+		displayFolder: 13 Statement Explorer
+		lineageTag: dcbe2e63-9404-5f55-85ff-6b81de919fc4
+
+	/// Summary bullet 4: volatility, as the coefficient of variation of the monthly values (above 20% is called volatile).
+	measure 'Focus Bullet 4' =
+			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
+			VAR sel = [Selected Month] VAR fy = ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) )
+			VAR t = FILTER ( ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) ), [@d] <= sel )
+			VAR t2 = ADDCOLUMNS ( t, "@cy", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ),
+			                         "@py", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) ) )
+			VAR n = COUNTROWS ( t2 )
+			VAR cv = DIVIDE ( STDEVX.P ( t2, [@cy] ), ABS ( AVERAGEX ( t2, [@cy] ) ) )
+			RETURN "• Monthly pattern is " & IF ( cv > 0.2, "volatile", "steady" ) & ": months vary by " & FORMAT ( cv, "0%" ) & " around the average." 
+		displayFolder: 13 Statement Explorer
+		lineageTag: 93978922-32eb-5f5c-8802-4f158ee90290
+
+	/// Page title of the ISX page.
+	measure 'PT ISX' = "Income Statement Explorer · " & [IS Range]
+		displayFolder: 6 Narrative\Page headers
+		lineageTag: e87d8c28-21fd-5bf9-85d6-8003ce588f35
+
+	/// Page subtitle of the ISX page: the key figures in one line.
+	measure 'PS ISX' = "Current year against prior year, by section and line · " & [Period Label] & " · costs shown negative, so a positive change is always favourable"
+		displayFolder: 6 Narrative\Page headers
+		lineageTag: 9a9349d6-e353-5855-b226-dd73fcb2b8ca
+
+	/// Dynamic visual title: updates with the period, currency and selection.
+	measure 'VT Focus Summary' = "Summary for " & [Focus Name]
+		displayFolder: 6 Narrative\Visual titles
+		lineageTag: 7aa30bb8-5996-5726-b77b-4ccf4aeb16f1
+
+	/// Dynamic visual title: updates with the period, currency and selection.
+	measure 'VT Focus Trend' = [Focus Name] & " by month: current year vs prior year · " & [Currency Label]
+		displayFolder: 6 Narrative\Visual titles
+		lineageTag: d428d842-f7fa-56f3-b76b-926f745984ff
+
+	/// Insight subtitle: one sentence computed from the data behind the visual; rewrites itself with every filter.
+	measure 'Sub Focus Trend' = "Pick a line in the Focus slicer; the summary and this trend follow it."
+		displayFolder: 6 Narrative\Subtitles
+		lineageTag: 1da1f348-4714-5718-8570-7fabe46bccbf
+
+	/// Dynamic visual title: updates with the period, currency and selection.
+	measure 'VT ISX' = "Income statement · CY vs PY · " & [Currency Label] & IF ( [Unit Divisor] = 1000, " thousands", "" )
+		displayFolder: 6 Narrative\Visual titles
+		lineageTag: 7ba739b0-63a4-5839-8c64-59bf023ee547
+
+	/// Insight subtitle: one sentence computed from the data behind the visual; rewrites itself with every filter.
+	measure 'Sub ISX' = "Click + on a section to see its lines. % Rev = share of net revenue; bps = change in that share (100 bps = 1 pt)."
+		displayFolder: 6 Narrative\Subtitles
+		lineageTag: c86b3cee-96cb-5c2c-835b-e80f2a07a926
+
+	/// Dynamic visual title: updates with the period, currency and selection.
+	measure 'VT ISX Method' = "Method, assumptions and trade-offs"
+		displayFolder: 6 Narrative\Visual titles
+		lineageTag: 89ee1b10-0a6f-557b-9a59-455d01bcacf0
+
+	/// Insight subtitle: one sentence computed from the data behind the visual; rewrites itself with every filter.
+	measure 'Sub ISX Method' = "How this page is built and what to keep in mind when reading it."
+		displayFolder: 6 Narrative\Subtitles
+		lineageTag: 52c30150-8df4-5e1c-b9e9-42e93731a98a
+
+	/// Footer of the ISX page: sources, exchange-rate policy, close month and page-specific caveats.
+	measure 'Footer ISX' = "Source: AdventureWorksDW (MIT), re-dated; FY2026-28 budgets synthetic · FX Bank of Canada: P&L monthly avg, BS month end, budget prior-FY avg · Closed " & FORMAT ( [As Of Month], "mmm yyyy" ) & " · Layout after the Goodly dynamic P&L; comparison is prior year, not budget"
+		displayFolder: 10 Layout
+		lineageTag: 2404ab2e-3940-5ce9-8970-97db9c5f5cb3
+
+	/// Theme colour "Actual Tint": cell shading on the Rolling Forecast page.
+	measure 'Col Actual Tint' = IF ( [Is Dark], "#1E3350", "#DCE8F7" )
+		displayFolder: 10 Theme
+		lineageTag: 3d55e091-c81b-5104-a78e-3d136f145f99
+
+	/// Theme colour "Budget Tint": cell shading on the Rolling Forecast page.
+	measure 'Col Budget Tint' = IF ( [Is Dark], "#4A2622", "#FBE3E0" )
+		displayFolder: 10 Theme
+		lineageTag: 4be68adc-2b2b-5b6b-82e0-13b09bb1a052
+
+	/// Last month treated as actual on the Rolling Forecast page: the Actuals Until slicer, or the reporting month when nothing is picked.
+	measure 'RF Cutoff' =
+			VAR picked = SELECTEDVALUE ( 'Actuals Until'[Month] )
+			RETURN IF ( ISBLANK ( picked ), [Selected Month], picked )
+		formatString: mmm yyyy
+		displayFolder: 14 Rolling Forecast
+		lineageTag: e5252b27-287f-5113-bc29-38e31522d119
+
+	/// Rolling forecast cell: actual for months up to the cut-off, budget for later months. The Total column adds both, which is the rolling forecast for the year.
+	measure 'RF Value' =
+			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
+			VAR cut = [RF Cutoff] VAR fy = ( YEAR ( cut ) + IF ( MONTH ( cut ) >= 4, 1, 0 ) )
+			-- months on the column (one month in a cell, all twelve in the Total column)
+			VAR t = ADDCOLUMNS ( VALUES ( 'Date'[Fiscal Month Number] ), "@d", DATE ( fy - 1, 3 + 'Date'[Fiscal Month Number], 1 ) )
+			RETURN SUMX ( t, VAR d = [@d] RETURN IF ( d <= cut, CALCULATE ( [Metric Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ), CALCULATE ( [Metric Budget (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) ) )
+		formatString: #,0,;(#,0,);-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: 8ccc2248-39fb-5f6d-910d-abc760751619
+
+	/// Cell shading on the Rolling Forecast matrix: blue = actual month, red tint = budget month, grey = total.
+	measure 'RF Cell Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR cut = [RF Cutoff] VAR fy = ( YEAR ( cut ) + IF ( MONTH ( cut ) >= 4, 1, 0 ) )
+			RETURN IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ),
+			    IF ( DATE ( fy - 1, 3 + MAX ( 'Date'[Fiscal Month Number] ), 1 ) <= cut, [Col Actual Tint], [Col Budget Tint] ),
+			    [Col Subtotal] )
+		displayFolder: 8 Formatting
+		lineageTag: 1dc7b403-c229-527d-a80c-eca2b6a54292
+
+	/// Actual from the start of the fiscal year to the cut-off month, for the selected metric.
+	measure 'RF Actual to Date' =
+			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
+			VAR cut = [RF Cutoff] VAR fy = ( YEAR ( cut ) + IF ( MONTH ( cut ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )   -- the twelve months of the cut-off's fiscal year
+			RETURN SUMX ( FILTER ( t, [@d] <= cut ), VAR d = [@d] RETURN CALCULATE ( [Metric Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: f18d0565-487a-5a56-905b-f4c476ebdc8d
+
+	/// Budget for the months after the cut-off.
+	measure 'RF Remaining Budget' =
+			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
+			VAR cut = [RF Cutoff] VAR fy = ( YEAR ( cut ) + IF ( MONTH ( cut ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )   -- the twelve months of the cut-off's fiscal year
+			RETURN SUMX ( FILTER ( t, [@d] > cut ), VAR d = [@d] RETURN CALCULATE ( [Metric Budget (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: 9f54c373-99cd-5d63-99ac-21f1af132880
+
+	/// Rolling forecast for the fiscal year: actual to the cut-off plus budget for the remaining months.
+	measure 'RF Total' = [RF Actual to Date] + [RF Remaining Budget]
+		formatString: #,0;(#,0);-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: c2b2398e-467b-58a9-9d90-b0555c54c673
+
+	/// Target = the full-year budget of the cut-off's fiscal year.
+	measure 'RF Target' =
+			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
+			VAR cut = [RF Cutoff] VAR fy = ( YEAR ( cut ) + IF ( MONTH ( cut ) >= 4, 1, 0 ) )
+			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )   -- the twelve months of the cut-off's fiscal year
+			RETURN SUMX ( t, VAR d = [@d] RETURN CALCULATE ( [Metric Budget (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: 22a04b8a-9ad3-59c8-b1e3-8a2e6b11ecdb
+
+	/// Rolling forecast minus target. Positive = on track (also for cost metrics, which are stored negative). Blank when there is no target.
+	measure 'RF Gap' = IF ( NOT ISBLANK ( [RF Target] ), [RF Total] - [RF Target] )
+		formatString: #,0;(#,0);-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: 2b9f1b83-12b4-562d-a3e1-9ff96d3f4adc
+
+	/// Rolling forecast as a share of the target.
+	measure 'RF Attainment %' = DIVIDE ( [RF Total], [RF Target] )
+		formatString: 0.0%;-0.0%;-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: aefeb35f-a4ab-5a14-b466-2b8cc2a6fefd
+
+	/// Fiscal months closed at the cut-off (April = 1).
+	measure 'RF Months Elapsed' = VAR cut = [RF Cutoff] RETURN MOD ( MONTH ( cut ) + 8, 12 ) + 1
+		formatString: 0
+		displayFolder: 14 Rolling Forecast
+		lineageTag: 580ec6bd-5297-55c8-9db7-ab5ce322db97
+
+	/// Fiscal months after the cut-off.
+	measure 'RF Months Left' = 12 - [RF Months Elapsed]
+		formatString: 0
+		displayFolder: 14 Rolling Forecast
+		lineageTag: 7b7cb628-aba0-5d30-bcc7-3f8e5007a233
+
+	/// What each remaining month must deliver to land exactly on target.
+	measure 'RF Required per Month' = IF ( NOT ISBLANK ( [RF Target] ), DIVIDE ( [RF Target] - [RF Actual to Date], [RF Months Left] ) )
+		formatString: #,0;(#,0);-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: a230a9c5-0b80-5c53-bf0f-53b6ee101a3d
+
+	/// Average actual per closed month.
+	measure 'RF Average per Month' = DIVIDE ( [RF Actual to Date], [RF Months Elapsed] )
+		formatString: #,0;(#,0);-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: febaa4ca-92e4-5e70-b9b6-6f68f322cf34
+
+	/// Second method: the year if the remaining months repeat the year-to-date average instead of the budget.
+	measure 'RF Run-Rate Total' = [RF Actual to Date] + [RF Average per Month] * [RF Months Left]
+		formatString: #,0;(#,0);-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: d0693d84-1a39-51e6-9893-d997dfc1d4bb
+
+	/// Run-rate projection minus target.
+	measure 'RF Run-Rate Gap' = IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Total] - [RF Target] )
+		formatString: #,0;(#,0);-
+		displayFolder: 14 Rolling Forecast
+		lineageTag: 92616158-65b7-5f6e-9529-e36b2c12a04c
+
+	/// On track when the rolling forecast is at or above target.
+	measure 'RF Status' = IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Gap] >= 0, "✓ On track", "✗ Short" ), "No target" )
+		displayFolder: 14 Rolling Forecast
+		lineageTag: ca470358-c4f2-549b-9ad8-c570fc98ab8b
+
+	/// Green when the rolling forecast reaches the target.
+	measure 'RF Status Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR g = IF ( NOT ISBLANK ( [RF Target] ), [RF Gap] >= 0 ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
+		displayFolder: 8 Formatting
+		lineageTag: 3e771146-a757-5aba-a1b2-523be38332a0
+
+	/// Whether the run-rate projection reaches the target.
+	measure 'RF Run-Rate Status' = IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" )
+		displayFolder: 14 Rolling Forecast
+		lineageTag: dbc490d2-871c-504d-b907-ec22da5bb933
+
+	/// Green when the run-rate projection reaches the target.
+	measure 'RF Run-Rate Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR g = IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Gap] >= 0 ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
+		displayFolder: 8 Formatting
+		lineageTag: 2573049e-8bc0-50b9-8d38-dab712978d85
+
+	/// KPI card value: [RF Total] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV RF Total' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			( VAR _x = [RF Total] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 11 KPI Cards
+		lineageTag: 50c809bb-aa20-517b-9b3d-38a807380fd8
+
+	/// KPI card value: [RF Target] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV RF Target' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			( VAR _x = [RF Target] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 11 KPI Cards
+		lineageTag: 2f5e9fb7-d10e-5a92-a7b7-1ff199d60396
+
+	/// KPI card value: [RF Required per Month] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV RF Required per Month' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			( VAR _x = [RF Required per Month] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 11 KPI Cards
+		lineageTag: 39996c85-9035-534e-a3ca-3bbfb3937e44
+
+	/// KPI card value: [RF Run-Rate Total] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
+	measure 'KV RF Run-Rate Total' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			( VAR _x = [RF Run-Rate Total] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 11 KPI Cards
+		lineageTag: 39ec7028-6920-5452-a041-d0881db58e44
+
+	/// Card text: status, gap and attainment of the rolling forecast.
+	measure 'RF Total Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			[RF Status] & " · " & ( VAR _x = [RF Gap] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " vs target (" & FORMAT ( [RF Attainment %], "0%" ) & ")"
+		displayFolder: 14 Rolling Forecast
+		lineageTag: 6eea0551-63f5-580c-84c6-6e149c697d2e
+
+	/// Card text: which target is used.
+	measure 'RF Target Text' = "Full-year budget FY" & ( YEAR ( [RF Cutoff] ) + IF ( MONTH ( [RF Cutoff] ) >= 4, 1, 0 ) ) & " · " & [Metric Name]
+		displayFolder: 14 Rolling Forecast
+		lineageTag: d68eec11-024e-5da3-a244-d1953af363fc
+
+	/// Card text: required monthly amount next to the average achieved so far.
+	measure 'RF Required Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"needed in each of " & [RF Months Left] & " months · average so far " & ( VAR _x = [RF Average per Month] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
+		displayFolder: 14 Rolling Forecast
+		lineageTag: acd5fab4-d92f-5e7c-84a0-0307d494ce51
+
+	/// Green when the average month so far is at least what the remaining months require.
+	measure 'RF Required Color' =
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			VAR g = IF ( [RF Months Left] > 0 && NOT ISBLANK ( [RF Target] ), [RF Average per Month] >= [RF Required per Month] ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
+		displayFolder: 8 Formatting
+		lineageTag: c7af4c95-123c-5f17-9982-0cf9cde9fdf4
+
+	/// Card text: verdict of the run-rate method.
+	measure 'RF Run-Rate Text' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			[RF Run-Rate Status] & " target · " & ( VAR _x = [RF Run-Rate Gap] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " if the average month repeats"
+		displayFolder: 14 Rolling Forecast
+		lineageTag: a3720665-67b6-530b-af66-28a1b8ea9aec
+
+	/// Page title of the RF page.
+	measure 'PT RF' = "Rolling Forecast · " & [Metric Name] & " · actuals until " & FORMAT ( [RF Cutoff], "mmm yyyy" )
+		displayFolder: 6 Narrative\Page headers
+		lineageTag: 87902858-e2b6-561f-a761-4ed134c2c08f
+
+	/// Page subtitle of the RF page: the key figures in one line.
+	measure 'PS RF' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			"Will we reach the target? Rolling forecast " & ( VAR _x = [RF Total] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " vs target " & ( VAR _x = [RF Target] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & ": " & [RF Status] & " (" & ( VAR _x = [RF Gap] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "). Run-rate view: " & [RF Run-Rate Status] & "."
+		displayFolder: 6 Narrative\Page headers
+		lineageTag: 0e9d4a70-4f99-5a3e-9359-7522f765b02c
+
+	/// Dynamic visual title: updates with the period, currency and selection.
+	measure 'VT RF Matrix' = [Metric Name] & " by entity and month · blue = actual, red tint = budget · " & [Currency Label] & " thousands"
+		displayFolder: 6 Narrative\Visual titles
+		lineageTag: 0dadcff2-a3b4-5f13-9539-ecdcac642fe4
+
+	/// Insight subtitle: one sentence computed from the data behind the visual; rewrites itself with every filter.
+	measure 'Sub RF Matrix' = "Move the Actuals Until slicer to replay any month end: months up to it show actuals, later months show budget, and Total is the rolling forecast."
+		displayFolder: 6 Narrative\Subtitles
+		lineageTag: 10695123-60be-5b84-82ef-bc5818a3a851
+
+	/// Dynamic visual title: updates with the period, currency and selection.
+	measure 'VT RF Table' = "Can each entity reach its target?"
+		displayFolder: 6 Narrative\Visual titles
+		lineageTag: 8ecc9241-b936-548d-843f-4ded741ab5fa
+
+	/// Insight subtitle: one sentence computed from the data behind the visual; rewrites itself with every filter.
+	measure 'Sub RF Table' =
+			VAR t = FILTER ( ADDCOLUMNS ( VALUES ( Entity[EntityName] ), "@g", [RF Gap], "@t", [RF Target] ), NOT ISBLANK ( [@t] ) )
+			RETURN COUNTROWS ( FILTER ( t, [@g] >= 0 ) ) + 0 & " of " & COUNTROWS ( t ) + 0 & " budgeted entities are on track. Required = what each remaining month must deliver; compare it with the average so far." 
+		displayFolder: 6 Narrative\Subtitles
+		lineageTag: 94fe2b10-e5c4-541f-bda8-4436b2b03f1c
+
+	/// Dynamic visual title: updates with the period, currency and selection.
+	measure 'VT RF Method' = "Method, assumptions and trade-offs"
+		displayFolder: 6 Narrative\Visual titles
+		lineageTag: 4f86238d-e447-54ff-8dcd-3501e702914b
+
+	/// Insight subtitle: one sentence computed from the data behind the visual; rewrites itself with every filter.
+	measure 'Sub RF Method' = "How the forecast is built and where it can mislead."
+		displayFolder: 6 Narrative\Subtitles
+		lineageTag: 3c761f4b-237b-5338-afd6-9b8c070041f5
+
+	/// Footer of the RF page: sources, exchange-rate policy, close month and page-specific caveats.
+	measure 'Footer RF' = "Source: AdventureWorksDW (MIT), re-dated; FY2026-28 budgets synthetic · FX Bank of Canada: P&L monthly avg, BS month end, budget prior-FY avg · Closed " & FORMAT ( [As Of Month], "mmm yyyy" ) & " · Layout after the Goodly Budget vs Actual; forecast = actual + remaining budget"
+		displayFolder: 10 Layout
+		lineageTag: d1f69edc-9674-5422-9a2a-8f54158ab584
+
+	/// Income-statement Sankey as an SVG image: revenue by region flows into net revenue, then splits into cost of sales, operating expenses, items below EBITDA and net income. Band width is proportional to the amount.
+	measure 'SVG Sankey' =
+			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
+			// SVG pattern: the measure returns an image as text (data category Image URL); # is written %23 so colours survive URL encoding.
+			// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+			-- flows, all as positive sizes (costs are stored negative in the model)
+			VAR rev = [Revenue] VAR gp = [Gross Profit] VAR cos = rev - gp VAR eb = [EBITDA] VAR ox = gp - eb VAR ni = [Net Income] VAR bl = eb - ni
+			VAR r1 = CALCULATE ( [Revenue], KEEPFILTERS ( Entity[Region] = "North America" ) ) + 0
+			VAR r2 = CALCULATE ( [Revenue], KEEPFILTERS ( Entity[Region] = "Europe" ) ) + 0
+			VAR r3 = CALCULATE ( [Revenue], KEEPFILTERS ( Entity[Region] = "Pacific" ) ) + 0
+			-- a Sankey can only draw positive flows: fall back to a message when a profit level is negative in the selection
+			VAR ok = rev > 0 && gp > 0 && eb > 0 && ni > 0 && cos >= 0 && ox >= 0 && bl >= 0 && r1 >= 0 && r2 >= 0 && r3 >= 0
+			-- layout: 330 px of height for net revenue; every other node uses the same scale, so widths are comparable
+			VAR k = DIVIDE ( 330, rev ) VAR top = 56 VAR gap = 16
+			VAR hR1 = r1 * k VAR hR2 = r2 * k VAR yR1 = top VAR yR2 = yR1 + hR1 + gap VAR yR3 = yR2 + hR2 + gap
+			VAR yC = top + gp * k + 30 VAR yO = top + eb * k + 30 VAR yB = top + ni * k + 30
+			VAR svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 470'>"
+			    & "<path d='M184," & FORMAT ( yR1, "0.0" ) & " C292.0," & FORMAT ( yR1, "0.0" ) & " 292.0," & FORMAT ( top, "0.0" ) & " 400," & FORMAT ( top, "0.0" ) & " L400," & FORMAT ( top + r1 * k, "0.0" ) & " C292.0," & FORMAT ( top + r1 * k, "0.0" ) & " 292.0," & FORMAT ( yR1 + r1 * k, "0.0" ) & " 184," & FORMAT ( yR1 + r1 * k, "0.0" ) & " Z' fill='" & [Col Accent] & "' fill-opacity='0.30'/>"
+			    & "<rect x='170' y='" & FORMAT ( yR1, "0.0" ) & "' width='14' height='" & FORMAT ( MAX ( r1 * k, 1 ), "0.0" ) & "' rx='2' fill='" & [Col Accent] & "'/>"
+			    & "<text x='162' y='" & FORMAT ( yR1 + r1 * k / 2 - 2, "0.0" ) & "' text-anchor='end' font-family='DIN, Segoe UI, sans-serif' font-size='13' font-weight='700' fill='" & [Col Title] & "'>North America</text>" & "<text x='162' y='" & FORMAT ( yR1 + r1 * k / 2 + 13, "0.0" ) & "' text-anchor='end' font-family='DIN, Segoe UI, sans-serif' font-size='12' fill='" & [Col Muted] & "'>" & ( VAR _x = r1 RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " (" & FORMAT ( DIVIDE ( r1, rev ), "0%" ) & ")</text>"
+			    & "<path d='M184," & FORMAT ( yR2, "0.0" ) & " C292.0," & FORMAT ( yR2, "0.0" ) & " 292.0," & FORMAT ( top + hR1, "0.0" ) & " 400," & FORMAT ( top + hR1, "0.0" ) & " L400," & FORMAT ( top + hR1 + r2 * k, "0.0" ) & " C292.0," & FORMAT ( top + hR1 + r2 * k, "0.0" ) & " 292.0," & FORMAT ( yR2 + r2 * k, "0.0" ) & " 184," & FORMAT ( yR2 + r2 * k, "0.0" ) & " Z' fill='" & [Col Accent] & "' fill-opacity='0.30'/>"
+			    & "<rect x='170' y='" & FORMAT ( yR2, "0.0" ) & "' width='14' height='" & FORMAT ( MAX ( r2 * k, 1 ), "0.0" ) & "' rx='2' fill='" & [Col Accent] & "'/>"
+			    & "<text x='162' y='" & FORMAT ( yR2 + r2 * k / 2 - 2, "0.0" ) & "' text-anchor='end' font-family='DIN, Segoe UI, sans-serif' font-size='13' font-weight='700' fill='" & [Col Title] & "'>Europe</text>" & "<text x='162' y='" & FORMAT ( yR2 + r2 * k / 2 + 13, "0.0" ) & "' text-anchor='end' font-family='DIN, Segoe UI, sans-serif' font-size='12' fill='" & [Col Muted] & "'>" & ( VAR _x = r2 RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " (" & FORMAT ( DIVIDE ( r2, rev ), "0%" ) & ")</text>"
+			    & "<path d='M184," & FORMAT ( yR3, "0.0" ) & " C292.0," & FORMAT ( yR3, "0.0" ) & " 292.0," & FORMAT ( top + hR1 + hR2, "0.0" ) & " 400," & FORMAT ( top + hR1 + hR2, "0.0" ) & " L400," & FORMAT ( top + hR1 + hR2 + r3 * k, "0.0" ) & " C292.0," & FORMAT ( top + hR1 + hR2 + r3 * k, "0.0" ) & " 292.0," & FORMAT ( yR3 + r3 * k, "0.0" ) & " 184," & FORMAT ( yR3 + r3 * k, "0.0" ) & " Z' fill='" & [Col Accent] & "' fill-opacity='0.30'/>"
+			    & "<rect x='170' y='" & FORMAT ( yR3, "0.0" ) & "' width='14' height='" & FORMAT ( MAX ( r3 * k, 1 ), "0.0" ) & "' rx='2' fill='" & [Col Accent] & "'/>"
+			    & "<text x='162' y='" & FORMAT ( yR3 + r3 * k / 2 - 2, "0.0" ) & "' text-anchor='end' font-family='DIN, Segoe UI, sans-serif' font-size='13' font-weight='700' fill='" & [Col Title] & "'>Pacific</text>" & "<text x='162' y='" & FORMAT ( yR3 + r3 * k / 2 + 13, "0.0" ) & "' text-anchor='end' font-family='DIN, Segoe UI, sans-serif' font-size='12' fill='" & [Col Muted] & "'>" & ( VAR _x = r3 RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " (" & FORMAT ( DIVIDE ( r3, rev ), "0%" ) & ")</text>"
+			    & "<rect x='400' y='" & FORMAT ( top, "0.0" ) & "' width='14' height='" & FORMAT ( MAX ( rev * k, 1 ), "0.0" ) & "' rx='2' fill='" & [Col Accent] & "'/>"
+			    & "<text x='407' y='" & FORMAT ( top - 34 + 0 / 2 - 2, "0.0" ) & "' text-anchor='middle' font-family='DIN, Segoe UI, sans-serif' font-size='13' font-weight='700' fill='" & [Col Title] & "'>Net revenue</text>" & "<text x='407' y='" & FORMAT ( top - 34 + 0 / 2 + 13, "0.0" ) & "' text-anchor='middle' font-family='DIN, Segoe UI, sans-serif' font-size='12' fill='" & [Col Muted] & "'>" & ( VAR _x = rev RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " (" & FORMAT ( DIVIDE ( rev, rev ), "0%" ) & ")</text>"
+			    & "<path d='M414," & FORMAT ( top, "0.0" ) & " C522.0," & FORMAT ( top, "0.0" ) & " 522.0," & FORMAT ( top, "0.0" ) & " 630," & FORMAT ( top, "0.0" ) & " L630," & FORMAT ( top + gp * k, "0.0" ) & " C522.0," & FORMAT ( top + gp * k, "0.0" ) & " 522.0," & FORMAT ( top + gp * k, "0.0" ) & " 414," & FORMAT ( top + gp * k, "0.0" ) & " Z' fill='" & [Col Good] & "' fill-opacity='0.30'/>"
+			    & "<path d='M414," & FORMAT ( top + gp * k, "0.0" ) & " C522.0," & FORMAT ( top + gp * k, "0.0" ) & " 522.0," & FORMAT ( yC, "0.0" ) & " 630," & FORMAT ( yC, "0.0" ) & " L630," & FORMAT ( yC + cos * k, "0.0" ) & " C522.0," & FORMAT ( yC + cos * k, "0.0" ) & " 522.0," & FORMAT ( top + gp * k + cos * k, "0.0" ) & " 414," & FORMAT ( top + gp * k + cos * k, "0.0" ) & " Z' fill='" & [Col Bad] & "' fill-opacity='0.30'/>"
+			    & "<rect x='630' y='" & FORMAT ( top, "0.0" ) & "' width='14' height='" & FORMAT ( MAX ( gp * k, 1 ), "0.0" ) & "' rx='2' fill='" & [Col Good] & "'/>"
+			    & "<text x='652' y='" & FORMAT ( top + gp * k / 2 - 2, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='13' font-weight='700' fill='" & [Col Title] & "'>Gross profit</text>" & "<text x='652' y='" & FORMAT ( top + gp * k / 2 + 13, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='12' fill='" & [Col Muted] & "'>" & ( VAR _x = gp RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " (" & FORMAT ( DIVIDE ( gp, rev ), "0%" ) & ")</text>"
+			    & "<rect x='630' y='" & FORMAT ( yC, "0.0" ) & "' width='14' height='" & FORMAT ( MAX ( cos * k, 1 ), "0.0" ) & "' rx='2' fill='" & [Col Bad] & "'/>"
+			    & "<text x='652' y='" & FORMAT ( yC + cos * k / 2 - 2, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='13' font-weight='700' fill='" & [Col Title] & "'>Cost of sales</text>" & "<text x='652' y='" & FORMAT ( yC + cos * k / 2 + 13, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='12' fill='" & [Col Muted] & "'>" & ( VAR _x = cos RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " (" & FORMAT ( DIVIDE ( cos, rev ), "0%" ) & ")</text>"
+			    & "<path d='M644," & FORMAT ( top, "0.0" ) & " C752.0," & FORMAT ( top, "0.0" ) & " 752.0," & FORMAT ( top, "0.0" ) & " 860," & FORMAT ( top, "0.0" ) & " L860," & FORMAT ( top + eb * k, "0.0" ) & " C752.0," & FORMAT ( top + eb * k, "0.0" ) & " 752.0," & FORMAT ( top + eb * k, "0.0" ) & " 644," & FORMAT ( top + eb * k, "0.0" ) & " Z' fill='" & [Col Good] & "' fill-opacity='0.30'/>"
+			    & "<path d='M644," & FORMAT ( top + eb * k, "0.0" ) & " C752.0," & FORMAT ( top + eb * k, "0.0" ) & " 752.0," & FORMAT ( yO, "0.0" ) & " 860," & FORMAT ( yO, "0.0" ) & " L860," & FORMAT ( yO + ox * k, "0.0" ) & " C752.0," & FORMAT ( yO + ox * k, "0.0" ) & " 752.0," & FORMAT ( top + eb * k + ox * k, "0.0" ) & " 644," & FORMAT ( top + eb * k + ox * k, "0.0" ) & " Z' fill='" & [Col Bad] & "' fill-opacity='0.30'/>"
+			    & "<rect x='860' y='" & FORMAT ( top, "0.0" ) & "' width='14' height='" & FORMAT ( MAX ( eb * k, 1 ), "0.0" ) & "' rx='2' fill='" & [Col Good] & "'/>"
+			    & "<text x='882' y='" & FORMAT ( top + eb * k / 2 - 2, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='13' font-weight='700' fill='" & [Col Title] & "'>EBITDA</text>" & "<text x='882' y='" & FORMAT ( top + eb * k / 2 + 13, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='12' fill='" & [Col Muted] & "'>" & ( VAR _x = eb RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " (" & FORMAT ( DIVIDE ( eb, rev ), "0%" ) & ")</text>"
+			    & "<rect x='860' y='" & FORMAT ( yO, "0.0" ) & "' width='14' height='" & FORMAT ( MAX ( ox * k, 1 ), "0.0" ) & "' rx='2' fill='" & [Col Bad] & "'/>"
+			    & "<text x='882' y='" & FORMAT ( yO + ox * k / 2 - 2, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='13' font-weight='700' fill='" & [Col Title] & "'>Operating expenses</text>" & "<text x='882' y='" & FORMAT ( yO + ox * k / 2 + 13, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='12' fill='" & [Col Muted] & "'>" & ( VAR _x = ox RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " (" & FORMAT ( DIVIDE ( ox, rev ), "0%" ) & ")</text>"
+			    & "<path d='M874," & FORMAT ( top, "0.0" ) & " C982.0," & FORMAT ( top, "0.0" ) & " 982.0," & FORMAT ( top, "0.0" ) & " 1090," & FORMAT ( top, "0.0" ) & " L1090," & FORMAT ( top + ni * k, "0.0" ) & " C982.0," & FORMAT ( top + ni * k, "0.0" ) & " 982.0," & FORMAT ( top + ni * k, "0.0" ) & " 874," & FORMAT ( top + ni * k, "0.0" ) & " Z' fill='" & [Col Good] & "' fill-opacity='0.30'/>"
+			    & "<path d='M874," & FORMAT ( top + ni * k, "0.0" ) & " C982.0," & FORMAT ( top + ni * k, "0.0" ) & " 982.0," & FORMAT ( yB, "0.0" ) & " 1090," & FORMAT ( yB, "0.0" ) & " L1090," & FORMAT ( yB + bl * k, "0.0" ) & " C982.0," & FORMAT ( yB + bl * k, "0.0" ) & " 982.0," & FORMAT ( top + ni * k + bl * k, "0.0" ) & " 874," & FORMAT ( top + ni * k + bl * k, "0.0" ) & " Z' fill='" & [Col Bad] & "' fill-opacity='0.30'/>"
+			    & "<rect x='1090' y='" & FORMAT ( top, "0.0" ) & "' width='14' height='" & FORMAT ( MAX ( ni * k, 1 ), "0.0" ) & "' rx='2' fill='" & [Col Good] & "'/>"
+			    & "<text x='1112' y='" & FORMAT ( top + ni * k / 2 - 2, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='13' font-weight='700' fill='" & [Col Title] & "'>Net income</text>" & "<text x='1112' y='" & FORMAT ( top + ni * k / 2 + 13, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='12' fill='" & [Col Muted] & "'>" & ( VAR _x = ni RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " (" & FORMAT ( DIVIDE ( ni, rev ), "0%" ) & ")</text>"
+			    & "<rect x='1090' y='" & FORMAT ( yB, "0.0" ) & "' width='14' height='" & FORMAT ( MAX ( bl * k, 1 ), "0.0" ) & "' rx='2' fill='" & [Col Bad] & "'/>"
+			    & "<text x='1112' y='" & FORMAT ( yB + bl * k / 2 - 2, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='13' font-weight='700' fill='" & [Col Title] & "'>Depreciation, interest, tax</text>" & "<text x='1112' y='" & FORMAT ( yB + bl * k / 2 + 13, "0.0" ) & "' text-anchor='start' font-family='DIN, Segoe UI, sans-serif' font-size='12' fill='" & [Col Muted] & "'>" & ( VAR _x = bl RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " (" & FORMAT ( DIVIDE ( bl, rev ), "0%" ) & ")</text>"
+			    & "</svg>"
+			VAR msg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 470'><text x='640' y='230' text-anchor='middle' font-family='DIN, Segoe UI, sans-serif' font-size='18' fill='" & [Col Muted] & "'>A Sankey needs positive flows: revenue or a profit level is negative for this selection.</text></svg>"
+			RETURN "data:image/svg+xml;utf8," & SUBSTITUTE ( SUBSTITUTE ( IF ( ok, svg, msg ), "%", "%25" ), "#", "%23" )
+		dataCategory: ImageUrl
+		displayFolder: 15 Sankey
+		lineageTag: 376a9af9-25d9-5021-b379-37ad194c5e2c
+
+	/// Page title of the Sankey page.
+	measure 'PT Sankey' = "Where the revenue goes · " & [Period Label]
+		displayFolder: 6 Narrative\Page headers
+		lineageTag: fe5ccfc6-d9a7-5c2e-8689-0581993c30b4
+
+	/// Page subtitle of the Sankey page: the key figures in one line.
+	measure 'PS Sankey' = "Of every $100 of net revenue, $" & FORMAT ( DIVIDE ( [Net Income], [Revenue] ) * 100, "0" ) & " reaches net income: $" & FORMAT ( DIVIDE ( -[Cost of Sales], [Revenue] ) * 100, "0" ) & " goes to cost of sales and $" & FORMAT ( DIVIDE ( -[Operating Expenses], [Revenue] ) * 100, "0" ) & " to operating expenses."
+		displayFolder: 6 Narrative\Page headers
+		lineageTag: b9424303-e851-5f69-a71e-67b184877de1
+
+	/// Dynamic visual title: updates with the period, currency and selection.
+	measure 'VT Sankey' = "From revenue to net income · band width = amount · " & [Currency Label]
+		displayFolder: 6 Narrative\Visual titles
+		lineageTag: 49eb1696-e829-55af-98f4-6974af686514
+
+	/// Insight subtitle: one sentence computed from the data behind the visual; rewrites itself with every filter.
+	measure 'Sub Sankey' = "Blue = revenue, green = what is kept at each level, red = what is spent. Percentages are shares of net revenue. Follows every slicer."
+		displayFolder: 6 Narrative\Subtitles
+		lineageTag: bdfa1050-20ad-5ca6-aa6a-f3a369b120ba
+
+	/// Footer of the Sankey page: sources, exchange-rate policy, close month and page-specific caveats.
+	measure 'Footer Sankey' = "Source: AdventureWorksDW (MIT), re-dated; FY2026-28 budgets synthetic · FX Bank of Canada: P&L monthly avg, BS month end, budget prior-FY avg · Closed " & FORMAT ( [As Of Month], "mmm yyyy" ) & " · Drawn by a DAX measure as SVG; no custom visual"
+		displayFolder: 10 Layout
+		lineageTag: 5be949d6-f520-5903-a721-01fa0cfefebb
+
 	/// Empty column: a table needs one column to exist.
 	column Placeholder
 		dataType: string

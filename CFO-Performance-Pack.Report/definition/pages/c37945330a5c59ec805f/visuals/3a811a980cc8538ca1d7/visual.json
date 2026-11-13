@@ -3,9 +3,9 @@
   "name": "3a811a980cc8538ca1d7",
   "position": {
     "x": 8,
-    "y": 84,
+    "y": 82,
     "z": 6000,
-    "height": 24,
+    "height": 22,
     "width": 180,
     "tabOrder": 6000
   },
@@ -42,7 +42,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'◆   Executive'"
+                  "Value": "'◆   2  Executive'"
                 }
               }
             },

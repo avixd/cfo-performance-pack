@@ -1,0 +1,38 @@
+/// Slicer on the Rolling Forecast page: the last month to treat as actual. Disconnected on purpose, so it moves the actual/budget cut-over without filtering the calendar.
+table 'Actuals Until'
+	lineageTag: 1624dd7c-46a7-5fe7-876d-52accdc83805
+
+	/// First day of a closed month.
+	column Month
+		isHidden
+		formatString: mmm yyyy
+		lineageTag: d77a7c6e-10ec-5b0c-97ac-b4834993403c
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Month]
+
+	/// Month shown in the slicer, e.g. Jun 2026.
+	column Label
+		lineageTag: ed3ac729-0206-5889-8add-1dc296919264
+		isNameInferred
+		sourceColumn: [Label]
+		sortByColumn: Index
+
+	/// Running month number, for sorting.
+	column Index
+		isHidden
+		lineageTag: 70734420-0f14-578a-8443-2bf6c70b320e
+		summarizeBy: none
+		isNameInferred
+		sourceColumn: [Index]
+
+	partition 'Actuals Until' = calculated
+		mode: import
+		source =
+				SELECTCOLUMNS (
+				    FILTER ( 'Date', 'Date'[IsClosed] ),
+				    "Month", 'Date'[Month],
+				    "Label", 'Date'[Year Month],
+				    "Index", 'Date'[Month Index]
+				)
+

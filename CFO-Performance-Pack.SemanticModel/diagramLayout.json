@@ -280,6 +280,58 @@
             "width": 220
           },
           "zIndex": 20
+        },
+        {
+          "location": {
+            "x": 660,
+            "y": 1040
+          },
+          "nodeIndex": "PL Focus",
+          "nodeLineageTag": "e4d829c5-2a06-556b-9aa5-0ec6d54e7a81",
+          "size": {
+            "height": 130,
+            "width": 200
+          },
+          "zIndex": 21
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 1200
+          },
+          "nodeIndex": "Display Unit",
+          "nodeLineageTag": "d003dda3-5f49-5e0f-9d39-b2c005b0ebaf",
+          "size": {
+            "height": 130,
+            "width": 200
+          },
+          "zIndex": 22
+        },
+        {
+          "location": {
+            "x": 220,
+            "y": 1220
+          },
+          "nodeIndex": "Actuals Until",
+          "nodeLineageTag": "1624dd7c-46a7-5fe7-876d-52accdc83805",
+          "size": {
+            "height": 130,
+            "width": 200
+          },
+          "zIndex": 23
+        },
+        {
+          "location": {
+            "x": 1360,
+            "y": 1040
+          },
+          "nodeIndex": "Data Dictionary",
+          "nodeLineageTag": "9f262a8e-9a41-523b-9419-50cd1e2e6ad1",
+          "size": {
+            "height": 260,
+            "width": 240
+          },
+          "zIndex": 24
         }
       ],
       "name": "All tables",

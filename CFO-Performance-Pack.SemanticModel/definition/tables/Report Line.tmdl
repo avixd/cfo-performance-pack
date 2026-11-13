@@ -21,6 +21,7 @@ table 'Report Line'
 		dataType: string
 		lineageTag: 94a4c049-4485-506c-ad0a-fd04ec147370
 		sourceColumn: Section
+		sortByColumn: SectionSort
 
 	/// Detail, Subtotal or Total; drives row shading.
 	column LineType
@@ -34,53 +35,68 @@ table 'Report Line'
 		lineageTag: f871440b-4815-5d5d-ba40-d9fce7a9f1a3
 		sourceColumn: Statement
 
+	/// First line number of the section; sorts sections in statement order.
+	column SectionSort
+		dataType: int64
+		isHidden
+		lineageTag: 02a573bf-6507-5cfa-b21b-4f8eed2d681c
+		summarizeBy: none
+		sourceColumn: SectionSort
+
+	/// No for subtotal lines whose section already has detail lines: the matrix shows the section header as that subtotal, so the line would repeat.
+	column MatrixRow
+		dataType: string
+		isHidden
+		lineageTag: 5a922697-6e67-5352-94ca-aa11d9934eb7
+		sourceColumn: MatrixRow
+
 	partition 'Report Line' = m
 		mode: import
 		queryGroup: Dimensions
 		source =
 				// Management P&L and balance-sheet template (Goodly method). Order follows LineKey.
 				let
-				    Source = #table(type table [LineKey = Int64.Type, LineName = text, Section = text, LineType = text, Statement = text], {
-				        {1, "Gross Sales", "Revenue", "Detail", "Income Statement"},
-				        {2, "Returns & Discounts", "Revenue", "Detail", "Income Statement"},
-				        {3, "Net Revenue", "Revenue", "Subtotal", "Income Statement"},
-				        {4, "Cost of Sales", "Cost of Sales", "Detail", "Income Statement"},
-				        {5, "Gross Profit", "Gross Profit", "Subtotal", "Income Statement"},
-				        {6, "Salaries & Benefits", "Operating Expenses", "Detail", "Income Statement"},
-				        {7, "Commissions", "Operating Expenses", "Detail", "Income Statement"},
-				        {8, "Travel & Entertainment", "Operating Expenses", "Detail", "Income Statement"},
-				        {9, "Marketing", "Operating Expenses", "Detail", "Income Statement"},
-				        {10, "Office, Professional & Software", "Operating Expenses", "Detail", "Income Statement"},
-				        {11, "Occupancy & Utilities", "Operating Expenses", "Detail", "Income Statement"},
-				        {12, "Total Operating Expenses", "Operating Expenses", "Subtotal", "Income Statement"},
-				        {13, "EBITDA", "EBITDA", "Total", "Income Statement"},
-				        {14, "Depreciation & Amortization", "Below EBITDA", "Detail", "Income Statement"},
-				        {15, "Operating Profit (EBIT)", "EBIT", "Total", "Income Statement"},
-				        {16, "Net Interest", "Below EBIT", "Detail", "Income Statement"},
-				        {17, "Other Income / (Expense)", "Below EBIT", "Detail", "Income Statement"},
-				        {18, "Profit Before Tax", "Profit Before Tax", "Total", "Income Statement"},
-				        {19, "Income Tax", "Below PBT", "Detail", "Income Statement"},
-				        {20, "Net Income", "Net Income", "Total", "Income Statement"},
-				        {101, "Cash", "Assets", "Detail", "Balance Sheet"},
-				        {102, "Receivables", "Assets", "Detail", "Balance Sheet"},
-				        {103, "Inventory", "Assets", "Detail", "Balance Sheet"},
-				        {104, "Other Current Assets (incl. intercompany)", "Assets", "Detail", "Balance Sheet"},
-				        {105, "Total Current Assets", "Assets", "Subtotal", "Balance Sheet"},
-				        {106, "Property, Plant & Equipment", "Assets", "Detail", "Balance Sheet"},
-				        {107, "Other Assets", "Assets", "Detail", "Balance Sheet"},
-				        {108, "Total Assets", "Assets", "Total", "Balance Sheet"},
-				        {109, "Accounts Payable", "Liabilities", "Detail", "Balance Sheet"},
-				        {110, "Accrued Liabilities", "Liabilities", "Detail", "Balance Sheet"},
-				        {111, "Short-term Debt", "Liabilities", "Detail", "Balance Sheet"},
-				        {112, "Other Current Liabilities (incl. intercompany)", "Liabilities", "Detail", "Balance Sheet"},
-				        {113, "Total Current Liabilities", "Liabilities", "Subtotal", "Balance Sheet"},
-				        {114, "Long-term Debt", "Liabilities", "Detail", "Balance Sheet"},
-				        {115, "Pension & Other Long-term Liabilities", "Liabilities", "Detail", "Balance Sheet"},
-				        {116, "Total Liabilities", "Liabilities", "Subtotal", "Balance Sheet"},
-				        {117, "Paid-in Capital", "Equity", "Detail", "Balance Sheet"},
-				        {118, "Retained Earnings", "Equity", "Detail", "Balance Sheet"},
-				        {119, "Total Equity", "Equity", "Subtotal", "Balance Sheet"},
-				        {120, "Total Liabilities & Equity", "Liabilities & Equity", "Total", "Balance Sheet"}
+				    Source = #table(type table [LineKey = Int64.Type, LineName = text, Section = text, LineType = text, Statement = text, SectionSort = Int64.Type, MatrixRow = text], {
+				        {1, "Gross Sales", "Revenue", "Detail", "Income Statement", 1, "Yes"},
+				        {2, "Returns & Discounts", "Revenue", "Detail", "Income Statement", 1, "Yes"},
+				        {3, "Net Revenue", "Revenue", "Subtotal", "Income Statement", 1, "No"},
+				        {4, "Cost of Sales", "Cost of Sales", "Detail", "Income Statement", 4, "Yes"},
+				        {5, "Gross Profit", "Gross Profit", "Subtotal", "Income Statement", 5, "Yes"},
+				        {6, "Salaries & Benefits", "Operating Expenses", "Detail", "Income Statement", 6, "Yes"},
+				        {7, "Commissions", "Operating Expenses", "Detail", "Income Statement", 6, "Yes"},
+				        {8, "Travel & Entertainment", "Operating Expenses", "Detail", "Income Statement", 6, "Yes"},
+				        {9, "Marketing", "Operating Expenses", "Detail", "Income Statement", 6, "Yes"},
+				        {10, "Office, Professional & Software", "Operating Expenses", "Detail", "Income Statement", 6, "Yes"},
+				        {11, "Occupancy & Utilities", "Operating Expenses", "Detail", "Income Statement", 6, "Yes"},
+				        {12, "Total Operating Expenses", "Operating Expenses", "Subtotal", "Income Statement", 6, "No"},
+				        {13, "EBITDA", "EBITDA", "Total", "Income Statement", 13, "Yes"},
+				        {14, "Depreciation & Amortization", "Below EBITDA", "Detail", "Income Statement", 14, "Yes"},
+				        {15, "Operating Profit (EBIT)", "EBIT", "Total", "Income Statement", 15, "Yes"},
+				        {16, "Net Interest", "Below EBIT", "Detail", "Income Statement", 16, "Yes"},
+				        {17, "Other Income / (Expense)", "Below EBIT", "Detail", "Income Statement", 16, "Yes"},
+				        {18, "Profit Before Tax", "Profit Before Tax", "Total", "Income Statement", 18, "Yes"},
+				        {19, "Income Tax", "Below PBT", "Detail", "Income Statement", 19, "Yes"},
+				        {20, "Net Income", "Net Income", "Total", "Income Statement", 20, "Yes"},
+				        {101, "Cash", "Assets", "Detail", "Balance Sheet", 101, "Yes"},
+				        {102, "Receivables", "Assets", "Detail", "Balance Sheet", 101, "Yes"},
+				        {103, "Inventory", "Assets", "Detail", "Balance Sheet", 101, "Yes"},
+				        {104, "Other Current Assets (incl. intercompany)", "Assets", "Detail", "Balance Sheet", 101, "Yes"},
+				        {105, "Total Current Assets", "Assets", "Subtotal", "Balance Sheet", 101, "No"},
+				        {106, "Property, Plant & Equipment", "Assets", "Detail", "Balance Sheet", 101, "Yes"},
+				        {107, "Other Assets", "Assets", "Detail", "Balance Sheet", 101, "Yes"},
+				        {108, "Total Assets", "Assets", "Total", "Balance Sheet", 101, "No"},
+				        {109, "Accounts Payable", "Liabilities", "Detail", "Balance Sheet", 109, "Yes"},
+				        {110, "Accrued Liabilities", "Liabilities", "Detail", "Balance Sheet", 109, "Yes"},
+				        {111, "Short-term Debt", "Liabilities", "Detail", "Balance Sheet", 109, "Yes"},
+				        {112, "Other Current Liabilities (incl. intercompany)", "Liabilities", "Detail", "Balance Sheet", 109, "Yes"},
+				        {113, "Total Current Liabilities", "Liabilities", "Subtotal", "Balance Sheet", 109, "No"},
+				        {114, "Long-term Debt", "Liabilities", "Detail", "Balance Sheet", 109, "Yes"},
+				        {115, "Pension & Other Long-term Liabilities", "Liabilities", "Detail", "Balance Sheet", 109, "Yes"},
+				        {116, "Total Liabilities", "Liabilities", "Subtotal", "Balance Sheet", 109, "No"},
+				        {117, "Paid-in Capital", "Equity", "Detail", "Balance Sheet", 117, "Yes"},
+				        {118, "Retained Earnings", "Equity", "Detail", "Balance Sheet", 117, "Yes"},
+				        {119, "Total Equity", "Equity", "Subtotal", "Balance Sheet", 117, "No"},
+				        {120, "Total Liabilities & Equity", "Liabilities & Equity", "Total", "Balance Sheet", 120, "Yes"}
 				    })
 				in
 				    Source

@@ -3,11 +3,11 @@
   "name": "15646af23db95a64b778",
   "position": {
     "x": 8,
-    "y": 214,
-    "z": 11000,
-    "height": 24,
+    "y": 226,
+    "z": 12000,
+    "height": 22,
     "width": 180,
-    "tabOrder": 11000
+    "tabOrder": 12000
   },
   "visual": {
     "visualType": "actionButton",
@@ -42,7 +42,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'ℹ   Notes'"
+                  "Value": "'ℹ   8  Notes'"
                 }
               }
             },

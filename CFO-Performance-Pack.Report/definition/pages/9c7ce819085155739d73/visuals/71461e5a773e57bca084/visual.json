@@ -3,9 +3,9 @@
   "name": "71461e5a773e57bca084",
   "position": {
     "x": 8,
-    "y": 110,
+    "y": 106,
     "z": 7000,
-    "height": 24,
+    "height": 22,
     "width": 180,
     "tabOrder": 7000
   },
@@ -42,7 +42,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'▤   Budget vs Actual'"
+                  "Value": "'▤   3  Budget vs Actual'"
                 }
               }
             },

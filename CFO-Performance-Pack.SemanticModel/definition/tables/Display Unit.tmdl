@@ -1,0 +1,42 @@
+/// Slicer on the Income Statement Explorer page: show amounts in thousands or in full.
+table 'Display Unit'
+	lineageTag: d003dda3-5f49-5e0f-9d39-b2c005b0ebaf
+
+	/// Thousand or Absolute.
+	column Unit
+		dataType: string
+		lineageTag: 7323c3be-dd49-5b3d-bde7-4e2c386329e2
+		sourceColumn: Unit
+		sortByColumn: Sort
+
+	/// Number the amounts are divided by.
+	column Divisor
+		dataType: int64
+		isHidden
+		lineageTag: 84731cdb-7857-5b85-b9e4-b77f784629dc
+		summarizeBy: none
+		sourceColumn: Divisor
+
+	/// Display order.
+	column Sort
+		dataType: int64
+		isHidden
+		lineageTag: 13f2c870-3cc2-53e7-970f-210f2fbe1cce
+		summarizeBy: none
+		sourceColumn: Sort
+
+	partition 'Display Unit' = m
+		mode: import
+		queryGroup: 'Report helpers'
+		source =
+				// Slicer on the Income Statement Explorer page: show amounts in thousands or in full.
+				let
+				    Source = #table(type table [Unit = text, Divisor = Int64.Type, Sort = Int64.Type], {
+				        {"Thousand", 1000, 1},
+				        {"Absolute", 1, 2}
+				    })
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+
