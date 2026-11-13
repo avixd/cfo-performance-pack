@@ -2,12 +2,14 @@
 table 'Theme Mode'
 	lineageTag: d9d1d34e-8ddb-5690-808b-c163a14e5bd7
 
+	/// Light or Dark.
 	column Mode
 		dataType: string
 		lineageTag: a57b436b-65b1-5ae5-9fc6-b7e360fd602b
 		sourceColumn: Mode
 		sortByColumn: Sort
 
+	/// Display order.
 	column Sort
 		dataType: int64
 		isHidden
@@ -17,7 +19,9 @@ table 'Theme Mode'
 
 	partition 'Theme Mode' = m
 		mode: import
+		queryGroup: 'Report helpers'
 		source =
+				// Selector for the light/dark toggle; every colour measure reads it.
 				let
 				    Source = #table(type table [Mode = text, Sort = Int64.Type], {
 				        {"Light", 1},

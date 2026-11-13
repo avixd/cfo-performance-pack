@@ -127,6 +127,8 @@ def render_table(t):
     else:
         L.append(f'\tpartition {q(tn)} = m')
         L.append('\t\tmode: import')
+        if t.get('group'):
+            L.append(f"\t\tqueryGroup: {q(t['group'])}")
         L.append('\t\tsource =')
         L.extend('\t\t\t\t' + ln for ln in t['m'].split('\n'))
         L.append('')
@@ -148,11 +150,11 @@ def render_expressions(data_root):
     def fn(name, desc, body):
         lines = [f'/// {desc}', f'expression {name} =']
         lines += ['\t\t' + ln for ln in body.split('\n')]
-        lines += [f'\tlineageTag: {tag("expr", name)}', '', '\tannotation PBI_ResultType = Function', '']
+        lines += [f'\tlineageTag: {tag("expr", name)}', f"\tqueryGroup: {q(M.QUERY_GROUPS[0])}", '', '\tannotation PBI_ResultType = Function', '']
         return lines
     L = ['/// Root folder holding reference/, actuals/, budget/, fx/ and inbox/. Change this one value to run the model on another machine.',
          f'expression DataRoot = "{data_root}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]',
-         f'\tlineageTag: {tag("expr", "DataRoot")}', '', '\tannotation PBI_ResultType = Text', '']
+         f'\tlineageTag: {tag("expr", "DataRoot")}', f"\tqueryGroup: {q(M.QUERY_GROUPS[0])}", '', '\tannotation PBI_ResultType = Text', '']
     L += fn('fnReadCsv', 'Reads one UTF-8 CSV (subfolder of DataRoot, file name) through the single Folder.Files(DataRoot) source; blank strings become null.', M.FN_READ_CSV)
     L += fn('fnLoadLedgerFolder', 'Combines every GL_*.csv in a subfolder of DataRoot: columns matched by name (order and extra columns ignored), exact duplicate rows removed, blank department mapped to 0 "Unassigned". Adding or removing a file adds or removes a period.', M.FN_LOAD_LEDGER)
     return '\n'.join(L) + '\n'
@@ -165,6 +167,8 @@ def render_model():
          'annotation __PBI_TimeIntelligenceEnabled = 0', '',
          'annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]', '',
          'annotation PBI_QueryOrder = ' + json.dumps(order, separators=(',', ':')), '']
+    for i, g in enumerate(M.QUERY_GROUPS):   # folders in the Power Query Queries pane
+        L += [f'queryGroup {q(g)}', '', f'\tannotation PBI_QueryGroupOrder = {i}', '']
     L += [f"ref table {q(t['name'])}" for t in M.TABLES]
     L += ['', 'ref cultureInfo en-CA', '']
     return '\n'.join(L) + '\n'
@@ -183,6 +187,13 @@ def build_model(data_root):
     write(os.path.join(SM, 'relationships.tmdl'), render_relationships())
     for t in M.TABLES:
         write(os.path.join(SM, 'tables', f"{t['name']}.tmdl"), render_table(t))
+    # model-view layout: fact in the middle, dimensions around it, helper tables in rows below (positions in model_def.DIAGRAM)
+    nodes = [{'location': {'x': x, 'y': y}, 'nodeIndex': name, 'nodeLineageTag': tag(name), 'size': {'height': h, 'width': w}, 'zIndex': i}
+             for i, (name, (x, y, w, h)) in enumerate(M.DIAGRAM.items())]
+    write(os.path.join(os.path.dirname(SM), 'diagramLayout.json'), json.dumps({
+        'version': '1.1.0', 'diagrams': [{'ordinal': 0, 'scrollPosition': {'x': 0, 'y': 0}, 'nodes': nodes, 'name': 'All tables', 'zoomValue': 60,
+                                          'pinKeyFieldsToTop': False, 'showExtraHeaderInfo': False, 'hideKeyFieldsWhenCollapsed': False, 'tablesLocked': False}],
+        'selectedDiagram': 'All tables', 'defaultDiagram': 'All tables'}, indent=2))
 
 
 # ============================================================== PBIR helpers
@@ -392,9 +403,9 @@ class Page:
         y = 58
         for pid, name, glyph in PAGES_NAV:
             on = pid == self.pid
-            self.button(f'nav_{pid}', 8, y, PANEL_W - 16, 26, f'{glyph}   {name}', 'PageNavigation', page=pid, fill='Sidebar Active' if on else 'Sidebar',
+            self.button(f'nav_{pid}', 8, y, PANEL_W - 16, 24, f'{glyph}   {name}', 'PageNavigation', page=pid, fill='Sidebar Active' if on else 'Sidebar',
                         text='Sidebar Text' if on else 'Sidebar Muted', outline=None, size=9, align='left', bold=on, round_=6)
-            y += 28
+            y += 26
         self.textline('lbl_f', 8, y + 2, PANEL_W - 16, 20, 'Lbl Filters', 7.5, 'Sidebar Muted', bold=True)
         y += 22
         for k, spec, ttl, mode, single, sync in [
@@ -408,9 +419,9 @@ class Page:
             hh = 54 if mode == 'Basic' else 59   # title row + one control row (dropdown boxes are taller than tiles)
             self.slicer(k, 6, y, PANEL_W - 12, hh, spec, ttl, mode=mode, single=single, horizontal=(mode == 'Basic'), sync=sync)
             y += hh + 1
-        self.button('reset', 10, y + 4, PANEL_W - 20, 26, '\u21ba  Reset all filters', 'ClearAllSlicers', tooltip='Clear every slicer on every page',
+        self.button('reset', 10, y + 2, PANEL_W - 20, 24, '\u21ba  Reset all filters', 'ClearAllSlicers', tooltip='Clear every slicer on every page',
                     fill='Sidebar Active', text='Sidebar Text', outline=None, round_=6)
-        self.textline('tagline', 8, H - 34, PANEL_W - 16, 26, 'Tagline', 8.5, 'Sidebar Muted')
+        self.textline('tagline', 8, H - 21, PANEL_W - 16, 19, 'Tagline', 7.5, 'Sidebar Muted')
         # header: title, insight subtitle, filter chips + refresh stamp; utilities top right
         self.textline('title', CX - 4, 4, 540, 32, title_measure, 16, 'Title', bold=True)
         self.textline('subtitle', CX - 4, 34, 640, 22, subtitle_measure, 8.5, 'Muted')
@@ -446,11 +457,11 @@ class Page:
                 'grid': [{'properties': {'rowPadding': L(3), 'gridHorizontal': L(True), 'gridHorizontalColor': solid(SERIES['grid']),
                                          'gridVertical': L(False), 'outlineColor': solid(SERIES['grid'])}}]}
 
-    def story(self, key, x, y, w, h, page, title, subtitle):
-        obj = self.table_objects(['Story[Section]', 'Story[Text]'], size=9.5, wrap=True)
+    def story(self, key, x, y, w, h, page, title, subtitle, size=9.5, head=('Topic', 'Detail')):
+        obj = self.table_objects(['Story[Section]', 'Story[Text]'], size=size, wrap=True)
         obj['columnWidth'] = [{'properties': {'value': L(96)}, 'selector': {'metadata': 'Story.Section'}},
                               {'properties': {'value': L(w * SX - 120)}, 'selector': {'metadata': 'Story.Text'}}]
-        return self.add(key, 'tableEx', x, y, w, h, roles={'Values': [('Story[Section]', 'Topic'), ('Story[Text]', 'Detail')]},
+        return self.add(key, 'tableEx', x, y, w, h, roles={'Values': [('Story[Section]', head[0]), ('Story[Text]', head[1])]},
                         objects=obj, title=title, subtitle=subtitle, sort=[('Story[Section]', 'Ascending')],
                         filters=[cat_filter(hexid(self.pid, key, 'f'), 'Story', 'Page', [page])])
 
@@ -458,7 +469,7 @@ class Page:
         obj = self.table_objects(['Insight[Topic]', 'Insight Text'], size=9.5, wrap=True)
         obj['columnWidth'] = [{'properties': {'value': L(100)}, 'selector': {'metadata': 'Insight.Topic'}},
                               {'properties': {'value': L(w * SX - 124)}, 'selector': {'metadata': '_Measures.Insight Text'}}]
-        topics = {1: 'Growth quality', 2: 'Cost absorption', 3: 'Full-year outlook', 4: 'People cost'}
+        topics = {1: 'Growth quality', 2: 'Cost absorption', 3: 'Full-year outlook', 4: 'People cost', 5: 'Currency effect'}
         return self.add(key, 'tableEx', x, y, w, h, roles={'Values': [('Insight[Topic]', 'Topic'), ('Insight Text', 'What the numbers say')]},
                         objects=obj, title='=VT Insights', subtitle='Sub Insights', sort=[('Insight[Topic]', 'Ascending')],
                         filters=[cat_filter(hexid(self.pid, key, 'f'), 'Insight', 'Topic', [topics[k] for k in keys])])
@@ -473,11 +484,8 @@ class Page:
         return self.add(key, 'card', x, y, w, h, roles={'Values': [(measure, label)]}, objects=obj, content=content, header=False)
 
     def kpi(self, key, x, y, w, h, measure, label, sub=None, sub_colour=None):
-        """Compact KPI (no time series): value + label (+ comparison)."""
-        top = h - 30 if sub else h
-        self.card(key, x, y, w, top, measure, label, size=19)
-        if sub:
-            self.card(key + '_sub', x, y + top, w, h - top, sub, None, size=8.5, colour='Muted', colour_measure=sub_colour)
+        """Compact KPI tile (no icon, sparkline or pacing bar): same blocks, alignment and number format as kpi_full."""
+        self.kpi_full(key, x, y, w, h, 'KV ' + measure, label, None, sub, sub_colour, doc_anchor=ANCHOR(FOLDER[measure]), desc=DESC.get(measure) or label)
 
     def kpi_full(self, key, x, y, w, h, value, label, glyph, sub=None, sub_colour=None, spark=None, prog_text=None, prog_bar=None, doc_anchor=None, desc=None):
         """Reference-style KPI card: icon circle, value, label (hover = definition, click = DAX), comparison, sparkline, progress to FY budget."""
@@ -486,16 +494,18 @@ class Page:
         x0, y0, w0, h0 = X(x), Y(y), w * SX, h * SY
         self.add(key + '_bg', 'textbox', x0, y0, w0, h0, content=False, header=False,
                  objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]})
-        self.button(key + '_ic', x0 + 8, y0 + 9, 26, 26, glyph, fill='Accent Soft', text='Accent', outline=None, size=10, round_=13, bold=True)
-        self.button(key + '_v', x0 + 36, y0 + 6, 88 if spark else (w0 - 42), 30, '', measure=value, fill=None, text='Title', outline=None, size=14, align='left', bold=True)
-        self.button(key + '_l', x0 + 36, y0 + 36, w0 - 42, 20, label + '  \u24d8', 'WebUrl', url=DOCS_URL + (doc_anchor or ''),
+        ix = 36 if glyph else 6          # compact tiles have no icon, so the text starts at the panel edge
+        if glyph:
+            self.button(key + '_ic', x0 + 8, y0 + 9, 26, 26, glyph, fill='Accent Soft', text='Accent', outline=None, size=10, round_=13, bold=True)
+        self.button(key + '_v', x0 + ix, y0 + 6, 92 if spark else (w0 - ix - 6), 30, '', measure=value, fill=None, text='Title', outline=None, size=14, align='left', bold=True)
+        self.button(key + '_l', x0 + ix, y0 + 34, w0 - ix - 6, 20, label + '  \u24d8', 'WebUrl', url=DOCS_URL + (doc_anchor or ''),
                     tooltip=(desc or label)[:250], fill=None, text='Muted', outline=None, size=8, align='left')
         if sub:
-            self.button(key + '_s', x0 + 4, y0 + 60, w0 - 8, 22, '', measure=sub, fill=None, text='Muted', outline=None, size=7.5, align='left')
+            self.button(key + '_s', x0 + (4 if glyph else ix - 2), y0 + 56, w0 - 8, 22, '', measure=sub, fill=None, text='Muted', outline=None, size=7.5, align='left')
             if sub_colour:
                 self.visuals[-1]['visual']['objects']['text'][1]['properties']['fontColor'] = mcolor(sub_colour)
         if spark:
-            self.image(key + '_sp', x0 + 126, y0 + 9, w0 - 136, 24, spark)
+            self.image(key + '_sp', x0 + 130, y0 + 9, w0 - 140, 24, spark)
         if prog_text:
             self.button(key + '_pt', x0 + 4, y0 + h0 - 36, w0 - 8, 20, '', measure=prog_text, fill=None, text='Muted', outline=None, size=7, align='left')
         if prog_bar:
@@ -549,7 +559,8 @@ class Page:
 # ============================================================== pages (content authored on the 1248 x 630 grid from x=16, y=74)
 PAGES_NAV = [('99445311384ca177b853', 'Overview', '\u2302'), (hexid('page', 'exec'), 'Executive', '\u25c6'),
              (hexid('page', 'bva'), 'Budget vs Actual', '\u25a4'), (hexid('page', 'is'), 'P&L', '\u2261'),
-             (hexid('page', 'bs'), 'Balance Sheet', '\u25a5'), (hexid('page', 'dq'), 'Data Quality', '\u2713')]
+             (hexid('page', 'bs'), 'Balance Sheet', '\u25a5'), (hexid('page', 'dq'), 'Data Quality', '\u2713'),
+             (hexid('page', 'notes'), 'Notes', '\u2139')]
 DESC = {m['name']: m.get('desc') for m in M.MEAS}
 ANCHOR = lambda folder: '#' + re.sub(r'[^a-z0-9 -]', '', folder.lower()).replace(' ', '-')
 FOLDER = {m['name']: m['folder'] for m in M.MEAS}
@@ -578,7 +589,7 @@ def page_overview():
     p.story('story', 16, 74, 400, 630, 'Overview', '=VT Story', 'Sub Story')
     x0, w4 = 428, 202
     full(p, 'k0', x0, 74, w4, 136, 'Revenue', 'Net revenue', '$', 'Revenue vs Budget Text', 'Revenue Var Color', 'SVG Spark Revenue', 'Revenue Progress Text', 'SVG Bar Revenue')
-    full(p, 'k1', x0 + (w4 + 10), 74, w4, 136, 'Organic Growth %', 'Organic growth', '\u2197', 'Revenue Growth Short')
+    full(p, 'k1', x0 + (w4 + 10), 74, w4, 136, 'Organic Growth %', 'Organic growth', '\u2197', 'Revenue Growth Short', 'Revenue Growth Color')
     full(p, 'k2', x0 + 2 * (w4 + 10), 74, w4, 136, 'Revenue New Entities', 'New-entity revenue', '+', 'Entity Budget Status Summary')
     full(p, 'k3', x0 + 3 * (w4 + 10), 74, w4, 136, 'Entities Reporting', 'Entities reporting', '#', 'Sub Entities Short')
     p.add('rev_fy', 'columnChart', 428, 220, 430, 270,
@@ -589,7 +600,12 @@ def page_overview():
     p.add('entities', 'tableEx', 870, 220, 394, 484,
           roles={'Values': [('Entity[EntityName]', 'Entity'), ('Entity[CurrencyCode]', 'Ccy'), ('Entity[Effective Ownership]', 'Group %'),
                             ('Entity Joined FY', 'Joined'), ('Entity Budget Status', 'Budget'), ('Revenue (M)', 'Revenue (M)')]},
-          objects=p.table_objects(fields, colours={'_Measures.Entity Budget Status': 'Entity Budget Status Color'}),
+          objects=dict(p.table_objects(fields, colours={'_Measures.Entity Budget Status': 'Entity Budget Status Color'}),
+                       columnWidth=[{'properties': {'value': L(112)}, 'selector': {'metadata': 'Entity.EntityName'}},
+                                    {'properties': {'value': L(34)}, 'selector': {'metadata': 'Entity.CurrencyCode'}},
+                                    {'properties': {'value': L(48)}, 'selector': {'metadata': 'Entity.Effective Ownership'}},
+                                    {'properties': {'value': L(48)}, 'selector': {'metadata': '_Measures.Entity Joined FY'}},
+                                    {'properties': {'value': L(92)}, 'selector': {'metadata': '_Measures.Entity Budget Status'}}]),
           title='=VT Entities', subtitle='Sub Entities', sort=[('Entity Joined FY', 'Ascending')])
     p.insights('ins', 428, 498, 430, 206, [1, 3])
     return p
@@ -614,7 +630,7 @@ def page_executive():
           objects=wf, title='=Title Revenue Bridge', subtitle='Sub Revenue Bridge', sort=[('Revenue Bridge[Step]', 'Ascending')])
     p.add('wf_ebitda', 'waterfallChart', 430, 266, 404, 190, roles={'Category': ['EBITDA Bridge[Step]'], 'Y': [('EBITDA Bridge Value', 'EBITDA variance')]},
           objects=wf, title='=Title EBITDA Bridge', subtitle='Sub EBITDA Bridge', sort=[('EBITDA Bridge[Step]', 'Ascending')])
-    p.insights('ins', 844, 266, 420, 190, [1, 2, 4])
+    p.insights('ins', 844, 266, 420, 190, [1, 2, 5])
     fields = ['Exception Rank Shown', 'Entity[EntityName]', 'Report Line[LineName]', 'Exception Actual', 'Exception Var', 'Exception Var %']
     p.add('exceptions', 'tableEx', 16, 466, 620, 238,
           roles={'Values': [('Exception Rank Shown', '#'), ('Entity[EntityName]', 'Entity'), ('Report Line[LineName]', 'P&L line'),
@@ -634,7 +650,7 @@ def page_bva():
     w = (1248 - 3 * 10) / 4
     tiles = [('Metric Actual', 'Actual', '$', 'Metric Var Text', 'Metric Var Color', 'SVG Spark Metric', 'Metric Progress Text', 'SVG Bar Metric'),
              ('Metric Budget', 'Budget', '\u25a4', 'Metric Budget FY Text', None, 'SVG Spark Metric Budget', None, None),
-             ('Metric PY', 'Prior year', '\u21ba', 'Metric Growth Text', None, 'SVG Spark Metric PY', None, None),
+             ('Metric PY', 'Prior year', '\u21ba', 'Metric Growth Text', 'Metric Growth Color', 'SVG Spark Metric PY', None, None),
              ('Metric Outlook FY', 'Full-year outlook', '\u2197', 'Metric Gap Text', 'Metric Gap Color', None, 'Metric Outlook Progress Text', 'SVG Bar Metric Outlook')]
     for i, t in enumerate(tiles):
         full(p, f'k{i}', 16 + i * (w + 10), 124, w, 132, *t)
@@ -665,12 +681,13 @@ def page_income():
                 [('Line Var vs Budget', 'Line Var Color'), ('Line Var % vs Budget', 'Line Var Color'), ('Line Growth %', 'Line Growth Color')],
                 '=VT PL', 'Sub PL')
     tiles = [('Gross Profit Margin %', 'Gross margin', 'Gross Margin Text', 'Gross Margin Var Color'),
-             ('EBITDA Margin %', 'EBITDA margin', None, None),
-             ('OpEx % of Revenue', 'Opex % of revenue', None, None),
-             ('Salary Cost per Head', 'Salary cost per head', None, None)]
+             ('EBITDA Margin %', 'EBITDA margin', 'EBITDA Margin Text', 'EBITDA Margin Var Color'),
+             ('OpEx % of Revenue', 'Opex % of revenue', 'OpEx Ratio Text', 'OpEx Ratio Var Color'),
+             ('Salary Cost per Head', 'Salary cost per head', 'Salary per Head Text', 'Salary per Head Color'),
+             ('Net Income Attributable to Group', 'Net income attributable to the group', 'NCI Text', None)]
     for i, (m, lab, sub, col) in enumerate(tiles):
-        p.kpi(f'k{i}', 926, 74 + i * 100, 338, 92, m, lab, sub, col)
-    p.insights('ins', 926, 476, 338, 228, [2, 4])
+        p.kpi(f'k{i}', 926, 74 + i * 94, 338, 86, m, lab, sub, col)
+    p.insights('ins', 926, 544, 338, 160, [2, 4])
     return p
 
 
@@ -679,16 +696,25 @@ def page_balance():
     p.chrome('PT BS', 'Sub Cash')
     cols = [('Line Closing Balance', 'Closing'), ('Line Prior Year-End Balance', 'Year end'), ('Line Balance Change', 'Change')]
     p.statement('bs', 16, 74, 600, 630, 'Balance Sheet', cols, [('Line Balance Change', 'Balance Change Color')], '=VT BS', 'Sub BS')
-    tiles = [('Cash', 'Cash'), ('Current Ratio', 'Current ratio (x)'), ('Debt to Equity', 'Debt to equity (x)'), ('Cash Conversion Cycle (days)', 'Cash cycle (days)'),
-             ('DSO (days)', 'Receivable days'), ('DIO (days)', 'Inventory days'), ('DPO (days)', 'Payable days'), ('DQ Balance Sheet Difference', 'Balance check')]
+    tiles = [('Cash', 'Cash', 'Cash Change Text', 'Cash Change Color'), ('Current Ratio', 'Current ratio', 'Current Ratio Change Text', 'Current Ratio Change Color'),
+             ('Debt to Equity', 'Debt to equity', 'Debt to Equity Change Text', 'Debt to Equity Change Color'),
+             ('Cash Conversion Cycle (days)', 'Cash cycle (days)', 'CCC Change Text', 'CCC Change Color'),
+             ('DSO (days)', 'Receivable days', 'DSO Change Text', 'DSO Change Color'), ('DIO (days)', 'Inventory days', 'DIO Change Text', 'DIO Change Color'),
+             ('DPO (days)', 'Payable days', 'DPO Change Text', 'DPO Change Color'),
+             ('DQ Balance Sheet Difference', 'Balance check', 'Balance Check Text', 'Balance Check Color')]
     w = (648 - 3 * 10) / 4
-    for i, (m, lab) in enumerate(tiles):
-        p.kpi(f'k{i}', 626 + (i % 4) * (w + 10), 74 + (i // 4) * 96, w, 88, m, lab)
+    for i, (m, lab, sub, col) in enumerate(tiles):
+        p.kpi(f'k{i}', 626 + (i % 4) * (w + 10), 74 + (i // 4) * 98, w, 90, m, lab, sub, col)
+    # cash bridge: green = source of cash, red = use of cash; the total is the change in cash since the year end
+    wf = p.axes({'sentimentColors': [{'properties': {'increaseFill': T('Good'), 'decreaseFill': T('Bad'), 'totalFill': solid(SERIES['total'])}}],
+                 'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000000), 'labelPrecision': L(1), 'fontSize': L(8.5), 'color': T('Text')}}]}, value_axis=False, legend=False)
+    p.add('cash_bridge', 'waterfallChart', 626, 272, 638, 212, roles={'Category': ['Cash Bridge[Step]'], 'Y': [('Cash Bridge Value', 'Cash effect')]},
+          objects=wf, title='=VT Cash Bridge', subtitle='Sub Cash Bridge', sort=[('Cash Bridge[Step]', 'Ascending')])
     obj = p.axes({'dataPoint': [{'properties': {'fill': solid(SERIES['actual'])}, 'selector': {'metadata': '_Measures.Cash Balance (month)'}},
                                 {'properties': {'fill': solid(SERIES['outlook'])}, 'selector': {'metadata': '_Measures.Working Capital (month)'}}],
                   'lineStyles': [{'properties': {'lineChartType': L('straight'), 'strokeWidth': L(2)}}]})
     obj['categoryAxis'][0]['properties']['axisType'] = L('Scalar')
-    p.add('cash', 'lineChart', 626, 270, 638, 434,
+    p.add('cash', 'lineChart', 626, 494, 638, 210,
           roles={'Category': ['Date[Month]'], 'Y': [('Cash Balance (month)', 'Cash'), ('Working Capital (month)', 'Trade working capital')]},
           objects=obj, title='=VT Cash', subtitle='Sub Cash Trend', sort=[('Date[Month]', 'Ascending')],
           filters=[cat_filter(hexid(p.pid, 'cash', 'f'), 'Date', 'IsClosed', ['true'])])
@@ -698,13 +724,14 @@ def page_balance():
 def page_dq():
     p = Page(hexid('page', 'dq'), 'Data Quality', 'DQ')
     p.chrome('PT DQ', 'PS DQ')
-    tiles = [('DQ Files Loaded', 'Ledger files loaded'), ('DQ Duplicates Removed', 'Duplicates removed'),
-             ('DQ Blank Departments Fixed', 'Blank depts fixed'), ('DQ Files With Schema Drift', 'Schema-drift files'),
-             ('DQ Balance Sheet Difference', 'Balance-sheet diff'), ('DQ Rows Missing FX Rate', 'Rows missing FX'),
-             ('DQ Accounts Missing From Chart', 'Unknown accounts'), ('DQ Synthetic Budget Share', 'Synthetic budget')]
+    tiles = [('DQ Files Loaded', 'Ledger files loaded', None, None), ('DQ Duplicates Removed', 'Duplicates removed', None, None),
+             ('DQ Blank Departments Fixed', 'Blank depts fixed', None, None), ('DQ Files With Schema Drift', 'Schema-drift files', None, None),
+             ('DQ Balance Sheet Difference', 'Balance-sheet diff', 'Balance Check Text', 'Balance Check Color'),
+             ('DQ Rows Missing FX Rate', 'Rows missing FX', 'FX Check Text', 'FX Check Color'),
+             ('DQ Accounts Missing From Chart', 'Unknown accounts', 'Chart Check Text', 'Chart Check Color'), ('DQ Synthetic Budget Share', 'Synthetic budget', None, None)]
     w = (1248 - 7 * 10) / 8
-    for i, (m, lab) in enumerate(tiles):
-        p.kpi(f'k{i}', 16 + i * (w + 10), 74, w, 88, m, lab)
+    for i, (m, lab, sub, col) in enumerate(tiles):
+        p.kpi(f'k{i}', 16 + i * (w + 10), 74, w, 88, m, lab, sub, col)
     f1 = ['DQ Injection Log[Month]', 'DQ Injection Log[Issue]', 'DQ Injection Log[RowsAffected]', 'DQ Injection Log[Treatment]']
     o1 = p.table_objects(f1, wrap=True)
     o1['columnWidth'] = [{'properties': {'value': L(62)}, 'selector': {'metadata': 'DQ Injection Log.Month'}},
@@ -722,6 +749,15 @@ def page_dq():
                             ('DQ File Log[SchemaDrift]', 'Schema drift')]},
           objects=p.table_objects(f2), title='=VT DQ Files', subtitle='Sub DQ Files', sort=[('DQ File Log[Name]', 'Ascending')])
     p.story('eda', 16, 414, 620, 290, 'DQ', '=VT EDA', 'Sub EDA')
+    return p
+
+
+def page_notes():
+    """Assumptions, policies and definitions: what a reader must know before quoting a number from any page."""
+    p = Page(hexid('page', 'notes'), 'Notes', 'Notes')
+    p.chrome('PT Notes', 'PS Notes')
+    p.story('notes', 16, 74, 800, 630, 'Notes', '=VT Notes', 'Sub Notes', size=8.5, head=('Topic', 'Assumption or policy'))
+    p.story('defs', 826, 74, 438, 630, 'Defs', '=VT Defs', 'Sub Defs', size=8.5, head=('Metric', 'Definition'))
     return p
 
 
@@ -776,7 +812,7 @@ def build_report():
                                     'items': [{'name': THEME_NAME, 'path': THEME_NAME, 'type': 'CustomTheme'}]})
     write(os.path.join(rdir, 'report.json'), json.dumps(rep, indent=2))
     write(os.path.join(RP, 'StaticResources', 'RegisteredResources', THEME_NAME), json.dumps(theme(), indent=2))
-    pages = [page_overview(), page_executive(), page_bva(), page_income(), page_balance(), page_dq()]
+    pages = [page_overview(), page_executive(), page_bva(), page_income(), page_balance(), page_dq(), page_notes()]
     for i, pg in enumerate(pages):
         pg.write(i)
     prune(pages)

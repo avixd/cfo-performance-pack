@@ -2,12 +2,14 @@
 table 'Period View'
 	lineageTag: 1fadda88-f6e5-5154-9375-946aab6cc3d2
 
+	/// Period view: YTD, QTD or MTD.
 	column View
 		dataType: string
 		lineageTag: 40cba6d6-9b13-50c3-9f15-db0baae109e1
 		sourceColumn: View
 		sortByColumn: Sort
 
+	/// Display order.
 	column Sort
 		dataType: int64
 		isHidden
@@ -17,7 +19,9 @@ table 'Period View'
 
 	partition 'Period View' = m
 		mode: import
+		queryGroup: 'Report helpers'
 		source =
+				// Slicer: MTD, QTD or YTD (default YTD).
 				let
 				    Source = #table(type table [View = text, Sort = Int64.Type], {
 				        {"YTD", 1},

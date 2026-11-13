@@ -1,0 +1,39 @@
+/// Axis for the cash bridge on the Balance Sheet page: one step per balance-sheet group.
+table 'Cash Bridge'
+	lineageTag: 76548689-4cbe-546a-bb74-9f9bcc45ca6a
+
+	/// Step shown on the bridge axis.
+	column Step
+		dataType: string
+		lineageTag: a8370901-04d9-58ad-b10f-3ddca1285e59
+		sourceColumn: Step
+		sortByColumn: Sort
+
+	/// Display order.
+	column Sort
+		dataType: int64
+		isHidden
+		lineageTag: 9e39cc3f-7feb-5196-932a-2f50d6fe2c91
+		summarizeBy: none
+		sourceColumn: Sort
+
+	partition 'Cash Bridge' = m
+		mode: import
+		queryGroup: 'Report helpers'
+		source =
+				// Axis for the cash bridge on the Balance Sheet page: one step per balance-sheet group.
+				let
+				    Source = #table(type table [Step = text, Sort = Int64.Type], {
+				        {"Receivables", 1},
+				        {"Inventory", 2},
+				        {"Other assets", 3},
+				        {"Payables", 4},
+				        {"Other liabilities", 5},
+				        {"Debt", 6},
+				        {"Equity", 7}
+				    })
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+

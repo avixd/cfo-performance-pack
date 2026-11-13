@@ -1,6 +1,7 @@
 /// Root folder holding reference/, actuals/, budget/, fx/ and inbox/. Change this one value to run the model on another machine.
 expression DataRoot = "<YOUR-LOCAL-PATH>\data\" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]
 	lineageTag: c494f972-fde3-585a-9acb-3bd729d69ee1
+	queryGroup: 'Parameters and functions'
 
 	annotation PBI_ResultType = Text
 
@@ -8,14 +9,19 @@ expression DataRoot = "<YOUR-LOCAL-PATH>\data\" meta [IsParameterQuery=true, Typ
 expression fnReadCsv =
 		(subfolder as text, fileName as text) as table =>
 		let
+		    // Folder path to match, lower-cased. An empty subfolder means DataRoot itself.
 		    Target = Text.Lower(if subfolder = "" then DataRoot else DataRoot & subfolder & "\"),
+		    // One static source for the whole model (Folder.Files(DataRoot)), filtered to the file: no gateway or privacy prompt.
 		    Hit = Table.SelectRows(Folder.Files(DataRoot), each Text.Lower([Folder Path]) = Target and Text.Lower([Name]) = Text.Lower(fileName)),
+		    // Parse as UTF-8 CSV (65001).
 		    Source = Csv.Document(Hit{0}[Content], [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
 		    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars = true]),
+		    // Empty strings become null so type conversion and null checks behave.
 		    Blanks = Table.TransformColumns(Promoted, {}, (x) => if x = "" then null else x)
 		in
 		    Blanks
 	lineageTag: e595d3c5-8417-5464-8ff4-eea5508f286c
+	queryGroup: 'Parameters and functions'
 
 	annotation PBI_ResultType = Function
 
@@ -23,17 +29,23 @@ expression fnReadCsv =
 expression fnLoadLedgerFolder =
 		(subfolder as text, scenario as text) as table =>
 		let
+		    // Folder to load, e.g. DataRoot\actuals\.
 		    Target = Text.Lower(DataRoot & subfolder & "\"),
 		    Files = Table.SelectRows(Folder.Files(DataRoot), each Text.Lower([Folder Path]) = Target),
+		    // Only ledger files: GL_*.csv. Dropping a file in adds a period; removing it removes the period.
 		    Csvs = Table.SelectRows(Files, each Text.Lower([Extension]) = ".csv" and Text.StartsWith([Name], "GL_")),
+		    // Per file: promote headers, pick the six columns BY NAME (survives reordered or extra columns; a missing column becomes null), drop exact duplicate rows.
 		    Parsed = Table.AddColumn(Csvs, "Data", each Table.Distinct(Table.SelectColumns(Table.PromoteHeaders(Csv.Document([Content], [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]), [PromoteAllScalars = true]), {"Month", "EntityKey", "DepartmentKey", "AccountKey", "AmountLC", "BudgetSource"}, MissingField.UseNull))),
 		    Kept = Table.SelectColumns(Parsed, {"Name", "Data"}),
 		    Expanded = Table.ExpandTableColumn(Kept, "Data", {"Month", "EntityKey", "DepartmentKey", "AccountKey", "AmountLC", "BudgetSource"}),
+		    // Blank department (ERP migration gap) is mapped to key 0 = "Unassigned" so no row is lost in the Department relationship.
 		    DeptFixed = Table.ReplaceValue(Table.ReplaceValue(Expanded, "", "0", Replacer.ReplaceValue, {"DepartmentKey"}), null, "0", Replacer.ReplaceValue, {"DepartmentKey"}),
+		    // Tag every row with the scenario of the folder it came from (Actual or Budget).
 		    WithScenario = Table.AddColumn(DeptFixed, "Scenario", each scenario, type text)
 		in
 		    WithScenario
 	lineageTag: b2435c18-26e6-5b88-9a9e-0d4ddf841882
+	queryGroup: 'Parameters and functions'
 
 	annotation PBI_ResultType = Function
 

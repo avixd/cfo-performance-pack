@@ -3,11 +3,11 @@
   "name": "3dde418f7fd4527e8e66",
   "position": {
     "x": 746.2,
-    "y": 197.2,
-    "z": 57000,
+    "y": 193.2,
+    "z": 58000,
     "height": 22,
     "width": 250.6,
-    "tabOrder": 57000
+    "tabOrder": 58000
   },
   "visual": {
     "visualType": "actionButton",
@@ -61,7 +61,7 @@
                           "Entity": "_Measures"
                         }
                       },
-                      "Property": "Col Muted"
+                      "Property": "Metric Growth Color"
                     }
                   }
                 }

@@ -2,12 +2,14 @@
 table 'Reporting Currency'
 	lineageTag: d402f302-e949-57cc-b209-ac42def220d6
 
+	/// Presentation currency.
 	column Currency
 		dataType: string
 		lineageTag: 15f3eb2b-4334-5887-b5b5-e00f7bc11349
 		sourceColumn: Currency
 		sortByColumn: Sort
 
+	/// Display order.
 	column Sort
 		dataType: int64
 		isHidden
@@ -17,7 +19,9 @@ table 'Reporting Currency'
 
 	partition 'Reporting Currency' = m
 		mode: import
+		queryGroup: 'Report helpers'
 		source =
+				// Slicer: presentation currency (CAD default).
 				let
 				    Source = #table(type table [Currency = text, Sort = Int64.Type], {
 				        {"CAD", 1},

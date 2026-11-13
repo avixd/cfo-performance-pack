@@ -10,150 +10,280 @@
       "nodes": [
         {
           "location": {
-            "x": 0,
-            "y": 26
-          },
-          "nodeIndex": "Account",
-          "nodeLineageTag": "5d8f6d03-b336-4887-8557-a6c11c7e6219",
-          "size": {
-            "height": 248,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 284,
-            "y": 74
-          },
-          "nodeIndex": "Department",
-          "nodeLineageTag": "229fe922-33de-4f7a-81b0-ac02b7ac341f",
-          "size": {
-            "height": 152,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 568,
-            "y": 50
-          },
-          "nodeIndex": "Entity",
-          "nodeLineageTag": "53b63a67-25f9-458e-a5b5-737bef532302",
-          "size": {
-            "height": 200,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 852,
-            "y": 26
-          },
-          "nodeIndex": "FX",
-          "nodeLineageTag": "6a79ed1c-d8f6-4f3d-bca7-14df9f430466",
-          "size": {
-            "height": 248,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 1136,
-            "y": 14
+            "x": 620,
+            "y": 300
           },
           "nodeIndex": "GL",
-          "nodeLineageTag": "9fcc3dea-cce0-4a9a-a254-b51449a710b1",
+          "nodeLineageTag": "b23f94e1-9ba8-5689-a2ff-f6a4f3156d70",
           "size": {
-            "height": 272,
-            "width": 234
+            "height": 330,
+            "width": 250
           },
           "zIndex": 0
         },
         {
           "location": {
-            "x": 1420,
-            "y": 0
+            "x": 620,
+            "y": 20
           },
           "nodeIndex": "Date",
-          "nodeLineageTag": "4a90c2ee-1a15-4c3e-b34d-55ebf975bcc7",
+          "nodeLineageTag": "6cde4cd2-fcbd-5f57-a1b1-dcfa89d0aaf7",
           "size": {
-            "height": 300,
-            "width": 234
+            "height": 250,
+            "width": 250
           },
-          "zIndex": 0
+          "zIndex": 1
         },
         {
           "location": {
-            "x": 1704,
-            "y": 50
+            "x": 260,
+            "y": 300
           },
-          "nodeIndex": "Report Line",
-          "nodeLineageTag": "931f3594-f3c8-4d45-a3d5-fd3e0173a76e",
+          "nodeIndex": "Entity",
+          "nodeLineageTag": "e7b63dec-7693-5f87-8875-49bea325e9e8",
           "size": {
-            "height": 200,
-            "width": 234
+            "height": 220,
+            "width": 250
           },
-          "zIndex": 0
+          "zIndex": 2
         },
         {
           "location": {
-            "x": 1988,
-            "y": 86
+            "x": 980,
+            "y": 300
+          },
+          "nodeIndex": "Account",
+          "nodeLineageTag": "35deeb7f-ec24-5d77-92c3-8cb1ff9e2c36",
+          "size": {
+            "height": 250,
+            "width": 250
+          },
+          "zIndex": 3
+        },
+        {
+          "location": {
+            "x": 620,
+            "y": 660
+          },
+          "nodeIndex": "Department",
+          "nodeLineageTag": "40aaf66a-bbb5-59ff-a163-d089c33a06d7",
+          "size": {
+            "height": 150,
+            "width": 250
+          },
+          "zIndex": 4
+        },
+        {
+          "location": {
+            "x": 260,
+            "y": 20
+          },
+          "nodeIndex": "FX",
+          "nodeLineageTag": "7632a779-3e03-5d8f-b6ed-0c60b8ad50ff",
+          "size": {
+            "height": 220,
+            "width": 250
+          },
+          "zIndex": 5
+        },
+        {
+          "location": {
+            "x": 1340,
+            "y": 300
           },
           "nodeIndex": "Report Line Map",
-          "nodeLineageTag": "77bf8ad2-5481-443f-a773-0f08c437d892",
+          "nodeLineageTag": "bc496158-b407-5438-bca9-ff4bc2578557",
           "size": {
-            "height": 128,
-            "width": 234
+            "height": 120,
+            "width": 220
           },
-          "zIndex": 0
+          "zIndex": 6
         },
         {
           "location": {
-            "x": 2272,
-            "y": 98
+            "x": 1340,
+            "y": 450
+          },
+          "nodeIndex": "Report Line",
+          "nodeLineageTag": "4df457e1-f969-517e-a5fb-5fc81e44f79f",
+          "size": {
+            "height": 190,
+            "width": 220
+          },
+          "zIndex": 7
+        },
+        {
+          "location": {
+            "x": 980,
+            "y": 20
           },
           "nodeIndex": "_Measures",
-          "nodeLineageTag": "45b9e8d6-c339-450a-8bc2-d9d38be1a1e6",
+          "nodeLineageTag": "76288148-93bb-5a23-a24d-abc08674d4e8",
           "size": {
-            "height": 104,
-            "width": 234
+            "height": 250,
+            "width": 250
           },
-          "zIndex": 0
+          "zIndex": 8
         },
         {
           "location": {
-            "x": 2556,
-            "y": 86
-          },
-          "nodeIndex": "Period View",
-          "nodeLineageTag": "ff897c4c-4ba3-4952-8054-a9e1996e75f2",
-          "size": {
-            "height": 128,
-            "width": 234
-          },
-          "zIndex": 0
-        },
-        {
-          "location": {
-            "x": 2840,
-            "y": 86
+            "x": 0,
+            "y": 880
           },
           "nodeIndex": "Reporting Currency",
-          "nodeLineageTag": "e2ce7c56-4dcd-483a-938c-8ad12c2735ff",
+          "nodeLineageTag": "d402f302-e949-57cc-b209-ac42def220d6",
           "size": {
-            "height": 128,
-            "width": 234
+            "height": 110,
+            "width": 200
           },
-          "zIndex": 0
+          "zIndex": 9
+        },
+        {
+          "location": {
+            "x": 220,
+            "y": 880
+          },
+          "nodeIndex": "Period View",
+          "nodeLineageTag": "1fadda88-f6e5-5154-9375-946aab6cc3d2",
+          "size": {
+            "height": 110,
+            "width": 200
+          },
+          "zIndex": 10
+        },
+        {
+          "location": {
+            "x": 440,
+            "y": 880
+          },
+          "nodeIndex": "Metric",
+          "nodeLineageTag": "5ff3a22c-43a3-513d-b134-6a6f20cb08b6",
+          "size": {
+            "height": 130,
+            "width": 200
+          },
+          "zIndex": 11
+        },
+        {
+          "location": {
+            "x": 660,
+            "y": 880
+          },
+          "nodeIndex": "Theme Mode",
+          "nodeLineageTag": "d9d1d34e-8ddb-5690-808b-c163a14e5bd7",
+          "size": {
+            "height": 110,
+            "width": 200
+          },
+          "zIndex": 12
+        },
+        {
+          "location": {
+            "x": 880,
+            "y": 880
+          },
+          "nodeIndex": "Revenue Bridge",
+          "nodeLineageTag": "1f3a9dc6-acab-5e55-b276-f2c8360f6b81",
+          "size": {
+            "height": 110,
+            "width": 200
+          },
+          "zIndex": 13
+        },
+        {
+          "location": {
+            "x": 1100,
+            "y": 880
+          },
+          "nodeIndex": "EBITDA Bridge",
+          "nodeLineageTag": "759ce980-314b-551f-b65b-21121b616310",
+          "size": {
+            "height": 110,
+            "width": 200
+          },
+          "zIndex": 14
+        },
+        {
+          "location": {
+            "x": 1320,
+            "y": 880
+          },
+          "nodeIndex": "Cash Bridge",
+          "nodeLineageTag": "76548689-4cbe-546a-bb74-9f9bcc45ca6a",
+          "size": {
+            "height": 110,
+            "width": 200
+          },
+          "zIndex": 15
+        },
+        {
+          "location": {
+            "x": 0,
+            "y": 1040
+          },
+          "nodeIndex": "Insight",
+          "nodeLineageTag": "48a5a841-244b-51c6-811a-e1f9fa4e13fa",
+          "size": {
+            "height": 110,
+            "width": 200
+          },
+          "zIndex": 16
+        },
+        {
+          "location": {
+            "x": 220,
+            "y": 1040
+          },
+          "nodeIndex": "Story",
+          "nodeLineageTag": "027dfa61-9329-5e95-9dec-bed79d06d844",
+          "size": {
+            "height": 150,
+            "width": 200
+          },
+          "zIndex": 17
+        },
+        {
+          "location": {
+            "x": 440,
+            "y": 1040
+          },
+          "nodeIndex": "Refresh Info",
+          "nodeLineageTag": "eee4745b-3f01-51d6-8e33-fbf744fb376a",
+          "size": {
+            "height": 100,
+            "width": 200
+          },
+          "zIndex": 18
+        },
+        {
+          "location": {
+            "x": 880,
+            "y": 1040
+          },
+          "nodeIndex": "DQ File Log",
+          "nodeLineageTag": "8522a233-9434-55f6-b062-8b00a8320bf7",
+          "size": {
+            "height": 210,
+            "width": 220
+          },
+          "zIndex": 19
+        },
+        {
+          "location": {
+            "x": 1120,
+            "y": 1040
+          },
+          "nodeIndex": "DQ Injection Log",
+          "nodeLineageTag": "756a585e-01ee-5841-a846-e2c1e21f8743",
+          "size": {
+            "height": 170,
+            "width": 220
+          },
+          "zIndex": 20
         }
       ],
       "name": "All tables",
-      "zoomValue": 40.0525547248832,
+      "zoomValue": 60,
       "pinKeyFieldsToTop": false,
       "showExtraHeaderInfo": false,
       "hideKeyFieldsWhenCollapsed": false,

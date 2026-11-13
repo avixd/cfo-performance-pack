@@ -3,11 +3,11 @@
   "name": "4bab07841526533db670",
   "position": {
     "x": 778.2,
-    "y": 173.2,
-    "z": 56000,
+    "y": 171.2,
+    "z": 57000,
     "height": 20,
     "width": 216.6,
-    "tabOrder": 56000
+    "tabOrder": 57000
   },
   "visual": {
     "visualType": "actionButton",
@@ -224,7 +224,7 @@
             "tooltip": {
               "expr": {
                 "Literal": {
-                  "Value": "'Prior year'"
+                  "Value": "'\"PY\" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).'"
                 }
               }
             }

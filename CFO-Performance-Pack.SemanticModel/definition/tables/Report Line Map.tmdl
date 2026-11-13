@@ -3,12 +3,14 @@ table 'Report Line Map'
 	lineageTag: bc496158-b407-5438-bca9-ff4bc2578557
 	isHidden
 
+	/// Report line.
 	column LineKey
 		dataType: int64
 		lineageTag: 032721d5-4435-5bd3-bef2-10c6f3470bf6
 		summarizeBy: none
 		sourceColumn: LineKey
 
+	/// Account included in that line.
 	column AccountKey
 		dataType: int64
 		lineageTag: 779669a5-e2b4-569f-b342-62e679f1f524
@@ -17,7 +19,9 @@ table 'Report Line Map'
 
 	partition 'Report Line Map' = m
 		mode: import
+		queryGroup: Dimensions
 		source =
+				// Each report line mapped to every account it includes; subtotals repeat the accounts of the lines they roll up.
 				let
 				    Source = #table(type table [LineKey = Int64.Type, AccountKey = Int64.Type], {
 				        {1, 52},

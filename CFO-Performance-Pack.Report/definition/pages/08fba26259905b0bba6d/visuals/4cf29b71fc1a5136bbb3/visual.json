@@ -3,11 +3,11 @@
   "name": "4cf29b71fc1a5136bbb3",
   "position": {
     "x": 511.1,
-    "y": 173.2,
-    "z": 50000,
+    "y": 171.2,
+    "z": 51000,
     "height": 20,
     "width": 216.6,
-    "tabOrder": 50000
+    "tabOrder": 51000
   },
   "visual": {
     "visualType": "actionButton",
@@ -224,7 +224,7 @@
             "tooltip": {
               "expr": {
                 "Literal": {
-                  "Value": "'Budget'"
+                  "Value": "'\"Budget\" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).'"
                 }
               }
             }

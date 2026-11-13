@@ -2,27 +2,32 @@
 table 'DQ Injection Log'
 	lineageTag: 756a585e-01ee-5841-a846-e2c1e21f8743
 
+	/// Month or range the injected issue affects.
 	column Month
 		dataType: string
 		lineageTag: 71f0b3f4-d22e-53d1-8fd6-82b0e36bd923
 		sourceColumn: Month
 
+	/// Type of issue injected by the data generator.
 	column Issue
 		dataType: string
 		lineageTag: 23461167-0cd2-5ddf-ac2f-b0d578edbe7a
 		sourceColumn: Issue
 
+	/// Rows affected.
 	column RowsAffected
 		dataType: int64
 		lineageTag: 730643f3-08d1-518a-8e40-4c133749fa21
 		summarizeBy: none
 		sourceColumn: RowsAffected
 
+	/// Realistic cause the issue imitates.
 	column Cause
 		dataType: string
 		lineageTag: d5ac75ae-cfcb-5f79-b6a9-4016419a61d0
 		sourceColumn: Cause
 
+	/// How the model handles it.
 	column Treatment
 		dataType: string
 		lineageTag: ac1c8eb1-03c8-5273-a07b-d2f1a496f964
@@ -30,7 +35,9 @@ table 'DQ Injection Log'
 
 	partition 'DQ Injection Log' = m
 		mode: import
+		queryGroup: 'Data quality'
 		source =
+				// What the reproducible generator deliberately broke (data/dq_injection_log.csv), for reconciliation to what was detected.
 				let
 				    Src = fnReadCsv("", "dq_injection_log.csv"),
 				    Typed = Table.TransformColumnTypes(Src, {{"Month", type text}, {"Issue", type text}, {"RowsAffected", Int64.Type}, {"Cause", type text}, {"Treatment", type text}}, "en-US")

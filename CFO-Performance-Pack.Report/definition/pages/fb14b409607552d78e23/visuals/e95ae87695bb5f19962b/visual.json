@@ -3,11 +3,11 @@
   "name": "e95ae87695bb5f19962b",
   "position": {
     "x": 8,
-    "y": 686,
-    "z": 20000,
-    "height": 26,
+    "y": 699,
+    "z": 21000,
+    "height": 19,
     "width": 180,
-    "tabOrder": 20000
+    "tabOrder": 21000
   },
   "visual": {
     "visualType": "actionButton",
@@ -57,7 +57,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8.5D"
+                  "Value": "7.5D"
                 }
               }
             },
