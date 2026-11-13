@@ -431,7 +431,7 @@ add('Insight Outlook',
     'VAR g = [Net Income Outlook FY] - [Net Income Budget FY]\n'
     'RETURN "Full-year outlook: net income " & [Currency Label] & " " & ' + M_('[Net Income Outlook FY]') + ' & " vs budget " & ' + M_('[Net Income Budget FY]') + '\n'
     '    & " (" & FORMAT ( g / 1e6, "+#,0.0;-#,0.0" ) & "M), assuming the remaining months land on budget."', '6 Narrative')
-add('Title BvA', '[Metric Name] & " · " & [Period Label] & ": " & [Currency Label] & " " & ' + M_('[Metric Actual]') + ' & ", " & FORMAT ( ABS ( [Metric Var % vs Budget] ), "0.0%" ) & IF ( [Metric Var vs Budget] >= 0, " favourable", " unfavourable" ) & " to budget"', '6 Narrative')
+add('Title BvA', '[Metric Name] & " · " & [Period Label] & ": " & ' + M_('[Metric Actual]') + ' & ", " & FORMAT ( ABS ( [Metric Var % vs Budget] ), "0.0%" ) & IF ( [Metric Var vs Budget] >= 0, " favourable", " unfavourable" ) & " to budget"', '6 Narrative')
 add('Title BvA Trend', '[Metric Name] & " by month, " & [Selected Fiscal Year] & ": actual to " & FORMAT ( [As Of Month], "mmm yyyy" ) & ", budget as outlook thereafter"', '6 Narrative')
 add('Title BvA Outlook', '"Full-year outlook " & [Currency Label] & " " & ' + M_('[Metric Outlook FY]') + ' & " vs budget " & ' + M_('[Metric Budget FY]') + ' & " (" & FORMAT ( [Metric Outlook Gap] / 1e6, "+#,0.0;-#,0.0" ) & "M)"', '6 Narrative')
 add('Title Variance by Entity', '"Where the " & LOWER ( [Metric Name] ) & " variance comes from: by entity (green = favourable)"', '6 Narrative')
@@ -659,7 +659,8 @@ VAR nm = IF ( worst = o, "Operating expenses", IF ( worst = c, "Cost of sales", 
 RETURN IF ( worst < 0, nm & " are the largest drag (" & ''' + MT('worst') + ''' & ")" & IF ( worst = o, "; salaries are " & FORMAT ( DIVIDE ( [Salaries Var vs Budget], o ), "0%" ) & " of it.", "." ), "Every driver is favourable to budget." )''', SB)
 add('Sub Exceptions', '''VAR t = FILTER ( ADDCOLUMNS ( CROSSJOIN ( VALUES ( Entity[EntityName] ), CALCULATETABLE ( VALUES ( 'Report Line'[LineKey] ), REMOVEFILTERS ( 'Report Line' ), 'Report Line'[LineType] = "Detail", 'Report Line'[Statement] = "Income Statement" ) ), "@v", [Line Var vs Budget] ), NOT ISBLANK ( [@v] ) )
 VAR top5 = TOPN ( 5, t, ABS ( [@v] ), DESC )
-RETURN COUNTROWS ( FILTER ( top5, [@v] < 0 ) ) & " of the 5 largest variances are unfavourable; together they total " & ''' + MT('SUMX ( top5, [@v] )') + ''' & "."''', SB)
+VAR bad = COUNTROWS ( FILTER ( top5, [@v] < 0 ) ) + 0
+RETURN bad & " of the 5 largest variances " & IF ( bad = 1, "is", "are" ) & " unfavourable; together they total " & ''' + MT('SUMX ( top5, [@v] )') + ''' & "."''', SB)
 add('Metric Actual (in context)', MET('[Actual]'), '5 Metric Selector', F)
 add('Metric Budget (in context)', MET('[Budget]'), '5 Metric Selector', F)
 MONTHS = '''VAR sel = [Selected Month] VAR fy = ''' + FYS + '''
@@ -935,7 +936,7 @@ for _n in ('Revenue', 'EBITDA'):
 add('Revenue Var % vs Budget (constant currency)', 'DIVIDE ( [Revenue Var vs Budget (constant currency)], ABS ( [Revenue Budget] ) )', FXF, P, 'Revenue variance % to budget at constant currency.')
 add('Insight Currency', '''VAR fr = [Revenue FX Effect] VAR fe = [EBITDA FX Effect] VAR rv = [Revenue Var vs Budget]
 RETURN IF ( ISBLANK ( fr ), "No foreign-currency activity in this selection.",
-    "Exchange rates versus budget rates " & IF ( fr >= 0, "added ", "removed " ) & ''' + money('ABS ( fr )') + ''' & " of revenue (" & FORMAT ( DIVIDE ( fr, rv ), "0%" ) & " of the variance) and "
+    "Exchange rates versus budget rates " & IF ( fr >= 0, "added ", "removed " ) & ''' + money('ABS ( fr )') + ''' & " of revenue (equal to " & FORMAT ( ABS ( DIVIDE ( fr, rv ) ), "0%" ) & " of the variance) and "
         & IF ( fe >= 0, "added ", "removed " ) & ''' + money('ABS ( fe )') + ''' & " of EBITDA. At constant currency revenue is " & FORMAT ( [Revenue Var % vs Budget (constant currency)], "+0.0%;-0.0%" ) & " vs budget." )''',
     '6 Narrative', None, 'Narrative: how much of the revenue and EBITDA result is exchange-rate translation rather than trading.')
 for _t in TABLES:
