@@ -1191,9 +1191,9 @@ add('RF Required per Month', 'IF ( NOT ISBLANK ( [RF Target] ), DIVIDE ( [RF Tar
 add('RF Average per Month', 'DIVIDE ( [RF Actual to Date], [RF Months Elapsed] )', RFF, F, 'Average actual per closed month.')
 add('RF Run-Rate Total', '[RF Actual to Date] + [RF Average per Month] * [RF Months Left]', RFF, F, 'Cross-check (average-month projection): the year if the remaining months repeat the year-to-date average month. Not the same as the run-rate on tab 3, which scales the remaining budget by the year-to-date beat.')
 add('RF Run-Rate Gap', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Total] - [RF Target] )', RFF, F, 'Average-month projection minus target.')
-add('RF Status', 'IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Gap] >= 0, "✓ On track", "✗ Short" ), "No target" )', RFF, None, 'On track when the rolling forecast is at or above target.')
+add('RF Status', 'IF ( NOT ISBLANK ( [RF Total] ), IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Gap] >= 0, "✓ On track", "✗ Short" ), "No target" ) )', RFF, None, 'On track when the rolling forecast is at or above target.')
 tone('RF Status Color', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Gap] >= 0 )', 'Green when the rolling forecast reaches the target.')
-add('RF Run-Rate Status', 'IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" )', RFF, None, 'Whether the average-month projection reaches the target.')
+add('RF Run-Rate Status', 'IF ( NOT ISBLANK ( [RF Total] ), IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" ) )', RFF, None, 'Whether the average-month projection reaches the target.')
 tone('RF Run-Rate Color', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Gap] >= 0 )', 'Green when the average-month projection reaches the target.')
 for _n in ('RF Total', 'RF Target', 'RF Required per Month', 'RF Run-Rate Total'):
     add(f'KV {_n}', kv_expr(_n), '11 KPI Cards')

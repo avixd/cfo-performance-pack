@@ -115,6 +115,13 @@
                   "Value": "0D"
                 }
               }
+            },
+            "verticalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'middle'"
+                }
+              }
             }
           },
           "selector": {

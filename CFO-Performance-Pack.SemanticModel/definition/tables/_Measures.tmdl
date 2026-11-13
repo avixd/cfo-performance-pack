@@ -3682,7 +3682,7 @@ table _Measures
 		lineageTag: 92616158-65b7-5f6e-9529-e36b2c12a04c
 
 	/// On track when the rolling forecast is at or above target.
-	measure 'RF Status' = IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Gap] >= 0, "✓ On track", "✗ Short" ), "No target" )
+	measure 'RF Status' = IF ( NOT ISBLANK ( [RF Total] ), IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Gap] >= 0, "✓ On track", "✗ Short" ), "No target" ) )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: ca470358-c4f2-549b-9ad8-c570fc98ab8b
 
@@ -3694,7 +3694,7 @@ table _Measures
 		lineageTag: 3e771146-a757-5aba-a1b2-523be38332a0
 
 	/// Whether the average-month projection reaches the target.
-	measure 'RF Run-Rate Status' = IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" )
+	measure 'RF Run-Rate Status' = IF ( NOT ISBLANK ( [RF Total] ), IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" ) )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: dbc490d2-871c-504d-b907-ec22da5bb933
 

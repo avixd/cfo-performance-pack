@@ -358,7 +358,7 @@ class Page:
         return self.add(key, 'actionButton', x, y, w, h, objects=obj, content=content, background=False, header=False)
 
     def button(self, key, x, y, w, h, label, link_type=None, url=None, tooltip=None, fill='Button', text='Text', outline='Line',
-               size=8.5, align='center', page=None, round_=4, measure=None, content=False, bold=False, valign=None):
+               size=8.5, align='center', page=None, round_=4, measure=None, content=False, bold=False, valign='middle'):
         sel = {'id': 'default'}
         txt = {'text': {'expr': mfield(measure)} if measure else L(label), 'fontColor': T(text), 'fontSize': L(size), 'horizontalAlignment': L(align),
                'bold': L(bold), 'leftMargin': L(6), 'rightMargin': L(4), 'topMargin': L(0), 'bottomMargin': L(0)}
@@ -862,7 +862,7 @@ def page_isx():
     p.add('trend', 'lineChart', 16, 530, 470, 174, roles={'Category': ['Date[Month Name]'], 'Y': [('Focus Monthly CY', 'CY'), ('Focus Monthly PY', 'PY')]},
           objects=obj, title='=VT Focus Trend', subtitle='Sub Focus Trend', sort=[('Date[Month Name]', 'Ascending')])
     # right: unit toggle, expandable statement matrix, method notes
-    cslicer(p, 'f_unit', 496, 74, 250, 64, 'Display Unit[Unit]', 'Amounts in', mode='Basic', single=True, horizontal=True)
+    cslicer(p, 'f_unit', 496, 74, 300, 64, 'Display Unit[Unit]', 'Amounts in', mode='Basic', single=True, horizontal=True)
     vals = [('IS CY', 'CY'), ('IS CY % Rev', 'CY % Rev'), ('IS PY', 'PY'), ('IS PY % Rev', 'PY % Rev'), ('IS Chg PY', 'Δ PY'), ('IS Chg % PY', 'Δ% PY'), ('IS Chg Rev bps', 'Δ % Rev (bps)')]
     names = [m for m, _ in vals]
     obj = matrix_objects(p, names, back={'_Measures.' + m: 'IS Row Background' for m in names},
@@ -886,7 +886,7 @@ def page_rf():
     p.chrome('PT RF', 'PS RF')
     # single-select slicers select their first item, so the list runs newest first: the page opens on the latest close
     cslicer(p, 'f_until', 16, 74, 220, 64, 'Actuals Until[Label]', 'Actuals until', single=True, sort=[('Actuals Until[Label]', 'Descending')])
-    cslicer(p, 'f_metric', 246, 74, 620, 64, 'Metric[Metric]', 'Metric', mode='Basic', single=True, horizontal=True)
+    cslicer(p, 'f_metric', 246, 74, 800, 64, 'Metric[Metric]', 'Metric', mode='Basic', single=True, horizontal=True)
     w = (1248 - 3 * 10) / 4
     for i, (m, lab, sub, col) in enumerate([('RF Total', 'Rolling forecast (actual + remaining budget)', 'RF Total Text', 'RF Status Color'),
                                             ('RF Target', 'Target', 'RF Target Text', None),
@@ -894,7 +894,7 @@ def page_rf():
                                             ('RF Run-Rate Total', 'Average-month projection (cross-check)', 'RF Run-Rate Text', 'RF Run-Rate Color')]):
         p.kpi(f'k{i}', 16 + i * (w + 10), 144, w, 92, m, lab, sub, col)
     obj = matrix_objects(p, ['RF Value'], back={'_Measures.RF Value': 'RF Cell Color'})
-    p.add('matrix', 'pivotTable', 16, 242, 1248, 244, roles={'Rows': [('Entity[EntityName]', 'Entity')], 'Columns': ['Date[Month Name]'], 'Values': [('RF Value', 'Value')]},
+    p.add('matrix', 'pivotTable', 16, 242, 1248, 268, roles={'Rows': [('Entity[EntityName]', 'Entity')], 'Columns': ['Date[Month Name]'], 'Values': [('RF Value', 'Value')]},
           objects=obj, title='=VT RF Matrix', subtitle='Sub RF Matrix')
     fields = ['Entity[EntityName]', 'RF Actual to Date', 'RF Remaining Budget', 'RF Total', 'RF Target', 'RF Gap', 'RF Attainment %', 'RF Required per Month',
               'RF Average per Month', 'RF Status']
@@ -902,10 +902,10 @@ def page_rf():
     obj = p.table_objects(fields, size=8.5, colours={'_Measures.RF Gap': 'RF Status Color', '_Measures.RF Status': 'RF Status Color', '_Measures.RF Attainment %': 'RF Status Color'})
     obj['total'] = [{'properties': {'totals': L(True)}}]
     obj['columnWidth'] = [{'properties': {'value': L(wd)}, 'selector': {'metadata': m if '[' not in m else m.replace('[', '.').rstrip(']')}}
-                          for m, wd in zip(['Entity.EntityName'] + ['_Measures.' + f for f in fields[1:]], [118, 72, 82, 82, 76, 64, 64, 80, 76, 72])]
-    p.add('table', 'tableEx', 16, 492, 846, 212, roles={'Values': list(zip(fields, heads))}, objects=obj, title='=VT RF Table', subtitle='Sub RF Table',
+                          for m, wd in zip(['Entity.EntityName'] + ['_Measures.' + f for f in fields[1:]], [104, 64, 64, 64, 64, 58, 54, 62, 58, 64])]
+    p.add('table', 'tableEx', 16, 516, 846, 188, roles={'Values': list(zip(fields, heads))}, objects=obj, title='=VT RF Table', subtitle='Sub RF Table',
           sort=[('RF Gap', 'Ascending')])
-    p.story('method', 872, 492, 392, 212, 'RF Method', '=VT RF Method', 'Sub RF Method', size=8, head=('Topic', 'Note'))
+    p.story('method', 872, 516, 392, 188, 'RF Method', '=VT RF Method', 'Sub RF Method', size=8, head=('Topic', 'Note'))
     return p
 
 
