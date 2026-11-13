@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/page/2.1.0/schema.json",
   "name": "08fba26259905b0bba6d",
-  "displayName": "Budget vs Actual",
+  "displayName": "3 \u00b7 Budget vs Actual",
   "displayOption": "FitToPage",
   "height": 720,
   "width": 1280,

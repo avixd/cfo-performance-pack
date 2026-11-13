@@ -1,0 +1,46 @@
+/// Slicer on the Income Statement Explorer page: which headline line the summary and the trend describe.
+table 'PL Focus'
+	lineageTag: e4d829c5-2a06-556b-9aa5-0ec6d54e7a81
+
+	/// Headline P&L line.
+	column Focus
+		dataType: string
+		lineageTag: 354fe217-1372-5dc9-af0c-723361cb2581
+		sourceColumn: Focus
+		sortByColumn: Sort
+
+	/// Report line the focus maps to.
+	column LineKey
+		dataType: int64
+		isHidden
+		lineageTag: e050ec36-e788-586c-83d8-563f40267500
+		summarizeBy: none
+		sourceColumn: LineKey
+
+	/// Display order.
+	column Sort
+		dataType: int64
+		isHidden
+		lineageTag: 14b9f61a-48d1-57f9-8e62-325ae3f3bc9a
+		summarizeBy: none
+		sourceColumn: Sort
+
+	partition 'PL Focus' = m
+		mode: import
+		queryGroup: 'Report helpers'
+		source =
+				// Slicer on the Income Statement Explorer page: which headline line the summary and the trend describe.
+				let
+				    Source = #table(type table [Focus = text, LineKey = Int64.Type, Sort = Int64.Type], {
+				        {"Revenue", 3, 1},
+				        {"COGS", 4, 2},
+				        {"Gross Profit", 5, 3},
+				        {"EBITDA", 13, 4},
+				        {"EBIT", 15, 5},
+				        {"Net Profit", 20, 6}
+				    })
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+

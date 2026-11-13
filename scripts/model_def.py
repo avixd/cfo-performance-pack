@@ -1002,6 +1002,291 @@ add('NCI Text', '"Minority partners (NCI) " & ' + money('[Net Income Attributabl
     '3 KPIs\\Ownership', None, 'Net income belonging to non-controlling interests, as an amount and a share of total net income.')
 
 
+# ======================================================================== v6: Sankey, data dictionary, statement explorer, rolling forecast
+# (placed before the documentation pass so the new objects get descriptions, comments and diagram positions like everything else)
+
+# ---- 6.1 Report Line: a section order and a flag for the expandable statement matrix (section header > detail lines)
+_SEC_SORT = {}
+for _l in LINES:
+    _SEC_SORT.setdefault(_l[2], _l[0])
+_HAS_DETAIL = {sec for sec in _SEC_SORT if any(l[2] == sec and l[3] == 'Detail' for l in LINES)}
+M_REPORT_LINE = m_table([('LineKey', 'Int64.Type'), ('LineName', 'text'), ('Section', 'text'), ('LineType', 'text'), ('Statement', 'text'), ('SectionSort', 'Int64.Type'), ('MatrixRow', 'text')],
+                        [l[:5] + (_SEC_SORT[l[2]], 'No' if (l[3] != 'Detail' and l[2] in _HAS_DETAIL) else 'Yes') for l in LINES])
+for _t in TABLES:
+    if _t['name'] == 'Report Line':
+        _t['m'] = M_REPORT_LINE
+        _t['cols'] = [(c[0], c[1], dict(c[2], sortBy='SectionSort')) if c[0] == 'Section' else c for c in _t['cols']] + [
+            ('SectionSort', 'int64', {'hidden': 1, 'desc': 'First line number of the section; sorts sections in statement order.'}),
+            ('MatrixRow', 'string', {'hidden': 1, 'desc': 'No for subtotal lines whose section already has detail lines: the matrix shows the section header as that subtotal, so the line would repeat.'})]
+
+# ---- 6.2 selector tables
+M_FOCUS = m_table([('Focus', 'text'), ('LineKey', 'Int64.Type'), ('Sort', 'Int64.Type')],
+                  [('Revenue', 3, 1), ('COGS', 4, 2), ('Gross Profit', 5, 3), ('EBITDA', 13, 4), ('EBIT', 15, 5), ('Net Profit', 20, 6)])
+M_UNIT = m_table([('Unit', 'text'), ('Divisor', 'Int64.Type'), ('Sort', 'Int64.Type')], [('Thousand', 1000, 1), ('Absolute', 1, 2)])
+DAX_ACTUALS_UNTIL = """SELECTCOLUMNS (
+    FILTER ( 'Date', 'Date'[IsClosed] ),
+    "Month", 'Date'[Month],
+    "Label", 'Date'[Year Month],
+    "Index", 'Date'[Month Index]
+)"""
+DAX_DICTIONARY = """-- One row per model object. INFO.VIEW functions read the model's own metadata, so the dictionary can never drift from the model.
+UNION (
+    SELECTCOLUMNS (
+        FILTER ( INFO.VIEW.TABLES (), NOT [IsPrivate] ),
+        "Object Type", "Table", "Table", [Name], "Name", [Name], "Description", [Description],
+        "Expression", [Expression], "Type", IF ( ISBLANK ( [Expression] ), "Power Query table", "Calculated table" ),
+        "Format", BLANK (), "Folder", BLANK (), "Hidden", IF ( [IsHidden], "Yes", "No" )
+    ),
+    SELECTCOLUMNS (
+        FILTER ( INFO.VIEW.COLUMNS (), [Type] <> "RowNumber" ),
+        "Object Type", "Column", "Table", [Table], "Name", [Name], "Description", [Description],
+        "Expression", [Expression], "Type", [DataType] & IF ( NOT ISBLANK ( [Expression] ), " (calculated)" ),
+        "Format", [FormatString], "Folder", [DisplayFolder], "Hidden", IF ( [IsHidden], "Yes", "No" )
+    ),
+    SELECTCOLUMNS (
+        INFO.VIEW.MEASURES (),
+        "Object Type", "Measure", "Table", [Table], "Name", [Name], "Description", [Description],
+        "Expression", [Expression], "Type", [DataType],
+        "Format", [FormatString], "Folder", [DisplayFolder], "Hidden", IF ( [IsHidden], "Yes", "No" )
+    ),
+    SELECTCOLUMNS (
+        INFO.VIEW.RELATIONSHIPS (),
+        "Object Type", "Relationship", "Table", [FromTable], "Name", [FromTable] & " > " & [ToTable],
+        "Description", [FromCardinality] & " to " & LOWER ( [ToCardinality] ) & ", " & IF ( [IsActive], "active", "inactive" ) & ", filter direction: " & [CrossFilteringBehavior],
+        "Expression", [Relationship], "Type", [FromCardinality] & " to " & LOWER ( [ToCardinality] ),
+        "Format", BLANK (), "Folder", BLANK (), "Hidden", "No"
+    )
+)"""
+_ins = len(TABLES) - 1
+TABLES[_ins:_ins] = [
+    dict(name='PL Focus', desc='Slicer on the Income Statement Explorer page: which headline line the summary and the trend describe.', m=M_FOCUS,
+         cols=[('Focus', 'string', {'sortBy': 'Sort', 'desc': 'Headline P&L line.'}), ('LineKey', 'int64', {'hidden': 1, 'desc': 'Report line the focus maps to.'}), ('Sort', 'int64', {'hidden': 1, 'desc': 'Display order.'})]),
+    dict(name='Display Unit', desc='Slicer on the Income Statement Explorer page: show amounts in thousands or in full.', m=M_UNIT,
+         cols=[('Unit', 'string', {'sortBy': 'Sort', 'desc': 'Thousand or Absolute.'}), ('Divisor', 'int64', {'hidden': 1, 'desc': 'Number the amounts are divided by.'}), ('Sort', 'int64', {'hidden': 1, 'desc': 'Display order.'})]),
+    dict(name='Actuals Until', desc='Slicer on the Rolling Forecast page: the last month to treat as actual. Disconnected on purpose, so it moves the actual/budget cut-over without filtering the calendar.',
+         dax=DAX_ACTUALS_UNTIL,
+         cols=[('Month', 'dateTime', {'fmt': 'mmm yyyy', 'hidden': 1, 'desc': 'First day of a closed month.'}), ('Label', 'string', {'sortBy': 'Index', 'desc': 'Month shown in the slicer, e.g. Jun 2026.'}),
+               ('Index', 'int64', {'hidden': 1, 'desc': 'Running month number, for sorting.'})]),
+    dict(name='Data Dictionary', desc='Self-documenting catalogue of the model: every table, column, measure and relationship with its description and expression, read from the model itself with the INFO.VIEW functions on each refresh.',
+         dax=DAX_DICTIONARY,
+         cols=[('Object Type', 'string', {'desc': 'Table, Column, Measure or Relationship.'}), ('Table', 'string', {'desc': 'Table the object belongs to (for a relationship: the many side).'}),
+               ('Name', 'string', {'desc': 'Object name.'}), ('Description', 'string', {'desc': 'Business description stored on the object.'}),
+               ('Expression', 'string', {'desc': 'DAX of a measure, calculated column or calculated table; the join for a relationship.'}),
+               ('Type', 'string', {'desc': 'Data type, table kind or cardinality.'}), ('Format', 'string', {'desc': 'Format string.'}),
+               ('Folder', 'string', {'desc': 'Display folder.'}), ('Hidden', 'string', {'desc': 'Yes when hidden from report authors.'})]),
+]
+
+# ---- 6.3 data dictionary counts
+DDF = '12 Data Dictionary'
+add('DD Objects', "COUNTROWS ( 'Data Dictionary' )", DDF, '0', 'Number of model objects in the current dictionary selection.')
+for _n in ('Table', 'Column', 'Measure', 'Relationship'):
+    add(f'DD {_n}s', f"CALCULATE ( COUNTROWS ( 'Data Dictionary' ), KEEPFILTERS ( 'Data Dictionary'[Object Type] = \"{_n}\" ) ) + 0", DDF, '0', f'Number of {_n.lower()}s in the current dictionary selection.')
+    add(f'KV DD {_n}s', kv_expr(f'DD {_n}s'), '11 KPI Cards')
+add('DD Documented %', "DIVIDE ( COUNTROWS ( FILTER ( 'Data Dictionary', NOT ISBLANK ( 'Data Dictionary'[Description] ) ) ), COUNTROWS ( 'Data Dictionary' ) )", DDF, P,
+    'Share of the selected objects that carry a description.')
+add('DD Documented Text', 'FORMAT ( [DD Documented %], "0%" ) & " of the selection has a description"', DDF, None, 'Card text: documentation coverage of the current selection.')
+add('PT DD', '"Data Dictionary · explore the model without opening it"', PH)
+add('PS DD', 'FORMAT ( [DD Objects], "#,0" ) & " objects in the selection · " & [DD Documented Text] & " · built from the model itself on every refresh"', PH)
+add('VT DD', '"Model objects: name, description and calculation"', VT)
+add('Sub DD', '"Type in a slicer search box to find any table, column or measure by part of its name. Clear the slicers to see everything."', SB)
+add('Footer DD', '"Source: INFO.VIEW.TABLES, COLUMNS, MEASURES and RELATIONSHIPS, unioned in the calculated table Data Dictionary · refreshed with the model"', '10 Layout')
+
+# ---- 6.4 Income Statement Explorer (after Goodly's dynamic P&L): six cards, focus summary and trend, section > line matrix
+ISF = '13 Statement Explorer'
+SECT = lambda base: ("IF ( HASONEVALUE ( 'Report Line'[Section] ),\n    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )\n"
+                     f"    RETURN CALCULATE ( {base}, TREATAS ( accts, Account[AccountKey] ) )\n)")
+_REV_CY, _REV_PY = LINE(3, '[Actual (Period)]'), LINE(3, '[Prior Year (Period)]')
+add('Unit Divisor', "SELECTEDVALUE ( 'Display Unit'[Divisor], 1000 )", ISF, '0', 'Divisor chosen with the Thousand / Absolute toggle (thousand by default).')
+add('IS CY Raw', SECT('[Actual (Period)]'), ISF, F, "Current period for the section or line on the row. A section header shows the union of its lines' accounts, i.e. the section total.")
+add('IS PY Raw', SECT('[Prior Year (Period)]'), ISF, F, 'Same period last year for the section or line on the row.')
+add('IS CY', 'DIVIDE ( [IS CY Raw], [Unit Divisor] )', ISF, '#,0;(#,0);-', 'Current period, in the unit chosen with the toggle.')
+add('IS PY', 'DIVIDE ( [IS PY Raw], [Unit Divisor] )', ISF, '#,0;(#,0);-', 'Prior year, in the unit chosen with the toggle.')
+add('IS CY % Rev', f'DIVIDE ( [IS CY Raw], {_REV_CY} )', ISF, '0.00%', 'Current period as a share of net revenue (common size).')
+add('IS PY % Rev', f'DIVIDE ( [IS PY Raw], {_REV_PY} )', ISF, '0.00%', 'Prior year as a share of prior-year net revenue.')
+add('IS Chg PY', 'DIVIDE ( [IS CY Raw] - [IS PY Raw], [Unit Divisor] )', ISF, '#,0;(#,0);-', 'Change versus prior year, in the chosen unit. Positive = favourable, because costs are stored negative.')
+add('IS Chg % PY', 'VAR p = IF ( [IS CY Raw] * [IS PY Raw] > 0, DIVIDE ( [IS CY Raw] - [IS PY Raw], ABS ( [IS PY Raw] ) ) ) RETURN IF ( ABS ( p ) < 10, p )', ISF, P,
+    'Change versus prior year in %. Blank when the signs differ or the change exceeds 1,000%.')
+add('IS Chg Rev bps', '( [IS CY % Rev] - [IS PY % Rev] ) * 10000', ISF, '#,0.0', 'Change in the share of revenue, in basis points (100 bps = 1 percentage point).')
+tone('IS Chg Color', 'IF ( NOT ISBLANK ( [IS CY Raw] ) && NOT ISBLANK ( [IS PY Raw] ), [IS CY Raw] >= [IS PY Raw] )', 'Green when the row is favourable to prior year (higher revenue or profit, lower cost).')
+add('IS Row Background', "IF ( ISINSCOPE ( 'Report Line'[LineName] ), [Col Panel], [Col Subtotal] )", '8 Formatting', None, 'Matrix shading: section headers tinted, detail lines on the panel colour.')
+add('IS Range', f"""VAR m = [Selected Month]
+VAR winStart = SWITCH ( SELECTEDVALUE ( 'Period View'[View], "YTD" ), "MTD", m, "QTD", DATE ( YEAR ( m ), INT ( ( MONTH ( m ) - 1 ) / 3 ) * 3 + 1, 1 ), DATE ( {FYN('m')} - 1, 4, 1 ) )
+RETURN FORMAT ( winStart, "dd-mmm-yy" ) & " to " & FORMAT ( EOMONTH ( m, 0 ), "dd-mmm-yy" )""", ISF, None, 'Date range covered by the current Period view, e.g. 01-Apr-26 to 31-Oct-26.')
+_CARDS = [('Revenue', 'Revenue'), ('Cost of Sales', 'COGS'), ('Gross Profit', 'Gross Profit'), ('EBITDA', 'EBITDA'), ('EBIT', 'EBIT'), ('Net Income', 'Net Profit')]
+for _n, _lab in _CARDS:
+    if not any(m['name'] == f'KV {_n}' for m in MEAS):
+        add(f'KV {_n}', kv_expr(_n), '11 KPI Cards')
+    add(f'IS {_n} PY Text', '"PY   " & ' + money(f'[{_n} PY]'), ISF, None, f'Card row: {_lab} for the same period last year.')
+    add(f'IS {_n} Chg Text', '"Change ($)   " & ' + money(f'[{_n}] - [{_n} PY]', 'signed'), ISF, None, f'Card row: {_lab} change versus last year, as an amount.')
+    add(f'IS {_n} Pct Text', f'"% Change   " & FORMAT ( DIVIDE ( [{_n}] - [{_n} PY], ABS ( [{_n} PY] ) ), "▲ 0.0%;▼ 0.0%;0.0%" )', ISF, None, f'Card row: {_lab} change versus last year, in %.')
+    tone(f'IS {_n} PY Color', f'IF ( NOT ISBLANK ( [{_n} PY] ), [{_n}] >= [{_n} PY] )', f'Green when {_lab} is favourable to last year.')
+FOC = lambda base: ("VAR lk = SELECTEDVALUE ( 'PL Focus'[LineKey], 3 )\nVAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )\n"
+                    "VAR flip = IF ( lk = 4, -1, 1 )   -- cost of sales is stored negative; the trend shows its size\n"
+                    f"RETURN flip * CALCULATE ( {base}, TREATAS ( accts, Account[AccountKey] ) )")
+add('Focus Name', "SELECTEDVALUE ( 'PL Focus'[Focus], \"Revenue\" )", ISF, None, 'Headline line picked in the Focus slicer (Revenue by default).')
+add('Focus Monthly CY', FOC('[Monthly Actual (Selected FY)]'), ISF, F, 'Trend chart: focus line by fiscal month, current year, up to the selected month.')
+add('Focus Monthly PY', FOC('[Monthly Prior Year (Selected FY)]'), ISF, F, 'Trend chart: focus line by fiscal month, prior year.')
+add('Focus Actual (in context)', FOC('[Actual]'), ISF, F, 'Focus line for whatever dates are in filter context (used inside the summary iterators).')
+_FT = f"""VAR sel = [Selected Month] VAR fy = {FYS}
+VAR t = FILTER ( ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) ), [@d] <= sel )
+VAR t2 = ADDCOLUMNS ( t, "@cy", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ),
+                         "@py", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) ) )
+VAR n = COUNTROWS ( t2 )
+"""
+add('Focus Bullet 1', _FT + """VAR last3 = AVERAGEX ( FILTER ( t2, [Value] > n - 3 ), [@cy] ) VAR prev3 = AVERAGEX ( FILTER ( t2, [Value] > n - 6 && [Value] <= n - 3 ), [@cy] )
+VAR chg = DIVIDE ( last3 - prev3, ABS ( prev3 ) )
+RETURN "• " & IF ( n < 6, "Fewer than six months closed: no trend statement yet.",
+    [Focus Name] & IF ( chg >= 0.02, " strengthened", IF ( chg <= -0.02, " softened", " held steady" ) ) & " toward period end: last 3 months " & FORMAT ( chg, "+0%;-0%" ) & " vs the 3 before." )""",
+    ISF, None, 'Summary bullet 1: direction toward period end (average of the last three months versus the three before; within 2% counts as steady).')
+add('Focus Bullet 2', _FT + """VAR pk = TOPN ( 1, t2, [@cy], DESC )
+RETURN "• Peak month was " & FORMAT ( MAXX ( pk, [@d] ), "mmm yyyy" ) & " (" & """ + money('MAXX ( pk, [@cy] )') + """ & ")." """, ISF, None, 'Summary bullet 2: month with the highest value in the year to date.')
+add('Focus Bullet 3', _FT + """VAR cy = SUMX ( t2, [@cy] ) VAR py = SUMX ( t2, [@py] ) VAR g = DIVIDE ( cy - py, ABS ( py ) )
+RETURN "• Year to date " & IF ( ISBLANK ( py ), "has no prior-year comparison.", IF ( cy >= py, "is above", "is below" ) & " prior year by " & FORMAT ( ABS ( g ), "0.0%" ) & "; "
+    & COUNTROWS ( FILTER ( t2, [@cy] >= [@py] ) ) + 0 & " of " & n & " months beat their prior-year month." )""", ISF, None, 'Summary bullet 3: year to date versus prior year, and how many months beat their prior-year month.')
+add('Focus Bullet 4', _FT + """VAR cv = DIVIDE ( STDEVX.P ( t2, [@cy] ), ABS ( AVERAGEX ( t2, [@cy] ) ) )
+RETURN "• Monthly pattern is " & IF ( cv > 0.2, "volatile", "steady" ) & ": months vary by " & FORMAT ( cv, "0%" ) & " around the average." """, ISF, None,
+    'Summary bullet 4: volatility, as the coefficient of variation of the monthly values (above 20% is called volatile).')
+add('PT ISX', '"Income Statement Explorer · " & [IS Range]', PH)
+add('PS ISX', '"Current year against prior year, by section and line · " & [Period Label] & " · costs shown negative, so a positive change is always favourable"', PH)
+add('VT Focus Summary', '"Summary for " & [Focus Name]', VT)
+add('VT Focus Trend', '[Focus Name] & " by month: current year vs prior year · " & [Currency Label]', VT)
+add('Sub Focus Trend', '"Pick a line in the Focus slicer; the summary and this trend follow it."', SB)
+add('VT ISX', '"Income statement · CY vs PY · " & [Currency Label] & IF ( [Unit Divisor] = 1000, " thousands", "" )', VT)
+add('Sub ISX', '"Click + on a section to see its lines. % Rev = share of net revenue; bps = change in that share (100 bps = 1 pt)."', SB)
+add('VT ISX Method', '"Method, assumptions and trade-offs"', VT)
+add('Sub ISX Method', '"How this page is built and what to keep in mind when reading it."', SB)
+add('Footer ISX', FOOT + ' & " · Layout after the Goodly dynamic P&L; comparison is prior year, not budget"', '10 Layout')
+
+# ---- 6.5 Rolling Forecast (after Goodly's Budget vs Actual, level 3): actual to a chosen month, budget after it, checked against the target
+RFF = '14 Rolling Forecast'
+PALETTE.update({'Actual Tint': ('#DCE8F7', '#1E3350'), 'Budget Tint': ('#FBE3E0', '#4A2622')})
+for _k in ('Actual Tint', 'Budget Tint'):
+    add(f'Col {_k}', f'IF ( [Is Dark], "{PALETTE[_k][1]}", "{PALETTE[_k][0]}" )', '10 Theme', None, f'Theme colour "{_k}": cell shading on the Rolling Forecast page.')
+add('RF Cutoff', "VAR picked = SELECTEDVALUE ( 'Actuals Until'[Month] )\nRETURN IF ( ISBLANK ( picked ), [Selected Month], picked )", RFF, 'mmm yyyy',
+    'Last month treated as actual on the Rolling Forecast page: the Actuals Until slicer, or the reporting month when nothing is picked.')
+_RF = f"""VAR cut = [RF Cutoff] VAR fy = {FYN('cut')}
+VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )   -- the twelve months of the cut-off's fiscal year
+"""
+_ACT = "CALCULATE ( [Metric Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d )"
+_BUD = "CALCULATE ( [Metric Budget (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d )"
+add('RF Value', f"""VAR cut = [RF Cutoff] VAR fy = {FYN('cut')}
+-- months on the column (one month in a cell, all twelve in the Total column)
+VAR t = ADDCOLUMNS ( VALUES ( 'Date'[Fiscal Month Number] ), "@d", DATE ( fy - 1, 3 + 'Date'[Fiscal Month Number], 1 ) )
+RETURN SUMX ( t, VAR d = [@d] RETURN IF ( d <= cut, {_ACT}, {_BUD} ) )""", RFF, FK,
+    'Rolling forecast cell: actual for months up to the cut-off, budget for later months. The Total column adds both, which is the rolling forecast for the year.')
+add('RF Cell Color', f"""VAR cut = [RF Cutoff] VAR fy = {FYN('cut')}
+RETURN IF ( HASONEVALUE ( 'Date'[Fiscal Month Number] ),
+    IF ( DATE ( fy - 1, 3 + MAX ( 'Date'[Fiscal Month Number] ), 1 ) <= cut, [Col Actual Tint], [Col Budget Tint] ),
+    [Col Subtotal] )""", '8 Formatting', None, 'Cell shading on the Rolling Forecast matrix: blue = actual month, red tint = budget month, grey = total.')
+add('RF Actual to Date', _RF + f'RETURN SUMX ( FILTER ( t, [@d] <= cut ), VAR d = [@d] RETURN {_ACT} )', RFF, F, 'Actual from the start of the fiscal year to the cut-off month, for the selected metric.')
+add('RF Remaining Budget', _RF + f'RETURN SUMX ( FILTER ( t, [@d] > cut ), VAR d = [@d] RETURN {_BUD} )', RFF, F, 'Budget for the months after the cut-off.')
+add('RF Total', '[RF Actual to Date] + [RF Remaining Budget]', RFF, F, 'Rolling forecast for the fiscal year: actual to the cut-off plus budget for the remaining months.')
+add('RF Target', _RF + f'RETURN SUMX ( t, VAR d = [@d] RETURN {_BUD} )', RFF, F, "Target = the full-year budget of the cut-off's fiscal year.")
+add('RF Gap', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Total] - [RF Target] )', RFF, F, 'Rolling forecast minus target. Positive = on track (also for cost metrics, which are stored negative). Blank when there is no target.')
+add('RF Attainment %', 'DIVIDE ( [RF Total], [RF Target] )', RFF, P, 'Rolling forecast as a share of the target.')
+add('RF Months Elapsed', "VAR cut = [RF Cutoff] RETURN MOD ( MONTH ( cut ) + 8, 12 ) + 1", RFF, '0', 'Fiscal months closed at the cut-off (April = 1).')
+add('RF Months Left', '12 - [RF Months Elapsed]', RFF, '0', 'Fiscal months after the cut-off.')
+add('RF Required per Month', 'IF ( NOT ISBLANK ( [RF Target] ), DIVIDE ( [RF Target] - [RF Actual to Date], [RF Months Left] ) )', RFF, F, 'What each remaining month must deliver to land exactly on target.')
+add('RF Average per Month', 'DIVIDE ( [RF Actual to Date], [RF Months Elapsed] )', RFF, F, 'Average actual per closed month.')
+add('RF Run-Rate Total', '[RF Actual to Date] + [RF Average per Month] * [RF Months Left]', RFF, F, 'Second method: the year if the remaining months repeat the year-to-date average instead of the budget.')
+add('RF Run-Rate Gap', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Total] - [RF Target] )', RFF, F, 'Run-rate projection minus target.')
+add('RF Status', 'IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Gap] >= 0, "✓ On track", "✗ Short" ), "No target" )', RFF, None, 'On track when the rolling forecast is at or above target.')
+tone('RF Status Color', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Gap] >= 0 )', 'Green when the rolling forecast reaches the target.')
+add('RF Run-Rate Status', 'IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-Rate Gap] >= 0, "✓ Reaches", "✗ Misses" ), "No target" )', RFF, None, 'Whether the run-rate projection reaches the target.')
+tone('RF Run-Rate Color', 'IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Gap] >= 0 )', 'Green when the run-rate projection reaches the target.')
+for _n in ('RF Total', 'RF Target', 'RF Required per Month', 'RF Run-Rate Total'):
+    add(f'KV {_n}', kv_expr(_n), '11 KPI Cards')
+add('RF Total Text', '[RF Status] & " · " & ' + money('[RF Gap]', 'signed') + ' & " vs target (" & FORMAT ( [RF Attainment %], "0%" ) & ")"', RFF, None, 'Card text: status, gap and attainment of the rolling forecast.')
+add('RF Target Text', '"Full-year budget FY" & ' + FYN('[RF Cutoff]') + ' & " · " & [Metric Name]', RFF, None, 'Card text: which target is used.')
+add('RF Required Text', '"needed in each of " & [RF Months Left] & " months · average so far " & ' + money('[RF Average per Month]'), RFF, None, 'Card text: required monthly amount next to the average achieved so far.')
+tone('RF Required Color', 'IF ( [RF Months Left] > 0 && NOT ISBLANK ( [RF Target] ), [RF Average per Month] >= [RF Required per Month] )', 'Green when the average month so far is at least what the remaining months require.')
+add('RF Run-Rate Text', '[RF Run-Rate Status] & " target · " & ' + money('[RF Run-Rate Gap]', 'signed') + ' & " if the average month repeats"', RFF, None, 'Card text: verdict of the run-rate method.')
+add('PT RF', '"Rolling Forecast · " & [Metric Name] & " · actuals until " & FORMAT ( [RF Cutoff], "mmm yyyy" )', PH)
+add('PS RF', '"Will we reach the target? Rolling forecast " & ' + money('[RF Total]') + ' & " vs target " & ' + money('[RF Target]') + ' & ": " & [RF Status] & " (" & ' + money('[RF Gap]', 'signed') + ' & "). Run-rate view: " & [RF Run-Rate Status] & "."', PH)
+add('VT RF Matrix', '[Metric Name] & " by entity and month · blue = actual, red tint = budget · " & [Currency Label] & " thousands"', VT)
+add('Sub RF Matrix', '"Move the Actuals Until slicer to replay any month end: months up to it show actuals, later months show budget, and Total is the rolling forecast."', SB)
+add('VT RF Table', '"Can each entity reach its target?"', VT)
+add('Sub RF Table', """VAR t = FILTER ( ADDCOLUMNS ( VALUES ( Entity[EntityName] ), "@g", [RF Gap], "@t", [RF Target] ), NOT ISBLANK ( [@t] ) )
+RETURN COUNTROWS ( FILTER ( t, [@g] >= 0 ) ) + 0 & " of " & COUNTROWS ( t ) + 0 & " budgeted entities are on track. Required = what each remaining month must deliver; compare it with the average so far." """, SB)
+add('VT RF Method', '"Method, assumptions and trade-offs"', VT)
+add('Sub RF Method', '"How the forecast is built and where it can mislead."', SB)
+add('Footer RF', FOOT + ' & " · Layout after the Goodly Budget vs Actual; forecast = actual + remaining budget"', '10 Layout')
+
+# ---- 6.6 Sankey: how net revenue flows to net income, drawn as one SVG image (no custom visual to install)
+def _sankey():
+    N = lambda e: f'FORMAT ( {e}, "0.0" )'
+    def link(xa, ya, xb, yb, h, col):
+        xm = (xa + xb) / 2
+        return (f'"<path d=\'M{xa}," & {N(ya)} & " C{xm}," & {N(ya)} & " {xm}," & {N(yb)} & " {xb}," & {N(yb)} & " L{xb}," & {N(f"{yb} + {h}")} & " C{xm}," & {N(f"{yb} + {h}")} & " {xm}," & {N(f"{ya} + {h}")} '
+                f'& " {xa}," & {N(f"{ya} + {h}")} & " Z\' fill=\'" & {col} & "\' fill-opacity=\'0.30\'/>"')
+    def node(x, y, h, col):
+        return f'"<rect x=\'{x}\' y=\'" & {N(y)} & "\' width=\'14\' height=\'" & {N(f"MAX ( {h}, 1 )")} & "\' rx=\'2\' fill=\'" & {col} & "\'/>"'
+    def label(x, y, h, anchor, name, val):
+        return (f'"<text x=\'{x}\' y=\'" & {N(f"{y} + {h} / 2 - 2")} & "\' text-anchor=\'{anchor}\' font-family=\'DIN, Segoe UI, sans-serif\' font-size=\'13\' font-weight=\'700\' fill=\'" & [Col Title] & "\'>{name}</text>"'
+                f' & "<text x=\'{x}\' y=\'" & {N(f"{y} + {h} / 2 + 13")} & "\' text-anchor=\'{anchor}\' font-family=\'DIN, Segoe UI, sans-serif\' font-size=\'12\' fill=\'" & [Col Muted] & "\'>" & {money(val)} & " (" & FORMAT ( DIVIDE ( {val}, rev ), "0%" ) & ")</text>"')
+    X1, X2, X3, X4, X5 = 170, 400, 630, 860, 1090
+    A, G, B = '[Col Accent]', '[Col Good]', '[Col Bad]'
+    parts = []
+    for r, y, tgt, nm in (('r1', 'yR1', 'y0', 'North America'), ('r2', 'yR2', 'y0 + hR1', 'Europe'), ('r3', 'yR3', 'y0 + hR1 + hR2', 'Pacific')):
+        h = f'{r} * k'
+        parts += [link(X1 + 14, y, X2, tgt, h, A), node(X1, y, h, A), label(X1 - 8, y, h, 'end', nm, r)]
+    parts += [node(X2, 'y0', 'rev * k', A), label(X2 + 7, 'y0 - 34', '0', 'middle', 'Net revenue', 'rev'),
+              link(X2 + 14, 'y0', X3, 'y0', 'gp * k', G), link(X2 + 14, 'y0 + gp * k', X3, 'yC', 'cgs * k', B),
+              node(X3, 'y0', 'gp * k', G), label(X3 + 22, 'y0', 'gp * k', 'start', 'Gross profit', 'gp'),
+              node(X3, 'yC', 'cgs * k', B), label(X3 + 22, 'yC', 'cgs * k', 'start', 'Cost of sales', 'cgs'),
+              link(X3 + 14, 'y0', X4, 'y0', 'eb * k', G), link(X3 + 14, 'y0 + eb * k', X4, 'yO', 'ox * k', B),
+              node(X4, 'y0', 'eb * k', G), label(X4 + 22, 'y0', 'eb * k', 'start', 'EBITDA', 'eb'),
+              node(X4, 'yO', 'ox * k', B), label(X4 + 22, 'yO', 'ox * k', 'start', 'Operating expenses', 'ox'),
+              link(X4 + 14, 'y0', X5, 'y0', 'ni * k', G), link(X4 + 14, 'y0 + ni * k', X5, 'yB', 'bl * k', B),
+              node(X5, 'y0', 'ni * k', G), label(X5 + 22, 'y0', 'ni * k', 'start', 'Net income', 'ni'),
+              node(X5, 'yB', 'bl * k', B), label(X5 + 22, 'yB', 'bl * k', 'start', 'Depreciation, interest, tax', 'bl')]
+    body = '\n    & '.join(parts)
+    return f"""-- flows, all as positive sizes (costs are stored negative in the model)
+VAR rev = [Revenue] VAR gp = [Gross Profit] VAR cgs = rev - gp VAR eb = [EBITDA] VAR ox = gp - eb VAR ni = [Net Income] VAR bl = eb - ni
+VAR r1 = CALCULATE ( [Revenue], KEEPFILTERS ( Entity[Region] = "North America" ) ) + 0
+VAR r2 = CALCULATE ( [Revenue], KEEPFILTERS ( Entity[Region] = "Europe" ) ) + 0
+VAR r3 = CALCULATE ( [Revenue], KEEPFILTERS ( Entity[Region] = "Pacific" ) ) + 0
+-- a Sankey can only draw positive flows: fall back to a message when a profit level is negative in the selection
+VAR ok = rev > 0 && gp > 0 && eb > 0 && ni > 0 && cgs >= 0 && ox >= 0 && bl >= 0 && r1 >= 0 && r2 >= 0 && r3 >= 0
+-- layout: 330 px of height for net revenue; every other node uses the same scale, so widths are comparable
+VAR k = DIVIDE ( 330, rev ) VAR y0 = 56 VAR vgap = 16
+VAR hR1 = r1 * k VAR hR2 = r2 * k VAR yR1 = y0 VAR yR2 = yR1 + hR1 + vgap VAR yR3 = yR2 + hR2 + gap
+VAR yC = y0 + gp * k + 30 VAR yO = y0 + eb * k + 30 VAR yB = y0 + ni * k + 30
+VAR svg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 470'>"
+    & {body}
+    & "</svg>"
+VAR msg = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1280 470'><text x='640' y='230' text-anchor='middle' font-family='DIN, Segoe UI, sans-serif' font-size='18' fill='" & [Col Muted] & "'>A Sankey needs positive flows: revenue or a profit level is negative for this selection.</text></svg>"
+RETURN "data:image/svg+xml;utf8," & SUBSTITUTE ( SUBSTITUTE ( IF ( ok, svg, msg ), "%", "%25" ), "#", "%23" )"""
+add('SVG Sankey', _sankey(), '15 Sankey', None,
+    'Income-statement Sankey as an SVG image: revenue by region flows into net revenue, then splits into cost of sales, operating expenses, items below EBITDA and net income. Band width is proportional to the amount.')
+MEAS[-1]['cat'] = 'ImageUrl'
+add('PT Sankey', '"Where the revenue goes · " & [Period Label]', PH)
+add('PS Sankey', '"Of every $100 of net revenue, $" & FORMAT ( DIVIDE ( [Net Income], [Revenue] ) * 100, "0" ) & " reaches net income: $" & FORMAT ( DIVIDE ( -[Cost of Sales], [Revenue] ) * 100, "0" ) & " goes to cost of sales and $" & FORMAT ( DIVIDE ( -[Operating Expenses], [Revenue] ) * 100, "0" ) & " to operating expenses."', PH)
+add('VT Sankey', '"From revenue to net income · band width = amount · " & [Currency Label]', VT)
+add('Sub Sankey', '"Blue = revenue, green = what is kept at each level, red = what is spent. Percentages are shares of net revenue. Follows every slicer."', SB)
+add('Footer Sankey', FOOT + ' & " · Drawn by a DAX measure as SVG; no custom visual"', '10 Layout')
+
+# ---- 6.7 method notes shown on the two replica pages (also in docs/04-methodology.md)
+STORY_ROWS += [
+    ('ISX Method', 1, 'What it shows', 'The P&L for the period against the same period last year: amount, share of revenue, change, change % and the shift in share of revenue in basis points.'),
+    ('ISX Method', 2, 'How it is built', 'Sections and lines are rows of the Report Line table; each line lists its accounts in Report Line Map. A section header sums the distinct accounts of its lines, so no subtotal is hard-coded.'),
+    ('ISX Method', 3, 'Assumptions', 'Period = the Period slicer (YTD by default) to the selected month. Prior year = same months one year earlier. Costs are negative, so a positive change is favourable on every row.'),
+    ('ISX Method', 4, 'Strengths', 'Adding or re-ordering a line is a data change, not a DAX change. Every column uses one definition, so cards, trend and matrix always agree.'),
+    ('ISX Method', 5, 'Limits', 'Compares with prior year only (budget is on page 3). Change % is blank when signs differ or the base is tiny. The summary bullets are rules (thresholds 2% and 20%), not judgement.'),
+    ('ISX Method', 6, 'Consider', 'New entities inflate growth: check the organic figure on page 2. Basis points are computed on net revenue of each year, so mix shifts move them even when costs are flat.'),
+    ('RF Method', 1, 'What it shows', 'For each entity: actuals up to the Actuals Until month, budget after it, and the total. That total is the rolling forecast, compared with the full-year budget (the target).'),
+    ('RF Method', 2, 'How it is built', 'Actuals Until is a disconnected slicer. One measure returns actual or budget per month depending on the cut-off; totals, gap, attainment and required run-rate derive from it.'),
+    ('RF Method', 3, 'Assumptions', 'Remaining months land exactly on budget. Target = original full-year budget. Actual and budget share the same grain (month x entity x account), so no allocation is needed.'),
+    ('RF Method', 4, 'Strengths', 'Simple, auditable and replayable: move the slicer to see what the forecast said at any month end. No statistical model to explain or maintain.'),
+    ('RF Method', 5, 'Limits', 'It carries the year-to-date variance forward but assumes it stops growing. Seasonality lives only in the budget. Entities without a budget have no target and show blank.'),
+    ('RF Method', 6, 'Cross-check', 'The run-rate column assumes the average month so far repeats. When the two methods disagree, the truth is usually between them: read Required per month against the average so far.'),
+    ('RF Method', 7, 'If grains differ', 'If budget were yearly or by region only, allocate it to months with a seasonality key (prior-year share) before using this page; never compare a monthly actual with an unallocated annual budget.'),
+]
+for _t in TABLES:
+    if _t['name'] == 'Story':
+        _t['m'] = m_table([('Page', 'text'), ('Sort', 'Int64.Type'), ('Section', 'text'), ('Text', 'text')], STORY_ROWS)
+
+
 # ======================================================================== v5: documentation pass (TOM descriptions, DAX and M comments, query groups, diagram)
 # ---- 5.1 remove presentation leftovers that no visual or measure uses (analytical KPI measures are kept as reusable building blocks)
 DROP = [r' Spark$', r' Progress Bar$', r'^Title (Overview|Executive|Income Statement|Balance Sheet|Overview Revenue|DQ)$', r'^Lbl Current View$',
@@ -1242,5 +1527,6 @@ DIAGRAM = {  # table: (x, y, width, height)
     'Revenue Bridge': (880, 880, 200, 110), 'EBITDA Bridge': (1100, 880, 200, 110), 'Cash Bridge': (1320, 880, 200, 110),
     'Insight': (0, 1040, 200, 110), 'Story': (220, 1040, 200, 150), 'Refresh Info': (440, 1040, 200, 100),
     'DQ File Log': (880, 1040, 220, 210), 'DQ Injection Log': (1120, 1040, 220, 170),
+    'PL Focus': (660, 1040, 200, 130), 'Display Unit': (0, 1200, 200, 130), 'Actuals Until': (220, 1220, 200, 130), 'Data Dictionary': (1360, 1040, 240, 260),
 }
 assert set(DIAGRAM) == {t['name'] for t in TABLES}, set(DIAGRAM) ^ {t['name'] for t in TABLES}

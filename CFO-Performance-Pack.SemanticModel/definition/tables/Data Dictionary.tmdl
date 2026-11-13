@@ -1,0 +1,90 @@
+/// Self-documenting catalogue of the model: every table, column, measure and relationship with its description and expression, read from the model itself with the INFO.VIEW functions on each refresh.
+table 'Data Dictionary'
+	lineageTag: 9f262a8e-9a41-523b-9419-50cd1e2e6ad1
+
+	/// Table, Column, Measure or Relationship.
+	column 'Object Type'
+		lineageTag: 8c9c4abb-0a8f-5391-8a1d-5ba113b0ff11
+		isNameInferred
+		sourceColumn: [Object Type]
+
+	/// Table the object belongs to (for a relationship: the many side).
+	column Table
+		lineageTag: 46220841-d23b-5aaf-9231-d34740a10d72
+		isNameInferred
+		sourceColumn: [Table]
+
+	/// Object name.
+	column Name
+		lineageTag: 0430a65a-2f14-5f76-895d-486cd166d782
+		isNameInferred
+		sourceColumn: [Name]
+
+	/// Business description stored on the object.
+	column Description
+		lineageTag: feb96edc-66e1-50ab-b633-0ef07b336893
+		isNameInferred
+		sourceColumn: [Description]
+
+	/// DAX of a measure, calculated column or calculated table; the join for a relationship.
+	column Expression
+		lineageTag: 830d08a2-cdea-556f-8fcb-1d34bb5f603d
+		isNameInferred
+		sourceColumn: [Expression]
+
+	/// Data type, table kind or cardinality.
+	column Type
+		lineageTag: e12401ee-edf4-55c2-a48f-1dff104ea14c
+		isNameInferred
+		sourceColumn: [Type]
+
+	/// Format string.
+	column Format
+		lineageTag: 9d836b53-2f47-5fed-a436-8dfb7e5c9ee6
+		isNameInferred
+		sourceColumn: [Format]
+
+	/// Display folder.
+	column Folder
+		lineageTag: c0db1786-5e41-5623-a74f-2cdbf9ab4524
+		isNameInferred
+		sourceColumn: [Folder]
+
+	/// Yes when hidden from report authors.
+	column Hidden
+		lineageTag: f902f469-ae16-50f4-8c3b-44cd16c95f88
+		isNameInferred
+		sourceColumn: [Hidden]
+
+	partition 'Data Dictionary' = calculated
+		mode: import
+		source =
+				-- One row per model object. INFO.VIEW functions read the model's own metadata, so the dictionary can never drift from the model.
+				UNION (
+				    SELECTCOLUMNS (
+				        FILTER ( INFO.VIEW.TABLES (), NOT [IsPrivate] ),
+				        "Object Type", "Table", "Table", [Name], "Name", [Name], "Description", [Description],
+				        "Expression", [Expression], "Type", IF ( ISBLANK ( [Expression] ), "Power Query table", "Calculated table" ),
+				        "Format", BLANK (), "Folder", BLANK (), "Hidden", IF ( [IsHidden], "Yes", "No" )
+				    ),
+				    SELECTCOLUMNS (
+				        FILTER ( INFO.VIEW.COLUMNS (), [Type] <> "RowNumber" ),
+				        "Object Type", "Column", "Table", [Table], "Name", [Name], "Description", [Description],
+				        "Expression", [Expression], "Type", [DataType] & IF ( NOT ISBLANK ( [Expression] ), " (calculated)" ),
+				        "Format", [FormatString], "Folder", [DisplayFolder], "Hidden", IF ( [IsHidden], "Yes", "No" )
+				    ),
+				    SELECTCOLUMNS (
+				        INFO.VIEW.MEASURES (),
+				        "Object Type", "Measure", "Table", [Table], "Name", [Name], "Description", [Description],
+				        "Expression", [Expression], "Type", [DataType],
+				        "Format", [FormatString], "Folder", [DisplayFolder], "Hidden", IF ( [IsHidden], "Yes", "No" )
+				    ),
+				    SELECTCOLUMNS (
+				        INFO.VIEW.RELATIONSHIPS (),
+				        "Object Type", "Relationship", "Table", [FromTable], "Name", [FromTable] & " > " & [ToTable],
+				        "Description", [FromCardinality] & " to " & LOWER ( [ToCardinality] ) & ", " & IF ( [IsActive], "active", "inactive" ) & ", filter direction: " & [CrossFilteringBehavior],
+				        "Expression", [Relationship], "Type", [FromCardinality] & " to " & LOWER ( [ToCardinality] ),
+				        "Format", BLANK (), "Folder", BLANK (), "Hidden", "No"
+				    )
+				)
+

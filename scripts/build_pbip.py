@@ -289,8 +289,8 @@ def T(name):          # theme colour (measure-driven)
 
 
 class Page:
-    def __init__(self, pid, display, key):
-        self.pid, self.display, self.key, self.visuals, self.z = pid, display, key, [], 0
+    def __init__(self, pid, display, key, hidden=False):
+        self.pid, self.display, self.key, self.visuals, self.z, self.hidden = pid, display, key, [], 0, hidden
 
     def add(self, key, vtype, x, y, w, h, roles=None, objects=None, title=None, sort=None, filters=None,
             background=True, container=None, subtitle=None, content=True, header=True, title_colour='Title'):
@@ -403,11 +403,11 @@ class Page:
         y = 58
         for pid, name, glyph in PAGES_NAV:
             on = pid == self.pid
-            self.button(f'nav_{pid}', 8, y, PANEL_W - 16, 24, f'{glyph}   {name}', 'PageNavigation', page=pid, fill='Sidebar Active' if on else 'Sidebar',
+            self.button(f'nav_{pid}', 8, y, PANEL_W - 16, 22, f'{glyph}   {name}', 'PageNavigation', page=pid, fill='Sidebar Active' if on else 'Sidebar',
                         text='Sidebar Text' if on else 'Sidebar Muted', outline=None, size=9, align='left', bold=on, round_=6)
-            y += 26
-        self.textline('lbl_f', 8, y + 2, PANEL_W - 16, 20, 'Lbl Filters', 7.5, 'Sidebar Muted', bold=True)
-        y += 22
+            y += 24
+        self.textline('lbl_f', 8, y, PANEL_W - 16, 16, 'Lbl Filters', 7.5, 'Sidebar Muted', bold=True)
+        y += 17
         for k, spec, ttl, mode, single, sync in [
                 ('s_fy', 'Date[Fiscal Year]', 'Fiscal year', 'Dropdown', False, 'Fiscal Year'),
                 ('s_m', 'Date[Month Name]', 'Month', 'Dropdown', False, 'Month Name'),
@@ -419,7 +419,7 @@ class Page:
             hh = 54 if mode == 'Basic' else 59   # title row + one control row (dropdown boxes are taller than tiles)
             self.slicer(k, 6, y, PANEL_W - 12, hh, spec, ttl, mode=mode, single=single, horizontal=(mode == 'Basic'), sync=sync)
             y += hh + 1
-        self.button('reset', 10, y + 2, PANEL_W - 20, 24, '\u21ba  Reset all filters', 'ClearAllSlicers', tooltip='Clear every slicer on every page',
+        self.button('reset', 10, y + 1, PANEL_W - 20, 22, '\u21ba  Reset all filters', 'ClearAllSlicers', tooltip='Clear every slicer on every page',
                     fill='Sidebar Active', text='Sidebar Text', outline=None, round_=6)
         self.textline('tagline', 8, H - 21, PANEL_W - 16, 19, 'Tagline', 7.5, 'Sidebar Muted')
         # header: title, insight subtitle, filter chips + refresh stamp; utilities top right
@@ -551,16 +551,20 @@ class Page:
         pdir = os.path.join(RP, 'definition', 'pages', self.pid)
         page = {'$schema': PAGE_SCHEMA, 'name': self.pid, 'displayName': self.display, 'displayOption': 'FitToPage', 'height': H, 'width': W,
                 'objects': {'background': [{'properties': {'transparency': L(100)}}]}}
+        if self.hidden:   # reachable in Desktop and through navigation, not shown as a tab to report readers
+            page['visibility'] = 'HiddenInViewMode'
         write(os.path.join(pdir, 'page.json'), json.dumps(page, indent=2))
         for v in self.visuals:
             write(os.path.join(pdir, 'visuals', v['name'], 'visual.json'), json.dumps(v, indent=2, ensure_ascii=False))
 
 
 # ============================================================== pages (content authored on the 1248 x 630 grid from x=16, y=74)
-PAGES_NAV = [('99445311384ca177b853', 'Overview', '\u2302'), (hexid('page', 'exec'), 'Executive', '\u25c6'),
-             (hexid('page', 'bva'), 'Budget vs Actual', '\u25a4'), (hexid('page', 'is'), 'P&L', '\u2261'),
-             (hexid('page', 'bs'), 'Balance Sheet', '\u25a5'), (hexid('page', 'dq'), 'Data Quality', '\u2713'),
-             (hexid('page', 'notes'), 'Notes', '\u2139')]
+# Visible tabs are numbered in reading order; hidden analysis pages carry an H prefix. docs/03-page-guide.md uses the same numbers.
+PAGES_NAV = [('99445311384ca177b853', '1  Overview', '\u2302'), (hexid('page', 'exec'), '2  Executive', '\u25c6'),
+             (hexid('page', 'bva'), '3  Budget vs Actual', '\u25a4'), (hexid('page', 'is'), '4  P&L', '\u2261'),
+             (hexid('page', 'bs'), '5  Balance Sheet', '\u25a5'), (hexid('page', 'dq'), '6  Data Quality', '\u2713'),
+             (hexid('page', 'dd'), '7  Data Dictionary', '\u2637'), (hexid('page', 'notes'), '8  Notes', '\u2139')]
+TAB = {pid: name.replace('  ', ' · ', 1) for pid, name, _ in PAGES_NAV}     # tab captions: "1 · Overview"
 DESC = {m['name']: m.get('desc') for m in M.MEAS}
 ANCHOR = lambda folder: '#' + re.sub(r'[^a-z0-9 -]', '', folder.lower()).replace(' ', '-')
 FOLDER = {m['name']: m['folder'] for m in M.MEAS}
@@ -584,7 +588,7 @@ def combo(p, key, x, y, w, h, title, subtitle):
 
 
 def page_overview():
-    p = Page('99445311384ca177b853', 'Overview', 'Overview')
+    p = Page('99445311384ca177b853', TAB['99445311384ca177b853'], 'Overview')
     p.chrome('PT Overview', 'PS Overview')
     p.story('story', 16, 74, 400, 630, 'Overview', '=VT Story', 'Sub Story')
     x0, w4 = 428, 202
@@ -612,7 +616,7 @@ def page_overview():
 
 
 def page_executive():
-    p = Page(hexid('page', 'exec'), 'Executive', 'Executive')
+    p = Page(hexid('page', 'exec'), TAB[hexid('page', 'exec')], 'Executive')
     p.chrome('PT Executive', 'PS Executive')
     p.card('headline', 16, 74, 1248, 40, 'Headline', None, size=12, colour='Accent')
     w = (1248 - 5 * 10) / 6
@@ -644,7 +648,7 @@ def page_executive():
 
 
 def page_bva():
-    p = Page(hexid('page', 'bva'), 'Budget vs Actual', 'BvA')
+    p = Page(hexid('page', 'bva'), TAB[hexid('page', 'bva')], 'BvA')
     p.chrome('PT BvA', 'Title BvA')
     p.slicer('s_metric', 16, 74, 640, 44, 'Metric[Metric]', None, mode='Basic', single=True, horizontal=True, content=True)
     w = (1248 - 3 * 10) / 4
@@ -672,7 +676,7 @@ def page_bva():
 
 
 def page_income():
-    p = Page(hexid('page', 'is'), 'P&L', 'IS')
+    p = Page(hexid('page', 'is'), TAB[hexid('page', 'is')], 'IS')
     p.chrome('PT IS', 'PS IS')
     cols = [('Line Actual', 'Actual'), ('Line Budget', 'Budget'), ('Line Var vs Budget', 'Var'), ('Line Var % vs Budget', 'Var %'),
             ('Line Prior Year', 'Prior year'), ('Line Growth %', 'vs PY %'), ('Line % of Revenue', '% of rev'), ('Line Outlook FY', 'FY outlook'),
@@ -692,7 +696,7 @@ def page_income():
 
 
 def page_balance():
-    p = Page(hexid('page', 'bs'), 'Balance Sheet', 'BS')
+    p = Page(hexid('page', 'bs'), TAB[hexid('page', 'bs')], 'BS')
     p.chrome('PT BS', 'Sub Cash')
     cols = [('Line Closing Balance', 'Closing'), ('Line Prior Year-End Balance', 'Year end'), ('Line Balance Change', 'Change')]
     p.statement('bs', 16, 74, 600, 630, 'Balance Sheet', cols, [('Line Balance Change', 'Balance Change Color')], '=VT BS', 'Sub BS')
@@ -722,7 +726,7 @@ def page_balance():
 
 
 def page_dq():
-    p = Page(hexid('page', 'dq'), 'Data Quality', 'DQ')
+    p = Page(hexid('page', 'dq'), TAB[hexid('page', 'dq')], 'DQ')
     p.chrome('PT DQ', 'PS DQ')
     tiles = [('DQ Files Loaded', 'Ledger files loaded', None, None), ('DQ Duplicates Removed', 'Duplicates removed', None, None),
              ('DQ Blank Departments Fixed', 'Blank depts fixed', None, None), ('DQ Files With Schema Drift', 'Schema-drift files', None, None),
@@ -754,10 +758,150 @@ def page_dq():
 
 def page_notes():
     """Assumptions, policies and definitions: what a reader must know before quoting a number from any page."""
-    p = Page(hexid('page', 'notes'), 'Notes', 'Notes')
+    p = Page(hexid('page', 'notes'), TAB[hexid('page', 'notes')], 'Notes')
     p.chrome('PT Notes', 'PS Notes')
     p.story('notes', 16, 74, 800, 630, 'Notes', '=VT Notes', 'Sub Notes', size=8.5, head=('Topic', 'Assumption or policy'))
     p.story('defs', 826, 74, 438, 630, 'Defs', '=VT Defs', 'Sub Defs', size=8.5, head=('Metric', 'Definition'))
+    return p
+
+
+def cslicer(p, key, x, y, w, h, spec, title, mode='Dropdown', single=False, horizontal=False, search=False):
+    """Slicer inside the content area (page-specific filters), styled as a panel. search=True adds the slicer's own search box."""
+    obj = {'data': [{'properties': {'mode': L(mode)}}], 'header': [{'properties': {'show': L(False)}}],
+           'items': [{'properties': {'textSize': L(9), 'fontColor': solid('#1F2A37'), 'background': solid('#FFFFFF')}}],
+           'selection': [{'properties': {'singleSelect': L(False), 'strictSingleSelect': L(single), 'selectAllCheckboxEnabled': L(not single)}}],
+           'general': [{'properties': dict({'orientation': L(1)} if horizontal else {}, **({'selfFilterEnabled': L(True)} if search else {}))}]}
+    return p.add(key, 'slicer', x, y, w, h, roles={'Values': [spec]}, objects=obj, title=title, header=False,
+                 container={'padding': [{'properties': {'top': L(2), 'bottom': L(2), 'left': L(6), 'right': L(6)}}]})
+
+
+def matrix_objects(p, value_fields, size=8.5, back=None, colours=None):
+    """Themed matrix formatting; back / colours = {field: measure} for conditional cell background / font colour."""
+    obj = p.table_objects(value_fields, size=size, colours=colours)
+    if back:
+        for v in obj['values'][1:]:
+            m = back.get(v['selector']['metadata'])
+            if m:
+                v['properties']['backColor'] = mcolor(m)
+                v['selector'] = {'data': [{'dataViewWildcard': {'matchingOption': 0}}], 'metadata': v['selector']['metadata']}   # 0 = cells and totals
+    del obj['total']
+    obj['rowHeaders'] = [{'properties': {'fontSize': L(size), 'fontColor': T('Text'), 'backColor': T('Panel'), 'wordWrap': L(False), 'showExpandCollapseButtons': L(True)}}]
+    return obj
+
+
+def page_dictionary():
+    """Tab 7: the model described by the model. One calculated table unions INFO.VIEW.TABLES/COLUMNS/MEASURES/RELATIONSHIPS."""
+    pid = hexid('page', 'dd')
+    p = Page(pid, TAB[pid], 'DD')
+    p.chrome('PT DD', 'PS DD')
+    w = (1248 - 3 * 10) / 4
+    for i, (m, lab) in enumerate([('DD Tables', 'Tables'), ('DD Columns', 'Columns'), ('DD Measures', 'Measures'), ('DD Relationships', 'Relationships')]):
+        p.kpi(f'k{i}', 16 + i * (w + 10), 74, w, 74, m, lab)
+    # page-specific slicers: tiles, searchable dropdowns and a free-text "contains" search
+    cslicer(p, 'f_type', 16, 156, 330, 62, 'Data Dictionary[Object Type]', 'Object type', mode='Basic', horizontal=True)
+    cslicer(p, 'f_table', 356, 156, 210, 62, 'Data Dictionary[Table]', 'Table (type to search)', search=True)
+    cslicer(p, 'f_folder', 576, 156, 250, 62, 'Data Dictionary[Folder]', 'Display folder (type to search)', search=True)
+    cslicer(p, 'f_name', 836, 156, 210, 62, 'Data Dictionary[Name]', 'Name (type to search)', search=True)
+    p.add('f_text', 'textSlicer', 1056, 156, 208, 62, roles={'Values': ['Data Dictionary[Name]']}, title='Name contains (free text)', header=False)
+    fields = ['Data Dictionary[Object Type]', 'Data Dictionary[Table]', 'Data Dictionary[Name]', 'Data Dictionary[Description]', 'Data Dictionary[Expression]',
+              'Data Dictionary[Folder]']
+    obj = p.table_objects(fields, size=8.5, wrap=True)
+    obj['columnWidth'] = [{'properties': {'value': L(wd)}, 'selector': {'metadata': 'Data Dictionary.' + c}}
+                          for c, wd in (('Object Type', 76), ('Table', 96), ('Name', 170), ('Description', 250), ('Expression', 330), ('Folder', 110))]
+    p.add('dict', 'tableEx', 16, 226, 1248, 478, roles={'Values': [(f, f.split('[')[1][:-1]) for f in fields]}, objects=obj, title='=VT DD', subtitle='Sub DD',
+          sort=[('Data Dictionary[Object Type]', 'Ascending')])
+    return p
+
+
+def page_sankey():
+    """Hidden H1: income-statement Sankey drawn by one DAX measure (SVG), so no custom visual has to be installed."""
+    p = Page(hexid('page', 'sankey'), 'H1 · Revenue Flow (Sankey)', 'Sankey', hidden=True)
+    p.chrome('PT Sankey', 'PS Sankey')
+    p.add('sankey', 'image', 16, 74, 1248, 516, title='=VT Sankey', subtitle='Sub Sankey', header=False,
+          objects={'image': [{'properties': {'sourceType': L('imageData'), 'sourceField': {'expr': mfield('SVG Sankey')}}}],
+                   'imageScaling': [{'properties': {'imageScalingType': L('Fit')}}]})
+    w = (1248 - 3 * 10) / 4
+    for i, (m, lab, sub, col) in enumerate([('Revenue', 'Net revenue', 'Revenue vs Budget Text', 'Revenue Var Color'), ('Gross Profit Margin %', 'Gross margin', 'Gross Margin Text', 'Gross Margin Var Color'),
+                                            ('EBITDA', 'EBITDA', 'EBITDA vs Budget Text', 'EBITDA Var Color'), ('Net Income', 'Net income', 'Net Income vs Budget Text', 'Net Income Var Color')]):
+        p.kpi(f'k{i}', 16 + i * (w + 10), 600, w, 104, m, lab, sub, col)
+    return p
+
+
+def page_isx():
+    """Hidden H2: Income Statement Explorer. Same components as the Goodly dynamic P&L page, in this report's look:
+    six KPI cards (value, PY, change, % change), a focus selector driving a rule-based summary and a CY vs PY trend,
+    a Thousand/Absolute toggle and an expandable section > line matrix with CY, % Rev, PY, % Rev, change, change % and bps."""
+    p = Page(hexid('page', 'isx'), 'H2 · Income Statement Explorer', 'ISX', hidden=True)
+    p.chrome('PT ISX', 'PS ISX')
+    X = lambda v: CX + (v - 16) * SX
+    Y = lambda v: CY + (v - 74) * SY
+    cslicer(p, 'f_focus', 16, 74, 470, 50, 'PL Focus[Focus]', 'Focus (drives the summary and the trend)', mode='Basic', single=True, horizontal=True)
+    cards = [('Revenue', 'Revenue ($)'), ('Cost of Sales', 'COGS ($)'), ('Gross Profit', 'Gross Profit ($)'), ('EBITDA', 'EBITDA ($)'), ('EBIT', 'EBIT ($)'), ('Net Income', 'Net Profit ($)')]
+    cw = (470 - 2 * 8) / 3
+    for i, (n, lab) in enumerate(cards):
+        x0, y0, w0, h0 = X(16 + (i % 3) * (cw + 8)), Y(130 + (i // 3) * 112), cw * SX, 106 * SY
+        p.add(f'c{i}_bg', 'textbox', x0, y0, w0, h0, content=False, header=False, objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]})
+        p.button(f'c{i}_l', x0 + 4, y0 + 4, w0 - 8, 16, lab, fill=None, text='Muted', outline=None, size=8.5, align='center')
+        p.button(f'c{i}_v', x0 + 4, y0 + 19, w0 - 8, 26, '', measure=f'KV {n}', fill=None, text='Title', outline=None, size=14, align='center', bold=True)
+        p.button(f'c{i}_p', x0 + 4, y0 + 47, w0 - 8, 15, '', measure=f'IS {n} PY Text', fill=None, text='Muted', outline=None, size=7.5, align='left')
+        p.button(f'c{i}_c', x0 + 4, y0 + 62, w0 - 8, 15, '', measure=f'IS {n} Chg Text', fill=None, text='Muted', outline=None, size=7.5, align='left')
+        p.button(f'c{i}_g', x0 + 4, y0 + 77, w0 - 8, 15, '', measure=f'IS {n} Pct Text', fill=None, text='Muted', outline=None, size=7.5, align='left')
+        p.visuals[-1]['visual']['objects']['text'][1]['properties']['fontColor'] = mcolor(f'IS {n} PY Color')
+    # rule-based summary for the focus line
+    sx, sy, sw, sh = X(16), Y(354), 470 * SX, 112 * SY
+    p.add('sum_bg', 'textbox', sx, sy, sw, sh, content=False, header=False, title='=VT Focus Summary',
+          objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]})
+    for i in range(4):
+        p.button(f'sum_{i}', sx + 6, sy + 24 + i * 18, sw - 12, 18, '', measure=f'Focus Bullet {i + 1}', fill=None, text='Text', outline=None, size=8, align='left')
+    obj = p.axes({'dataPoint': [{'properties': {'fill': solid(SERIES['actual'])}, 'selector': {'metadata': '_Measures.Focus Monthly CY'}},
+                                {'properties': {'fill': solid(SERIES['py'])}, 'selector': {'metadata': '_Measures.Focus Monthly PY'}}],
+                  'lineStyles': [{'properties': {'lineChartType': L('smooth'), 'strokeWidth': L(2), 'showMarker': L(True)}}],
+                  'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000), 'labelPrecision': L(0), 'fontSize': L(7.5), 'color': T('Text')}}]}, value_axis=False)
+    p.add('trend', 'lineChart', 16, 472, 470, 232, roles={'Category': ['Date[Month Name]'], 'Y': [('Focus Monthly CY', 'CY'), ('Focus Monthly PY', 'PY')]},
+          objects=obj, title='=VT Focus Trend', subtitle='Sub Focus Trend', sort=[('Date[Month Name]', 'Ascending')])
+    # right: unit toggle, expandable statement matrix, method notes
+    cslicer(p, 'f_unit', 496, 74, 250, 50, 'Display Unit[Unit]', 'Amounts in', mode='Basic', single=True, horizontal=True)
+    vals = [('IS CY', 'CY'), ('IS CY % Rev', 'CY % Rev'), ('IS PY', 'PY'), ('IS PY % Rev', 'PY % Rev'), ('IS Chg PY', 'Δ PY'), ('IS Chg % PY', 'Δ% PY'), ('IS Chg Rev bps', 'Δ % Rev (bps)')]
+    names = [m for m, _ in vals]
+    obj = matrix_objects(p, names, back={'_Measures.' + m: 'IS Row Background' for m in names},
+                         colours={'_Measures.IS Chg PY': 'IS Chg Color', '_Measures.IS Chg % PY': 'IS Chg Color'})
+    # section header = the section total (subtotal on top); no grand total, because a P&L has no meaningful sum of all sections
+    obj['subTotals'] = [{'properties': {'rowSubtotals': L(True), 'perRowLevel': L(True), 'rowSubtotalsPosition': L('Top'), 'columnSubtotals': L(False)}},
+                        {'properties': {'rowSubtotals': L(False)}, 'selector': {'metadata': 'Report Line.Section'}},
+                        {'properties': {'rowSubtotals': L(True)}, 'selector': {'metadata': 'Report Line.LineName'}}]
+    obj['rowHeaders'][0]['properties']['steppedLayout'] = L(True)
+    p.add('matrix', 'pivotTable', 496, 130, 768, 400, roles={'Rows': [('Report Line[Section]', 'Heads'), ('Report Line[LineName]', 'Line')], 'Values': vals},
+          objects=obj, title='=VT ISX', subtitle='Sub ISX',
+          filters=[cat_filter(hexid(p.pid, 'matrix', 'f1'), 'Report Line', 'Statement', ['Income Statement']),
+                   cat_filter(hexid(p.pid, 'matrix', 'f2'), 'Report Line', 'MatrixRow', ['Yes'])])
+    p.story('method', 496, 536, 768, 168, 'ISX Method', '=VT ISX Method', 'Sub ISX Method', size=8, head=('Topic', 'Note'))
+    return p
+
+
+def page_rf():
+    """Hidden H3: Rolling Forecast. Same components as the Goodly Budget vs Actual page (level 3): an 'Actuals Until' selector and a
+    month matrix that shows actuals up to that month and budget after it; plus the question it exists to answer: will we reach the target?"""
+    p = Page(hexid('page', 'rf'), 'H3 · Rolling Forecast', 'RF', hidden=True)
+    p.chrome('PT RF', 'PS RF')
+    cslicer(p, 'f_until', 16, 74, 220, 56, 'Actuals Until[Label]', 'Actuals until', single=True)
+    cslicer(p, 'f_metric', 246, 74, 520, 56, 'Metric[Metric]', 'Metric', mode='Basic', single=True, horizontal=True)
+    w = (1248 - 3 * 10) / 4
+    for i, (m, lab, sub, col) in enumerate([('RF Total', 'Rolling forecast (actual + remaining budget)', 'RF Total Text', 'RF Status Color'),
+                                            ('RF Target', 'Target', 'RF Target Text', None),
+                                            ('RF Required per Month', 'Required per remaining month', 'RF Required Text', 'RF Required Color'),
+                                            ('RF Run-Rate Total', 'Run-rate projection (cross-check)', 'RF Run-Rate Text', 'RF Run-Rate Color')]):
+        p.kpi(f'k{i}', 16 + i * (w + 10), 136, w, 92, m, lab, sub, col)
+    obj = matrix_objects(p, ['RF Value'], back={'_Measures.RF Value': 'RF Cell Color'})
+    p.add('matrix', 'pivotTable', 16, 234, 1248, 250, roles={'Rows': [('Entity[EntityName]', 'Entity')], 'Columns': ['Date[Month Name]'], 'Values': [('RF Value', 'Value')]},
+          objects=obj, title='=VT RF Matrix', subtitle='Sub RF Matrix')
+    fields = ['Entity[EntityName]', 'RF Actual to Date', 'RF Remaining Budget', 'RF Total', 'RF Target', 'RF Gap', 'RF Attainment %', 'RF Required per Month',
+              'RF Average per Month', 'RF Status']
+    heads = ['Entity', 'Actual to date', 'Remaining budget', 'Rolling forecast', 'Target', 'Gap', 'Attainment', 'Required / month', 'Average / month', 'Status']
+    obj = p.table_objects(fields, size=8.5, colours={'_Measures.RF Gap': 'RF Status Color', '_Measures.RF Status': 'RF Status Color', '_Measures.RF Attainment %': 'RF Status Color'})
+    obj['total'] = [{'properties': {'totals': L(True)}}]
+    p.add('table', 'tableEx', 16, 490, 760, 214, roles={'Values': list(zip(fields, heads))}, objects=obj, title='=VT RF Table', subtitle='Sub RF Table',
+          sort=[('RF Gap', 'Ascending')])
+    p.story('method', 786, 490, 478, 214, 'RF Method', '=VT RF Method', 'Sub RF Method', size=8, head=('Topic', 'Note'))
     return p
 
 
@@ -812,7 +956,8 @@ def build_report():
                                     'items': [{'name': THEME_NAME, 'path': THEME_NAME, 'type': 'CustomTheme'}]})
     write(os.path.join(rdir, 'report.json'), json.dumps(rep, indent=2))
     write(os.path.join(RP, 'StaticResources', 'RegisteredResources', THEME_NAME), json.dumps(theme(), indent=2))
-    pages = [page_overview(), page_executive(), page_bva(), page_income(), page_balance(), page_dq(), page_notes()]
+    pages = [page_overview(), page_executive(), page_bva(), page_income(), page_balance(), page_dq(), page_dictionary(), page_notes(),
+             page_sankey(), page_isx(), page_rf()]
     for i, pg in enumerate(pages):
         pg.write(i)
     prune(pages)

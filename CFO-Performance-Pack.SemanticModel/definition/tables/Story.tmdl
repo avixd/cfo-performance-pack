@@ -75,7 +75,20 @@ table Story
 				        {"Defs", 10, "Current ratio", "Current assets / current liabilities."},
 				        {"Defs", 11, "Debt to equity", "Short-term + long-term debt / total equity."},
 				        {"Defs", 12, "Salary cost per head", "Salaries and benefits for the period / closing headcount (statistical account)."},
-				        {"Defs", 13, "Trade working capital", "Receivables + inventory - payables."}
+				        {"Defs", 13, "Trade working capital", "Receivables + inventory - payables."},
+				        {"ISX Method", 1, "What it shows", "The P&L for the period against the same period last year: amount, share of revenue, change, change % and the shift in share of revenue in basis points."},
+				        {"ISX Method", 2, "How it is built", "Sections and lines are rows of the Report Line table; each line lists its accounts in Report Line Map. A section header sums the distinct accounts of its lines, so no subtotal is hard-coded."},
+				        {"ISX Method", 3, "Assumptions", "Period = the Period slicer (YTD by default) to the selected month. Prior year = same months one year earlier. Costs are negative, so a positive change is favourable on every row."},
+				        {"ISX Method", 4, "Strengths", "Adding or re-ordering a line is a data change, not a DAX change. Every column uses one definition, so cards, trend and matrix always agree."},
+				        {"ISX Method", 5, "Limits", "Compares with prior year only (budget is on page 3). Change % is blank when signs differ or the base is tiny. The summary bullets are rules (thresholds 2% and 20%), not judgement."},
+				        {"ISX Method", 6, "Consider", "New entities inflate growth: check the organic figure on page 2. Basis points are computed on net revenue of each year, so mix shifts move them even when costs are flat."},
+				        {"RF Method", 1, "What it shows", "For each entity: actuals up to the Actuals Until month, budget after it, and the total. That total is the rolling forecast, compared with the full-year budget (the target)."},
+				        {"RF Method", 2, "How it is built", "Actuals Until is a disconnected slicer. One measure returns actual or budget per month depending on the cut-off; totals, gap, attainment and required run-rate derive from it."},
+				        {"RF Method", 3, "Assumptions", "Remaining months land exactly on budget. Target = original full-year budget. Actual and budget share the same grain (month x entity x account), so no allocation is needed."},
+				        {"RF Method", 4, "Strengths", "Simple, auditable and replayable: move the slicer to see what the forecast said at any month end. No statistical model to explain or maintain."},
+				        {"RF Method", 5, "Limits", "It carries the year-to-date variance forward but assumes it stops growing. Seasonality lives only in the budget. Entities without a budget have no target and show blank."},
+				        {"RF Method", 6, "Cross-check", "The run-rate column assumes the average month so far repeats. When the two methods disagree, the truth is usually between them: read Required per month against the average so far."},
+				        {"RF Method", 7, "If grains differ", "If budget were yearly or by region only, allocate it to months with a seasonality key (prior-year share) before using this page; never compare a monthly actual with an unallocated annual budget."}
 				    })
 				in
 				    Source

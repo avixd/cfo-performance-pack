@@ -12,7 +12,7 @@ annotation __PBI_TimeIntelligenceEnabled = 0
 
 annotation PBI_ProTooling = ["MCP-PBIModeling","DevMode"]
 
-annotation PBI_QueryOrder = ["DataRoot","fnReadCsv","fnLoadLedgerFolder","Account","Entity","Department","GL","FX","Report Line","Report Line Map","Reporting Currency","Period View","Metric","Revenue Bridge","EBITDA Bridge","Insight","DQ File Log","DQ Injection Log","Theme Mode","Story","Cash Bridge","_Measures"]
+annotation PBI_QueryOrder = ["DataRoot","fnReadCsv","fnLoadLedgerFolder","Account","Entity","Department","GL","FX","Report Line","Report Line Map","Reporting Currency","Period View","Metric","Revenue Bridge","EBITDA Bridge","Insight","DQ File Log","DQ Injection Log","Theme Mode","Story","Cash Bridge","PL Focus","Display Unit","_Measures"]
 
 queryGroup 'Parameters and functions'
 
@@ -54,6 +54,10 @@ ref table 'Theme Mode'
 ref table Story
 ref table 'Refresh Info'
 ref table 'Cash Bridge'
+ref table 'PL Focus'
+ref table 'Display Unit'
+ref table 'Actuals Until'
+ref table 'Data Dictionary'
 ref table _Measures
 
 ref cultureInfo en-CA
