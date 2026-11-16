@@ -1292,10 +1292,12 @@ for _t in TABLES:
 # ---- 7.1 dynamic format strings (https://www.sqlbi.com/articles/introducing-dynamic-format-strings-for-dax-measures/)
 # A money measure stays a NUMBER; a second DAX expression on the measure returns the format string for the value in context.
 # Same standard as the money() text helper: one decimal in millions, whole thousands, whole units below, negatives in brackets, zero as a dash.
+# Scaling commas must sit directly before the decimal point ("#,0,." and "#,0,,.0"): Power BI visuals ignore a scaling comma that is
+# followed by a literal ("#,0,\K" printed $501,120K on a chart, although FORMAT() in the engine scaled it). Verified on screen 16 Nov.
 # SELECTEDMEASURE() is the measure the format belongs to. The expression is deliberately small: the engine evaluates the measure a
 # second time to pick the format, so anything heavy here would double the cost of the visual.
 DYN_MONEY = ('VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\\M;($#,0,,.0\\M);-", '
-             '_x >= 1e3, "$#,0,\\K;($#,0,\\K);-", "$#,0;($#,0);-" )')
+             '_x >= 1e3, "$#,0,.\\K;($#,0,.\\K);-", "$#,0;($#,0);-" )')
 # Statement explorer (H2): the Thousand / Absolute toggle changes the format string, not the value (selection-driven format).
 DYN_UNIT = 'IF ( [Unit Divisor] = 1000, "#,0,;(#,0,);-", "#,0;(#,0);-" )'
 for _m in MEAS:

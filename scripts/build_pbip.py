@@ -632,14 +632,14 @@ def page_overview():
     fields = ['Entity[EntityName]', 'Entity[CurrencyCode]', 'Entity[Effective Ownership]', 'Entity Joined FY', 'Entity Budget Status', 'Revenue']
     p.add('entities', 'tableEx', 824, 220, 440, 484,
           roles={'Values': [('Entity[EntityName]', 'Entity'), ('Entity[CurrencyCode]', 'Ccy'), ('Entity[Effective Ownership]', 'Group %'),
-                            ('Entity Joined FY', 'Joined'), ('Entity Budget Status', 'Budget'), ('Revenue', 'Revenue')]},
+                            ('Entity Joined FY', 'Joined'), ('Entity Budget Status', 'Budget'), ('Revenue', 'Rev')]},
           objects=dict(p.table_objects(fields, size=8, colours={'_Measures.Entity Budget Status': 'Entity Budget Status Color'}),
-                       columnWidth=[{'properties': {'value': L(90)}, 'selector': {'metadata': 'Entity.EntityName'}},
-                                    {'properties': {'value': L(38)}, 'selector': {'metadata': 'Entity.CurrencyCode'}},
-                                    {'properties': {'value': L(42)}, 'selector': {'metadata': 'Entity.Effective Ownership'}},
-                                    {'properties': {'value': L(50)}, 'selector': {'metadata': '_Measures.Entity Joined FY'}},
-                                    {'properties': {'value': L(78)}, 'selector': {'metadata': '_Measures.Entity Budget Status'}},
-                                    {'properties': {'value': L(46)}, 'selector': {'metadata': '_Measures.Revenue'}}]),
+                       columnWidth=[{'properties': {'value': L(94)}, 'selector': {'metadata': 'Entity.EntityName'}},
+                                    {'properties': {'value': L(36)}, 'selector': {'metadata': 'Entity.CurrencyCode'}},
+                                    {'properties': {'value': L(40)}, 'selector': {'metadata': 'Entity.Effective Ownership'}},
+                                    {'properties': {'value': L(48)}, 'selector': {'metadata': '_Measures.Entity Joined FY'}},
+                                    {'properties': {'value': L(82)}, 'selector': {'metadata': '_Measures.Entity Budget Status'}},
+                                    {'properties': {'value': L(44)}, 'selector': {'metadata': '_Measures.Revenue'}}]),
           title='=VT Entities', subtitle='Sub Entities', sort=[('Entity Joined FY', 'Ascending')])
     p.insights('ins', 428, 498, 384, 206, [1, 3])
     return p

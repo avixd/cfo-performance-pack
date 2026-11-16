@@ -103,7 +103,7 @@
               },
               "queryRef": "_Measures.Revenue",
               "nativeQueryRef": "Revenue",
-              "displayName": "Revenue"
+              "displayName": "Rev"
             }
           ]
         }
@@ -534,7 +534,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "90D"
+                  "Value": "94D"
                 }
               }
             }
@@ -548,7 +548,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "38D"
+                  "Value": "36D"
                 }
               }
             }
@@ -562,7 +562,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "42D"
+                  "Value": "40D"
                 }
               }
             }
@@ -576,7 +576,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "50D"
+                  "Value": "48D"
                 }
               }
             }
@@ -590,7 +590,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "78D"
+                  "Value": "82D"
                 }
               }
             }
@@ -604,7 +604,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "46D"
+                  "Value": "44D"
                 }
               }
             }
