@@ -81,14 +81,17 @@ def render_table(t):
             head, body = expr_block(m['expr'], 3)
             L.append(f"\tmeasure {q(m['name'])}{head}")
             L.extend(body)
-            if m.get('dyn'):        # dynamic format string: a DAX expression instead of a fixed format (the two are mutually exclusive)
-                L.append(f"\t\tformatStringDefinition = {m['dyn']}")
-            elif m.get('fmt'):
+            if m.get('fmt') and not m.get('dyn'):
                 L.append(f"\t\tformatString: {m['fmt']}")
             if m.get('cat'):
                 L.append(f"\t\tdataCategory: {m['cat']}")
             L.append(f"\t\tdisplayFolder: {m['folder']}")
             L.append(f"\t\tlineageTag: {tag(tn, 'measure', m['name'])}")
+            if m.get('dyn'):
+                # Dynamic format string: a DAX expression instead of a fixed format (a measure cannot have both).
+                # TMDL wants expression properties after the plain ones, separated by a blank line (this is how Desktop writes it).
+                L.append('')
+                L.append(f"\t\tformatStringDefinition = {m['dyn']}")
             L.append('')
     calc_table = 'dax' in t
     for cn, dt, p in t['cols']:
