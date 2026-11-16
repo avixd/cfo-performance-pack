@@ -86,3 +86,10 @@ The statement explorer (H2) uses the second flavour: the *Thousand / Absolute* s
 - Scaling commas must sit directly before the decimal point (`#,0,.` and `#,0,,.0`). `#,0,\K` scales in the engine's `FORMAT()` but Power BI visuals printed `$501,120K`; found and fixed on screen.
 - A waterfall chart formats its own *Total* column from the neighbouring values, so a total below one million can still read `$0.7M` there while the title says `$675K`.
 - Not available on a live connection to a remote model (report-level measures have no format string expression).
+- Measures plotted against a value axis (the monthly and cumulative trend charts on pages 3 and 5) keep a fixed format: an axis has no single value to choose a format from, and with a dynamic format it printed `$0MK`.
+
+**"n.m." above 999%.** A variance against a tiny base is noise (a new entity with a token budget showed +2,597%). The 23 variance, growth, attainment and progress percentages therefore carry `IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )`: the value is unchanged, only its display becomes the literal *n.m.* The same rule wraps every percentage that appears inside a sentence or card text. Trade-off: the size of an extreme variance is no longer visible on the page; it is still in the measure and in any export.
+
+**Legend.** Footer note 2 on every page spells out the short forms: n.m. = not meaningful, K = thousands, M = millions, pts = percentage points, bps = basis points, x = times.
+
+**Dark mode.** Every colour, including the text and background of the slicers inside the pages, is a theme measure switched by the Light / Dark slicer. The sidebar slicers stay light on the dark sidebar in both modes by design.
