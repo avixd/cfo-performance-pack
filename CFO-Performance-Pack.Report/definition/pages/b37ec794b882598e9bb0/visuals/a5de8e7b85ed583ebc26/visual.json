@@ -150,7 +150,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Name (type to search)'"
+                  "Value": "'Name (search)'"
                 }
               }
             },

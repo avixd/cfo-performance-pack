@@ -3913,7 +3913,7 @@ Page title of the ISX page.
 **PS ISX**  
 Page subtitle of the ISX page: the key figures in one line.
 ```dax
-"Current year against prior year, by section and line · " & [Period Label] & " · costs shown negative, so a positive change is always favourable"
+"Current vs prior year · " & [Period Label] & " · costs are negative, so a positive change is favourable"
 ```
 
 **PT RF**  

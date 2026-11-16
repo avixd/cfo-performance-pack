@@ -150,7 +150,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Display folder (type to search)'"
+                  "Value": "'Folder (search)'"
                 }
               }
             },

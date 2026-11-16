@@ -1148,7 +1148,7 @@ add('Focus Bullet 4', _FT + """VAR cv = DIVIDE ( STDEVX.P ( t2, [@cy] ), ABS ( A
 RETURN "• Monthly pattern is " & IF ( cv > 0.2, "volatile", "steady" ) & ": months vary by " & FORMAT ( cv, "0%" ) & " around the average." """, ISF, None,
     'Summary bullet 4: volatility, as the coefficient of variation of the monthly values (above 20% is called volatile).')
 add('PT ISX', '"Income Statement Explorer · " & [IS Range]', PH)
-add('PS ISX', '"Current year against prior year, by section and line · " & [Period Label] & " · costs shown negative, so a positive change is always favourable"', PH)
+add('PS ISX', '"Current vs prior year · " & [Period Label] & " · costs are negative, so a positive change is favourable"', PH)
 add('VT Focus Summary', '"Summary for " & [Focus Name]', VT)
 add('VT Focus Trend', '[Focus Name] & " by month: current year vs prior year · " & [Currency Label]', VT)
 add('Sub Focus Trend', '"Pick a line in the Focus slicer; the summary and this trend follow it."', SB)

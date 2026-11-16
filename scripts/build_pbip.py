@@ -616,12 +616,12 @@ def page_overview():
           roles={'Values': [('Entity[EntityName]', 'Entity'), ('Entity[CurrencyCode]', 'Ccy'), ('Entity[Effective Ownership]', 'Group %'),
                             ('Entity Joined FY', 'Joined'), ('Entity Budget Status', 'Budget'), ('Revenue (M)', 'Rev (M)')]},
           objects=dict(p.table_objects(fields, size=8, colours={'_Measures.Entity Budget Status': 'Entity Budget Status Color'}),
-                       columnWidth=[{'properties': {'value': L(98)}, 'selector': {'metadata': 'Entity.EntityName'}},
-                                    {'properties': {'value': L(40)}, 'selector': {'metadata': 'Entity.CurrencyCode'}},
-                                    {'properties': {'value': L(44)}, 'selector': {'metadata': 'Entity.Effective Ownership'}},
-                                    {'properties': {'value': L(52)}, 'selector': {'metadata': '_Measures.Entity Joined FY'}},
+                       columnWidth=[{'properties': {'value': L(94)}, 'selector': {'metadata': 'Entity.EntityName'}},
+                                    {'properties': {'value': L(38)}, 'selector': {'metadata': 'Entity.CurrencyCode'}},
+                                    {'properties': {'value': L(42)}, 'selector': {'metadata': 'Entity.Effective Ownership'}},
+                                    {'properties': {'value': L(50)}, 'selector': {'metadata': '_Measures.Entity Joined FY'}},
                                     {'properties': {'value': L(82)}, 'selector': {'metadata': '_Measures.Entity Budget Status'}},
-                                    {'properties': {'value': L(40)}, 'selector': {'metadata': '_Measures.Revenue (M)'}}]),
+                                    {'properties': {'value': L(38)}, 'selector': {'metadata': '_Measures.Revenue (M)'}}]),
           title='=VT Entities', subtitle='Sub Entities', sort=[('Entity Joined FY', 'Ascending')])
     p.insights('ins', 428, 498, 384, 206, [1, 3])
     return p
@@ -811,9 +811,9 @@ def page_dictionary():
         p.kpi(f'k{i}', 16 + i * (w + 10), 74, w, 74, m, lab)
     # page-specific slicers: tiles, searchable dropdowns and a free-text "contains" search
     cslicer(p, 'f_type', 16, 156, 480, 66, 'Data Dictionary[Object Type]', 'Object type', mode='Basic', horizontal=True)
-    cslicer(p, 'f_table', 506, 156, 170, 66, 'Data Dictionary[Table]', 'Table (type to search)', search=True)
-    cslicer(p, 'f_folder', 686, 156, 190, 66, 'Data Dictionary[Folder]', 'Display folder (type to search)', search=True)
-    cslicer(p, 'f_name', 886, 156, 160, 66, 'Data Dictionary[Name]', 'Name (type to search)', search=True)
+    cslicer(p, 'f_table', 506, 156, 170, 66, 'Data Dictionary[Table]', 'Table (search)', search=True)
+    cslicer(p, 'f_folder', 686, 156, 190, 66, 'Data Dictionary[Folder]', 'Folder (search)', search=True)
+    cslicer(p, 'f_name', 886, 156, 160, 66, 'Data Dictionary[Name]', 'Name (search)', search=True)
     p.add('f_text', 'textSlicer', 1056, 156, 208, 66, roles={'Values': ['Data Dictionary[Name]']}, title='Name contains (free text)', header=False)
     fields = ['Data Dictionary[Object Type]', 'Data Dictionary[Table]', 'Data Dictionary[Name]', 'Data Dictionary[Description]', 'Data Dictionary[Expression]',
               'Data Dictionary[Folder]']

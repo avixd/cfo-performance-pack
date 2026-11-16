@@ -3514,7 +3514,7 @@ table _Measures
 		lineageTag: e87d8c28-21fd-5bf9-85d6-8003ce588f35
 
 	/// Page subtitle of the ISX page: the key figures in one line.
-	measure 'PS ISX' = "Current year against prior year, by section and line · " & [Period Label] & " · costs shown negative, so a positive change is always favourable"
+	measure 'PS ISX' = "Current vs prior year · " & [Period Label] & " · costs are negative, so a positive change is favourable"
 		displayFolder: 6 Narrative\Page headers
 		lineageTag: 9a9349d6-e353-5855-b226-dd73fcb2b8ca
 
