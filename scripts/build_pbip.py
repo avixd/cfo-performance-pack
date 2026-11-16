@@ -607,23 +607,23 @@ def page_overview():
     full(p, 'k1', x0 + (w4 + 10), 74, w4, 136, 'Organic Growth %', 'Organic growth', '\u2197', 'Revenue Growth Short', 'Revenue Growth Color')
     full(p, 'k2', x0 + 2 * (w4 + 10), 74, w4, 136, 'Revenue New Entities', 'New-entity revenue', '+', 'Entity Budget Status Summary')
     full(p, 'k3', x0 + 3 * (w4 + 10), 74, w4, 136, 'Entities Reporting', 'Entities reporting', '#', 'Sub Entities Short')
-    p.add('rev_fy', 'columnChart', 428, 220, 430, 270,
+    p.add('rev_fy', 'columnChart', 428, 220, 384, 270,
           roles={'Category': ['Date[Fiscal Year]'], 'Series': ['Entity[Region]'], 'Y': [('Revenue Actual (in context)', 'Net revenue')]},
           objects=p.axes({'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000000), 'labelPrecision': L(1), 'fontSize': L(8), 'color': solid('#FFFFFF')}}]}, value_axis=False),
           title='=VT Revenue by FY', subtitle='Sub Revenue Mix', sort=[('Date[Fiscal Year]', 'Ascending')])
     fields = ['Entity[EntityName]', 'Entity[CurrencyCode]', 'Entity[Effective Ownership]', 'Entity Joined FY', 'Entity Budget Status', 'Revenue (M)']
-    p.add('entities', 'tableEx', 870, 220, 394, 484,
+    p.add('entities', 'tableEx', 824, 220, 440, 484,
           roles={'Values': [('Entity[EntityName]', 'Entity'), ('Entity[CurrencyCode]', 'Ccy'), ('Entity[Effective Ownership]', 'Group %'),
                             ('Entity Joined FY', 'Joined'), ('Entity Budget Status', 'Budget'), ('Revenue (M)', 'Rev (M)')]},
           objects=dict(p.table_objects(fields, size=8, colours={'_Measures.Entity Budget Status': 'Entity Budget Status Color'}),
-                       columnWidth=[{'properties': {'value': L(96)}, 'selector': {'metadata': 'Entity.EntityName'}},
-                                    {'properties': {'value': L(28)}, 'selector': {'metadata': 'Entity.CurrencyCode'}},
-                                    {'properties': {'value': L(38)}, 'selector': {'metadata': 'Entity.Effective Ownership'}},
-                                    {'properties': {'value': L(42)}, 'selector': {'metadata': '_Measures.Entity Joined FY'}},
-                                    {'properties': {'value': L(70)}, 'selector': {'metadata': '_Measures.Entity Budget Status'}},
-                                    {'properties': {'value': L(42)}, 'selector': {'metadata': '_Measures.Revenue (M)'}}]),
+                       columnWidth=[{'properties': {'value': L(98)}, 'selector': {'metadata': 'Entity.EntityName'}},
+                                    {'properties': {'value': L(40)}, 'selector': {'metadata': 'Entity.CurrencyCode'}},
+                                    {'properties': {'value': L(44)}, 'selector': {'metadata': 'Entity.Effective Ownership'}},
+                                    {'properties': {'value': L(52)}, 'selector': {'metadata': '_Measures.Entity Joined FY'}},
+                                    {'properties': {'value': L(82)}, 'selector': {'metadata': '_Measures.Entity Budget Status'}},
+                                    {'properties': {'value': L(40)}, 'selector': {'metadata': '_Measures.Revenue (M)'}}]),
           title='=VT Entities', subtitle='Sub Entities', sort=[('Entity Joined FY', 'Ascending')])
-    p.insights('ins', 428, 498, 430, 206, [1, 3])
+    p.insights('ins', 428, 498, 384, 206, [1, 3])
     return p
 
 
@@ -810,10 +810,10 @@ def page_dictionary():
     for i, (m, lab) in enumerate([('DD Tables', 'Tables'), ('DD Columns', 'Columns'), ('DD Measures', 'Measures'), ('DD Relationships', 'Relationships')]):
         p.kpi(f'k{i}', 16 + i * (w + 10), 74, w, 74, m, lab)
     # page-specific slicers: tiles, searchable dropdowns and a free-text "contains" search
-    cslicer(p, 'f_type', 16, 156, 400, 66, 'Data Dictionary[Object Type]', 'Object type', mode='Basic', horizontal=True)
-    cslicer(p, 'f_table', 426, 156, 180, 66, 'Data Dictionary[Table]', 'Table (type to search)', search=True)
-    cslicer(p, 'f_folder', 616, 156, 220, 66, 'Data Dictionary[Folder]', 'Display folder (type to search)', search=True)
-    cslicer(p, 'f_name', 846, 156, 200, 66, 'Data Dictionary[Name]', 'Name (type to search)', search=True)
+    cslicer(p, 'f_type', 16, 156, 480, 66, 'Data Dictionary[Object Type]', 'Object type', mode='Basic', horizontal=True)
+    cslicer(p, 'f_table', 506, 156, 170, 66, 'Data Dictionary[Table]', 'Table (type to search)', search=True)
+    cslicer(p, 'f_folder', 686, 156, 190, 66, 'Data Dictionary[Folder]', 'Display folder (type to search)', search=True)
+    cslicer(p, 'f_name', 886, 156, 160, 66, 'Data Dictionary[Name]', 'Name (type to search)', search=True)
     p.add('f_text', 'textSlicer', 1056, 156, 208, 66, roles={'Values': ['Data Dictionary[Name]']}, title='Name contains (free text)', header=False)
     fields = ['Data Dictionary[Object Type]', 'Data Dictionary[Table]', 'Data Dictionary[Name]', 'Data Dictionary[Description]', 'Data Dictionary[Expression]',
               'Data Dictionary[Folder]']
@@ -847,7 +847,7 @@ def page_isx():
     p.chrome('PT ISX', 'PS ISX')
     X = lambda v: CX + (v - 16) * SX
     Y = lambda v: CY + (v - 74) * SY
-    cslicer(p, 'f_focus', 16, 74, 590, 64, 'PL Focus[Focus]', 'Focus (drives the summary and the trend)', mode='Basic', single=True, horizontal=True)
+    cslicer(p, 'f_focus', 16, 74, 700, 64, 'PL Focus[Focus]', 'Focus (drives the summary and the trend)', mode='Basic', single=True, horizontal=True)
     cards = [('Revenue', 'Revenue ($)'), ('Cost of Sales', 'COGS ($)'), ('Gross Profit', 'Gross Profit ($)'), ('EBITDA', 'EBITDA ($)'), ('EBIT', 'EBIT ($)'), ('Net Income', 'Net Profit ($)')]
     cw = (470 - 2 * 8) / 3
     for i, (n, lab) in enumerate(cards):
@@ -873,7 +873,7 @@ def page_isx():
     p.add('trend', 'lineChart', 16, 530, 470, 174, roles={'Category': ['Date[Month Name]'], 'Y': [('Focus Monthly CY', 'CY'), ('Focus Monthly PY', 'PY')]},
           objects=obj, title='=VT Focus Trend', subtitle='Sub Focus Trend', sort=[('Date[Month Name]', 'Ascending')])
     # right: unit toggle, expandable statement matrix, method notes
-    cslicer(p, 'f_unit', 616, 74, 300, 64, 'Display Unit[Unit]', 'Amounts in', mode='Basic', single=True, horizontal=True)
+    cslicer(p, 'f_unit', 726, 74, 240, 64, 'Display Unit[Unit]', 'Amounts in', mode='Basic', single=True, horizontal=True)
     vals = [('IS CY', 'CY'), ('IS CY % Rev', 'CY % Rev'), ('IS PY', 'PY'), ('IS PY % Rev', 'PY % Rev'), ('IS Chg PY', 'Δ PY'), ('IS Chg % PY', 'Δ% PY'), ('IS Chg Rev bps', 'Δ % Rev (bps)')]
     names = [m for m, _ in vals]
     obj = matrix_objects(p, names, back={'_Measures.' + m: 'IS Row Background' for m in names},
