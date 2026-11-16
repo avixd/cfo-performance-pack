@@ -65,7 +65,7 @@ for m in M.MEAS:
 for f, ms in folders.items():
     L += [f'### {f}', '']
     for m in ms:
-        L.append(f"**{m['name']}**" + (f" · format `{m['fmt']}`" if m.get('fmt') else '') + (f"  \n{m['desc']}" if m.get('desc') else ''))
+        L.append(f"**{m['name']}**" + (' · format: dynamic (DAX format-string expression)' if m.get('dyn') else f" · format `{m['fmt']}`" if m.get('fmt') else '') + (f"  \n{m['desc']}" if m.get('desc') else ''))
         L += ['```dax', m['expr'], '```', '']
 os.makedirs(os.path.dirname(OUT), exist_ok=True)
 with open(OUT, 'w', encoding='utf-8') as fh:

@@ -958,7 +958,7 @@ NOTES = [
     ('Notes', 2, 'Close and as-of month', 'The reporting month is the latest month with an actuals file ("books closed"). Selecting a later month falls back to the close.'),
     ('Notes', 3, 'Sign convention', 'Revenue is positive and costs are negative, so subtotals add up. Every variance is actual minus budget: positive is favourable, on revenue and on cost lines.'),
     ('Notes', 4, 'Colour', 'Green = favourable, red = unfavourable, amber = caution (budget not credible), blue = actual, light blue = outlook, grey = budget or prior year. Arrows show direction only.'),
-    ('Notes', 5, 'Number format', 'Text and cards: $ with millions to one decimal, thousands whole. Tables: thousands, negatives in brackets. Percentages to one decimal. "n.m." or blank = not meaningful.'),
+    ('Notes', 5, 'Number format', 'Cards, chart labels and summary tables: $ with millions to one decimal, thousands whole, negatives in brackets. One dynamic format string on each measure sets this, so the value stays a number. Statements: thousands. Percentages to one decimal. "n.m." or blank = not meaningful.'),
     ('Notes', 6, 'Currency', 'Bank of Canada rates, CAD per unit. P&L at monthly average, balance sheet at month end, budget at the prior fiscal-year average. USD view translates the CAD result at the USD rate.'),
     ('Notes', 7, 'Currency effect', 'Constant currency = actuals translated at budget rates. The difference to reported actuals is translation, not trading. Rates after the last published month are carried forward.'),
     ('Notes', 8, 'Budget', 'FY2026 to FY2028 budgets are synthetic (prior-year actual x growth x seeded noise). Entities that joined after the budget was set have no budget and are flagged.'),
@@ -1287,6 +1287,42 @@ for _t in TABLES:
     if _t['name'] == 'Story':
         _t['m'] = m_table([('Page', 'text'), ('Sort', 'Int64.Type'), ('Section', 'text'), ('Text', 'text')], STORY_ROWS)
 
+
+# ======================================================================== v7: dynamic format strings, KPI values as card visuals
+# ---- 7.1 dynamic format strings (https://www.sqlbi.com/articles/introducing-dynamic-format-strings-for-dax-measures/)
+# A money measure stays a NUMBER; a second DAX expression on the measure returns the format string for the value in context.
+# Same standard as the money() text helper: one decimal in millions, whole thousands, whole units below, negatives in brackets, zero as a dash.
+# SELECTEDMEASURE() is the measure the format belongs to. The expression is deliberately small: the engine evaluates the measure a
+# second time to pick the format, so anything heavy here would double the cost of the visual.
+DYN_MONEY = ('VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\\M;($#,0,,.0\\M);-", '
+             '_x >= 1e3, "$#,0,\\K;($#,0,\\K);-", "$#,0;($#,0);-" )')
+# Statement explorer (H2): the Thousand / Absolute toggle changes the format string, not the value (selection-driven format).
+DYN_UNIT = 'IF ( [Unit Divisor] = 1000, "#,0,;(#,0,);-", "#,0;(#,0);-" )'
+for _m in MEAS:
+    if _m.get('fmt') == F:
+        _m['dyn'] = DYN_MONEY
+redefine('IS CY', '[IS CY Raw]', desc='Current period. The Thousand / Absolute toggle sets the format string; the value is not divided.')
+redefine('IS PY', '[IS PY Raw]', desc='Prior year. The Thousand / Absolute toggle sets the format string; the value is not divided.')
+redefine('IS Chg PY', '[IS CY Raw] - [IS PY Raw]', desc='Change versus prior year. Positive = favourable, because costs are stored negative. The toggle sets the format string.')
+for _m in MEAS:
+    if _m['name'] in ('IS CY', 'IS PY', 'IS Chg PY'):
+        _m['dyn'] = DYN_UNIT
+    if _m.get('fmt') == '0.00':
+        _m['fmt'] = '0.00\\x'          # ratios read 1.25x on cards and in tables
+
+# ---- 7.2 KPI tiles show the measure itself in a card visual, so the text copies (KV ...) and the pre-scaled Revenue (M) are gone
+MEAS[:] = [_m for _m in MEAS if not _m['name'].startswith('KV ') and _m['name'] != 'Revenue (M)']
+
+# ---- 7.3 headline: no half sentence when a variance % is not meaningful (e.g. one entity without a credible budget is cross-filtered)
+_h = next(_m for _m in MEAS if _m['name'] == 'Headline')
+_a = '& " revenue, " & FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget. "'
+_b = ('& " revenue, " & IF ( ISBLANK ( [Revenue Var % vs Budget] ), "budget comparison not meaningful", '
+      'FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" ) & ". "')
+_c = '& "EBITDA " & FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" &'
+_d = ('& "EBITDA " & IF ( ISBLANK ( [EBITDA Var % vs Budget] ), "budget comparison not meaningful", '
+      'FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" ) &')
+assert _a in _h['expr'] and _c in _h['expr']
+_h['expr'] = _h['expr'].replace(_a, _b).replace(_c, _d)
 
 # ======================================================================== v5: documentation pass (TOM descriptions, DAX and M comments, query groups, diagram)
 # ---- 5.1 remove presentation leftovers that no visual or measure uses (analytical KPI measures are kept as reusable building blocks)

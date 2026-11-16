@@ -77,7 +77,7 @@
             "horizontalAlignment": {
               "expr": {
                 "Literal": {
-                  "Value": "'left'"
+                  "Value": "'center'"
                 }
               }
             },
@@ -91,14 +91,14 @@
             "leftMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "14D"
+                  "Value": "2D"
                 }
               }
             },
             "rightMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "4D"
+                  "Value": "2D"
                 }
               }
             },

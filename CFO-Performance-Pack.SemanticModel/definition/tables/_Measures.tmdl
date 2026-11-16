@@ -4,7 +4,7 @@ table _Measures
 
 	/// Ledger amount in the selected reporting currency (CAD default). Costs are negative.
 	measure Amount = IF ( SELECTEDVALUE ( 'Reporting Currency'[Currency], "CAD" ) = "USD", SUM ( GL[Amount USD] ), SUM ( GL[Amount CAD] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 0 Base
 		lineageTag: 9a50ffa7-ca88-5e2f-8b6c-238da2335e74
 
@@ -46,13 +46,13 @@ table _Measures
 
 	/// Amount for the Actual scenario. Base of every actual measure.
 	measure Actual = CALCULATE ( [Amount], GL[Scenario] = "Actual" )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 0 Base
 		lineageTag: 7dcacfbf-8ae5-5219-a4a9-eb38942b5661
 
 	/// Amount for the Budget scenario. Base of every budget measure.
 	measure Budget = CALCULATE ( [Amount], GL[Scenario] = "Budget" )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 0 Base
 		lineageTag: 80f270b8-b830-5ecf-8361-ddac5e96cfd2
 
@@ -61,7 +61,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month]
 			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: ee31ae98-7067-53c5-9b4c-d1c8d9cb9224
 
@@ -70,7 +70,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month]
 			RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: 68ed2d4e-c609-5e85-96d1-f4c8a935f6b0
 
@@ -79,7 +79,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = EDATE ( [Selected Month], -12 )
 			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: e4621977-ef57-51a2-aee8-bf2b6bf8cb05
 
@@ -88,7 +88,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month]
 			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( YEAR ( m ), INT ( ( MONTH ( m ) - 1 ) / 3 ) * 3 + 1, 1 ) && 'Date'[Month] <= m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: 2e5ce83c-5899-55d6-8452-bb5d8dc39ad9
 
@@ -97,7 +97,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month]
 			RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( YEAR ( m ), INT ( ( MONTH ( m ) - 1 ) / 3 ) * 3 + 1, 1 ) && 'Date'[Month] <= m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: afa7e53b-38d2-57d3-b3ae-bb4595cde189
 
@@ -106,7 +106,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = EDATE ( [Selected Month], -12 )
 			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( YEAR ( m ), INT ( ( MONTH ( m ) - 1 ) / 3 ) * 3 + 1, 1 ) && 'Date'[Month] <= m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: 49bba018-1b9f-5aba-934c-2a606b086b49
 
@@ -115,7 +115,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month]
 			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) - 1, 4, 1 ) && 'Date'[Month] <= m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: 2467bada-092b-53a7-aa55-e03a3dcf6e57
 
@@ -124,7 +124,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month]
 			RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) - 1, 4, 1 ) && 'Date'[Month] <= m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: fcf51821-c2b9-5d89-a40e-c665c4d74061
 
@@ -133,7 +133,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = EDATE ( [Selected Month], -12 )
 			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= DATE ( ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) - 1, 4, 1 ) && 'Date'[Month] <= m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: 4ce429e6-9118-5836-a7b4-8a0389f97460
 
@@ -142,7 +142,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month] VAR fy = ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) )
 			RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Fiscal Year Number] = fy )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: db34269d-2727-5a89-80c6-a5568de3e745
 
@@ -151,25 +151,25 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month] VAR fy = ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) )
 			RETURN [Actual YTD] + CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Fiscal Year Number] = fy && 'Date'[Month] > m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: 0583feeb-bbb7-5e7c-b3f9-d099759a4942
 
 	/// Actual for the period chosen in the Period slicer (MTD, QTD or YTD) ending at the selected month.
 	measure 'Actual (Period)' = SWITCH ( SELECTEDVALUE ( 'Period View'[View], "YTD" ), "MTD", [Actual MTD], "QTD", [Actual QTD], [Actual YTD] )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: 06aaf99d-8d29-5c67-a737-3c28bd5c11fd
 
 	/// Budget for the period chosen in the Period slicer (MTD, QTD or YTD) ending at the selected month.
 	measure 'Budget (Period)' = SWITCH ( SELECTEDVALUE ( 'Period View'[View], "YTD" ), "MTD", [Budget MTD], "QTD", [Budget QTD], [Budget YTD] )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: 74920714-7353-5c2f-aba1-b53b4fba5e96
 
 	/// Actual for the same period one year earlier (for the period chosen in the Period slicer (MTD, QTD or YTD) ending at the selected month).
 	measure 'Prior Year (Period)' = SWITCH ( SELECTEDVALUE ( 'Period View'[View], "YTD" ), "MTD", [Prior Year MTD], "QTD", [Prior Year QTD], [Prior Year YTD] )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: e12ffa17-a02e-5fb7-ab7e-0515580c5cc2
 
@@ -178,7 +178,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month]
 			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: d216693c-510d-5b54-94ef-c7b90ec21b49
 
@@ -187,7 +187,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month] VAR ye = DATE ( ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) - 1, 3, 1 )
 			RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = ye )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)
 		lineageTag: e021c823-a265-56f9-864e-1b7d8a0b731b
 
@@ -199,7 +199,7 @@ table _Measures
 			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
 			    RETURN IF ( d <= sel, CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) )
 			)
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)\Month axis
 		lineageTag: 4dc6c521-8730-5a45-888f-ff242229cc29
 
@@ -211,7 +211,7 @@ table _Measures
 			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
 			    RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d )
 			)
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)\Month axis
 		lineageTag: 252a726e-a924-51fa-ba02-b3ff89f3a949
 
@@ -223,7 +223,7 @@ table _Measures
 			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
 			    RETURN IF ( d > sel, CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) )
 			)
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)\Month axis
 		lineageTag: 31bd4af8-3860-59a4-889f-f6f9172dafa9
 
@@ -235,7 +235,7 @@ table _Measures
 			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
 			    RETURN CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) )
 			)
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)\Month axis
 		lineageTag: efa05e12-44dc-5178-a1ee-f9cae9ffde74
 
@@ -247,7 +247,7 @@ table _Measures
 			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
 			    RETURN IF ( d <= sel, CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= fyStart && 'Date'[Month] <= d ) )
 			)
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)\Month axis
 		lineageTag: 45f20c42-8704-5820-bf77-afc9157a3640
 
@@ -259,7 +259,7 @@ table _Measures
 			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
 			    RETURN IF ( d >= sel, CALCULATE ( [Actual], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= fyStart && 'Date'[Month] <= sel ) + CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] > sel && 'Date'[Month] <= d ) )
 			)
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)\Month axis
 		lineageTag: 7d2c8a42-7cf0-57f8-863b-449ee11ca37a
 
@@ -271,7 +271,7 @@ table _Measures
 			    VAR d = DATE ( fy - 1, 3 + fm, 1 ) VAR sel = [Selected Month] VAR fyStart = DATE ( fy - 1, 4, 1 )
 			    RETURN CALCULATE ( [Budget], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= fyStart && 'Date'[Month] <= d )
 			)
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 1 Period (fiscal)\Month axis
 		lineageTag: dc78b74b-e345-546e-ace8-6c097ce54619
 
@@ -322,7 +322,7 @@ table _Measures
 
 	/// Line actual minus the same period last year.
 	measure 'Line Var vs Prior Year' = [Line Actual] - [Line Prior Year]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 2 Statement Lines
 		lineageTag: 4fccbdd6-7f0f-5f77-bcd5-d5ca572c1e86
 
@@ -399,7 +399,7 @@ table _Measures
 	measure Revenue =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: 3ea43793-6346-5570-9733-71810985839b
 
@@ -407,7 +407,7 @@ table _Measures
 	measure 'Revenue Budget' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: b0c864df-2a50-539c-9917-fd057058b1fe
 
@@ -415,13 +415,13 @@ table _Measures
 	measure 'Revenue PY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: 81bba724-5de0-5528-a1a8-b612a4bf70b3
 
 	/// Revenue: actual minus budget. Positive = favourable (costs are stored negative).
 	measure 'Revenue Var vs Budget' = [Revenue] - [Revenue Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: 03f2e84c-1c94-5f95-9030-207d83ca5543
 
@@ -441,7 +441,7 @@ table _Measures
 	measure 'Revenue Outlook FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: 514570a5-8ad6-5bbd-9a33-8b551e333256
 
@@ -449,7 +449,7 @@ table _Measures
 	measure 'Revenue Budget FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: 829d31c5-1661-5713-954c-d7264c558757
 
@@ -467,7 +467,7 @@ table _Measures
 	measure 'Cost of Sales' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Cost of Sales
 		lineageTag: b6e45bed-ed70-5c40-a819-24c9888cb286
 
@@ -475,7 +475,7 @@ table _Measures
 	measure 'Cost of Sales Budget' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Cost of Sales
 		lineageTag: eb514ebe-1502-5a49-89f6-23f0c84b1655
 
@@ -483,13 +483,13 @@ table _Measures
 	measure 'Cost of Sales PY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Cost of Sales
 		lineageTag: 050119e6-855a-51bc-8fa5-c0da7cbda4e8
 
 	/// Cost of Sales: actual minus budget. Positive = favourable (costs are stored negative).
 	measure 'Cost of Sales Var vs Budget' = [Cost of Sales] - [Cost of Sales Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Cost of Sales
 		lineageTag: fd061f62-849c-598e-89dc-b672582a26d0
 
@@ -509,7 +509,7 @@ table _Measures
 	measure 'Cost of Sales Outlook FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Cost of Sales
 		lineageTag: 5e9c0532-64c7-5a35-8b4c-14fa259e7332
 
@@ -517,7 +517,7 @@ table _Measures
 	measure 'Cost of Sales Budget FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Cost of Sales
 		lineageTag: 2d1aa66d-2f33-532a-a315-35a6ce6f39cf
 
@@ -525,7 +525,7 @@ table _Measures
 	measure 'Gross Profit' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Gross Profit
 		lineageTag: 7b9dfbe7-d0a5-5eba-86b5-27efd739b66c
 
@@ -533,7 +533,7 @@ table _Measures
 	measure 'Gross Profit Budget' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Gross Profit
 		lineageTag: 6a3cbcf8-6534-5ae8-8df2-8cab68a042ad
 
@@ -541,13 +541,13 @@ table _Measures
 	measure 'Gross Profit PY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Gross Profit
 		lineageTag: 70914060-28a8-5bf3-a353-b61539a9d698
 
 	/// Gross Profit: actual minus budget. Positive = favourable (costs are stored negative).
 	measure 'Gross Profit Var vs Budget' = [Gross Profit] - [Gross Profit Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Gross Profit
 		lineageTag: 88ea4144-91cb-5b56-887f-37f1b2eb10c2
 
@@ -567,7 +567,7 @@ table _Measures
 	measure 'Gross Profit Outlook FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Gross Profit
 		lineageTag: fe08a62c-3d10-5963-a00e-ca30a867ec9a
 
@@ -575,7 +575,7 @@ table _Measures
 	measure 'Gross Profit Budget FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 5 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Gross Profit
 		lineageTag: 4e6f8463-c38b-569d-9d82-ad1f8e441015
 
@@ -583,7 +583,7 @@ table _Measures
 	measure 'Operating Expenses' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Operating Expenses
 		lineageTag: c0b7f43a-c492-5e60-a810-33daedb641f6
 
@@ -591,7 +591,7 @@ table _Measures
 	measure 'Operating Expenses Budget' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Operating Expenses
 		lineageTag: ec53ac78-392a-5793-ac5a-f06357a001ac
 
@@ -599,13 +599,13 @@ table _Measures
 	measure 'Operating Expenses PY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Operating Expenses
 		lineageTag: 91f5bb45-f47a-57d5-8f03-8e5ef3941181
 
 	/// Operating Expenses: actual minus budget. Positive = favourable (costs are stored negative).
 	measure 'Operating Expenses Var vs Budget' = [Operating Expenses] - [Operating Expenses Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Operating Expenses
 		lineageTag: 69ec9823-75de-582c-8b4f-c1dadf2f3b55
 
@@ -625,7 +625,7 @@ table _Measures
 	measure 'Operating Expenses Outlook FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Operating Expenses
 		lineageTag: 714b4bc5-0e0c-5cdf-a44e-acd4d497bbee
 
@@ -633,7 +633,7 @@ table _Measures
 	measure 'Operating Expenses Budget FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 12 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Operating Expenses
 		lineageTag: a199a3a9-acbe-5bbe-bab5-f27bcf8c9a11
 
@@ -646,7 +646,7 @@ table _Measures
 	measure EBITDA =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: da81866f-cac4-5ee0-9032-7ff2653e247e
 
@@ -654,7 +654,7 @@ table _Measures
 	measure 'EBITDA Budget' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: 16a0cc74-0837-5772-b544-402ca6b17888
 
@@ -662,13 +662,13 @@ table _Measures
 	measure 'EBITDA PY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: a4609c0b-6985-5aff-9e90-31f1da3cf46f
 
 	/// EBITDA: actual minus budget. Positive = favourable (costs are stored negative).
 	measure 'EBITDA Var vs Budget' = [EBITDA] - [EBITDA Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: edff737e-bd3a-59d7-b265-56eae2bb8d8b
 
@@ -688,7 +688,7 @@ table _Measures
 	measure 'EBITDA Outlook FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: 1cd779db-0d47-509f-8948-a3ec6c52760e
 
@@ -696,7 +696,7 @@ table _Measures
 	measure 'EBITDA Budget FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: 0d67e711-a9cc-5891-bb96-e13ec1016d42
 
@@ -714,7 +714,7 @@ table _Measures
 	measure EBIT =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBIT
 		lineageTag: afbe31ac-f338-5d40-9089-0081841c76c3
 
@@ -722,7 +722,7 @@ table _Measures
 	measure 'EBIT Budget' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBIT
 		lineageTag: 0e532924-1b03-5135-8f3d-a6662faf3c4b
 
@@ -730,13 +730,13 @@ table _Measures
 	measure 'EBIT PY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBIT
 		lineageTag: d739c6db-afd8-5834-a6da-03dafa50fdcb
 
 	/// EBIT: actual minus budget. Positive = favourable (costs are stored negative).
 	measure 'EBIT Var vs Budget' = [EBIT] - [EBIT Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBIT
 		lineageTag: 12f4986e-7153-5393-a8bc-06de26f58eef
 
@@ -756,7 +756,7 @@ table _Measures
 	measure 'EBIT Outlook FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBIT
 		lineageTag: f31c2650-5107-5ec5-bd48-c92b0f0e4052
 
@@ -764,7 +764,7 @@ table _Measures
 	measure 'EBIT Budget FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 15 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBIT
 		lineageTag: 6b214759-04b7-55d1-a3ef-de30d9819908
 
@@ -772,7 +772,7 @@ table _Measures
 	measure 'Net Income' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: d882e907-ef46-50a3-8aef-dac16e0802cb
 
@@ -780,7 +780,7 @@ table _Measures
 	measure 'Net Income Budget' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: 24e0f5c0-2303-5ee9-b513-dcb235e52384
 
@@ -788,13 +788,13 @@ table _Measures
 	measure 'Net Income PY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: 11cae03a-50ae-5431-ad18-481547c92bf4
 
 	/// Net Income: actual minus budget. Positive = favourable (costs are stored negative).
 	measure 'Net Income Var vs Budget' = [Net Income] - [Net Income Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: a6d746f4-cef8-517b-a300-80f86d42949b
 
@@ -814,7 +814,7 @@ table _Measures
 	measure 'Net Income Outlook FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Outlook FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: 0ce1149e-c88f-500f-b777-159a04a96121
 
@@ -822,7 +822,7 @@ table _Measures
 	measure 'Net Income Budget FY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: d818e7cb-e738-53cf-b769-db3419baa168
 
@@ -908,13 +908,13 @@ table _Measures
 
 	/// Revenue from entities that also traded in the same period last year.
 	measure 'Revenue Like-for-Like' = SUMX ( VALUES ( Entity[EntityKey] ), IF ( NOT ISBLANK ( [Revenue PY] ), [Revenue] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: 571b3656-8882-5c28-a5a7-dd8c431f2121
 
 	/// Revenue from entities that joined the group within the last twelve months.
 	measure 'Revenue New Entities' = [Revenue] - [Revenue Like-for-Like]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: 2731af40-0f56-5775-b3da-9a4852662bdc
 
@@ -926,13 +926,13 @@ table _Measures
 
 	/// Revenue earned by entities with no budget for the period (acquired after the budget was set).
 	measure 'Revenue Unbudgeted' = SUMX ( VALUES ( Entity[EntityKey] ), IF ( ISBLANK ( [Revenue Budget] ), [Revenue] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: 8506dea8-aacf-5579-b463-cd8c110b7f39
 
 	/// Revenue variance to budget counting only entities that have a budget for the period.
 	measure 'Revenue Var vs Budget (Budgeted Entities)' = SUMX ( VALUES ( Entity[EntityKey] ), IF ( NOT ISBLANK ( [Revenue Budget] ), [Revenue] - [Revenue Budget] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: 67928d5d-3ee7-5f09-b18d-e2c42cd44522
 
@@ -956,19 +956,19 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month]
 			RETURN CALCULATE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] > EDATE ( m, -12 ) && 'Date'[Month] <= m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: 405aed6c-59cf-537c-bdae-ce831d0d9f97
 
 	/// Revenue growth vs prior year split into organic (like-for-like entities) and new entities; the waterfall total is the total growth.
 	measure 'Revenue Bridge Value' = SWITCH ( SELECTEDVALUE ( 'Revenue Bridge'[Step] ), "Organic growth", [Revenue Like-for-Like] - [Revenue PY], "New entities", [Revenue New Entities] )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: e91a2c95-14ea-5c31-ad2e-a811c9497bda
 
 	/// EBITDA variance to budget split by driver; the waterfall total is the EBITDA variance.
 	measure 'EBITDA Bridge Value' = SWITCH ( SELECTEDVALUE ( 'EBITDA Bridge'[Step] ), "Revenue", [Revenue Var vs Budget], "Cost of sales", [Cost of Sales Var vs Budget], "Operating expenses", [Operating Expenses Var vs Budget] )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: 91ee8477-bbc8-519f-afc9-050172f05b9f
 
@@ -976,13 +976,13 @@ table _Measures
 	measure 'Net Income Attributable to Group' =
 			// Per-entity pattern: evaluated entity by entity and then summed, because the rule applies to each entity separately.
 			SUMX ( VALUES ( Entity[EntityKey] ), CALCULATE ( [Net Income] ) * CALCULATE ( MAX ( Entity[Effective Ownership] ) ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Ownership
 		lineageTag: f32749bc-79c2-5fa2-8f3a-9e766a7a1944
 
 	/// Share of profit belonging to minority partners in partly owned entities.
 	measure 'Net Income Attributable to NCI' = [Net Income] - [Net Income Attributable to Group]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Ownership
 		lineageTag: 92ec9938-d508-5198-ab20-2a0871b04921
 
@@ -1008,7 +1008,7 @@ table _Measures
 	measure 'Revenue Actual (in context)' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: 46294a64-e1fb-51e2-b5f5-53d1b554b829
 
@@ -1016,7 +1016,7 @@ table _Measures
 	measure 'Cash Balance (month)' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: 43755276-93c2-56dc-ac29-dc8756a840b5
 
@@ -1024,7 +1024,7 @@ table _Measures
 	measure 'Working Capital (month)' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 102 ), Account[AccountKey] ) ) + CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 103 ), Account[AccountKey] ) ) - CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 109 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: 48348524-80a0-5003-94c7-0c08f9e920ce
 
@@ -1056,7 +1056,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Actual (Period)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 72d5f0cb-ee7d-51f7-a551-c0496a1be14c
 
@@ -1066,7 +1066,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Budget (Period)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: f2fecbd9-090f-5988-9e37-cdf760ddc195
 
@@ -1076,13 +1076,13 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Prior Year (Period)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: d2cbf70f-97d0-5551-82a4-6249799e459e
 
 	/// "Var vs Budget" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 	measure 'Metric Var vs Budget' = [Metric Actual] - [Metric Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 2dc60196-8b18-5eca-909b-896a2e9e952e
 
@@ -1104,7 +1104,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Outlook FY], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 54a60acb-224b-5ae0-bb9c-a484ef5cdddf
 
@@ -1114,13 +1114,13 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Budget FY], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 367ac4bb-72cd-53ed-b437-0f41c90fc5cc
 
 	/// Full-year outlook minus full-year budget for the selected metric.
 	measure 'Metric Outlook Gap' = [Metric Outlook FY] - [Metric Budget FY]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: a173804b-fc60-5bb6-8b7a-102a88ed0234
 
@@ -1130,7 +1130,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Monthly Actual (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 01265a22-5445-5735-b2ed-3082c5ddd0ad
 
@@ -1140,7 +1140,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Monthly Budget (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 55c3efbc-6d04-56a2-859a-62f591648aca
 
@@ -1150,7 +1150,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Monthly Outlook (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 7659de5a-f85b-581a-b731-89574db84062
 
@@ -1160,7 +1160,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Monthly Prior Year (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 72af7ad3-420b-514a-ac5f-a64694e6208d
 
@@ -1170,7 +1170,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Cumulative Actual (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: f35fa356-a3a4-522b-8e67-664504b92e00
 
@@ -1180,7 +1180,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Cumulative Outlook (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 5285cd21-2598-5e1c-9334-4a6713ca3de8
 
@@ -1190,7 +1190,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Cumulative Budget (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 395f0724-92c4-54bd-aba9-bbc93f6d6b46
 
@@ -1208,7 +1208,7 @@ table _Measures
 	measure Cash =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: f3fbe669-e16c-5f4d-8e15-07d623929f35
 
@@ -1216,7 +1216,7 @@ table _Measures
 	measure 'Total Assets' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 108 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: f486df1f-05d7-585a-9b32-fe2691d0141b
 
@@ -1224,7 +1224,7 @@ table _Measures
 	measure 'Total Equity' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 119 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: 62e86610-0272-5bce-827a-3006673a8a5a
 
@@ -1232,7 +1232,7 @@ table _Measures
 	measure 'Current Ratio' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			DIVIDE ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 105 ), Account[AccountKey] ) ), CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 113 ), Account[AccountKey] ) ) )
-		formatString: 0.00
+		formatString: 0.00\x
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: f5dc2ba2-3d62-55ea-806f-b0b7e8a28e6a
 
@@ -1240,7 +1240,7 @@ table _Measures
 	measure 'Debt to Equity' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			DIVIDE ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 111 ), Account[AccountKey] ) ) + CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 114 ), Account[AccountKey] ) ), CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 119 ), Account[AccountKey] ) ) )
-		formatString: 0.00
+		formatString: 0.00\x
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: 0fef3ee4-566b-584a-954a-1812b16ed00d
 
@@ -1250,7 +1250,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR m = [Selected Month]
 			RETURN CALCULATE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] > EDATE ( m, -12 ) && 'Date'[Month] <= m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: 243ff9fb-50c6-53ea-aafb-5de54f55d563
 
@@ -1288,10 +1288,10 @@ table _Measures
 	measure Headline =
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
 			VAR core = [Core Region] VAR rv = [Revenue Var vs Budget] VAR rc = [Revenue Var Core] VAR share = DIVIDE ( rv - rc, rv ) VAR ec = [EBITDA Var Core]
-			RETURN [Currency Label] & " " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " revenue, " & FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget. "
+			RETURN [Currency Label] & " " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " revenue, " & IF ( ISBLANK ( [Revenue Var % vs Budget] ), "budget comparison not meaningful", FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" ) & ". "
 			    & IF ( ISBLANK ( rc ), "",
 			        "Core " & core & " " & FORMAT ( [Revenue Var % Core], "+0.0%;-0.0%" ) & IF ( rv > 0 && share > 0.5, "; newer regions deliver " & FORMAT ( share, "0%" ) & " of the beat", "" ) & ". " )
-			    & "EBITDA " & FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" & IF ( ISBLANK ( ec ), ".", ", " & core & " " & ( VAR _x = ec RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "." )
+			    & "EBITDA " & IF ( ISBLANK ( [EBITDA Var % vs Budget] ), "budget comparison not meaningful", FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" ) & IF ( ISBLANK ( ec ), ".", ", " & core & " " & ( VAR _x = ec RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "." )
 		displayFolder: 6 Narrative
 		lineageTag: f25fa65d-ea2e-538e-810f-79f356ba544a
 
@@ -1481,12 +1481,6 @@ table _Measures
 		displayFolder: 8 Formatting
 		lineageTag: 880d1dc2-fcf3-5301-a3fa-8a44bcd12557
 
-	/// Net revenue in millions, for compact tables.
-	measure 'Revenue (M)' = DIVIDE ( [Revenue], 1e6 )
-		formatString: #,0.0
-		displayFolder: 3 KPIs\Revenue
-		lineageTag: bf60c564-80d7-5771-a4db-c48d44f54127
-
 	/// True when the Dark tile of the theme toggle is selected.
 	measure 'Is Dark' = SELECTEDVALUE ( 'Theme Mode'[Mode], "Light" ) = "Dark"
 		displayFolder: 10 Theme
@@ -1665,7 +1659,7 @@ table _Measures
 
 	/// Revenue variance to budget for the core region only.
 	measure 'Revenue Var Core' = VAR r = [Core Region] RETURN CALCULATE ( [Revenue Var vs Budget], KEEPFILTERS ( Entity[Region] = r ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: 09e9d7e3-c479-516b-bafc-5d269e216c7a
 
@@ -1677,7 +1671,7 @@ table _Measures
 
 	/// EBITDA variance to budget for the core region only.
 	measure 'EBITDA Var Core' = VAR r = [Core Region] RETURN CALCULATE ( [EBITDA Var vs Budget], KEEPFILTERS ( Entity[Region] = r ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: ce04c894-6c52-5372-82ec-209a90145f1f
 
@@ -1691,7 +1685,7 @@ table _Measures
 	measure 'Revenue Var Credible' =
 			// Per-entity pattern: evaluated entity by entity and then summed, because the rule applies to each entity separately.
 			SUMX ( VALUES ( Entity[EntityKey] ), IF ( NOT ISBLANK ( [Revenue Budget] ) && DIVIDE ( [Revenue], [Revenue Budget] ) <= 2, [Revenue Var vs Budget] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: 8e50f408-2de5-533f-8cf5-2d4bd65c3219
 
@@ -1755,7 +1749,7 @@ table _Measures
 	measure 'Salaries Var vs Budget' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 6 ), Account[AccountKey] ) ) - CALCULATE ( [Budget (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 6 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\People
 		lineageTag: 3dc573d2-7f21-5dd4-9484-47d39bc5e63c
 
@@ -1763,7 +1757,7 @@ table _Measures
 	measure 'Salary Cost per Head' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			DIVIDE ( -CALCULATE ( [Actual (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 6 ), Account[AccountKey] ) ), [Headcount] )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\People
 		lineageTag: 4c9b1f62-650e-558e-b0e2-99ccd614e3cd
 
@@ -1771,7 +1765,7 @@ table _Measures
 	measure 'Salary Cost per Head PY' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			DIVIDE ( -CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 6 ), Account[AccountKey] ) ), [Headcount PY] )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\People
 		lineageTag: e7168173-298e-5880-ad67-05f3d0e2de75
 
@@ -1794,7 +1788,7 @@ table _Measures
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Budget YTD], TREATAS ( accts, Account[AccountKey] ) )
 			RETURN a + ( [Metric Budget FY] - b ) * DIVIDE ( a, b )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 5fef84bd-259b-5427-b435-a33deb66edaa
 
@@ -1921,7 +1915,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Actual], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: f83deecd-192c-592c-b742-2fb96a11b29b
 
@@ -1931,7 +1925,7 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Budget], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 5 Metric Selector
 		lineageTag: 8653f4f0-6818-514f-8ce4-18abdddc567a
 
@@ -2147,91 +2141,6 @@ table _Measures
 	measure 'Footer Note 2' = "2  Described in the model: every measure has a description (docs/01-semantic-model.md)."
 		displayFolder: 10 Layout
 		lineageTag: 1d572535-ae21-5df0-bbe7-982e97f52dd2
-
-	/// KPI card value: [Revenue] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Revenue' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: da762ac8-24ba-54a6-bea9-237bfdb2234d
-
-	/// KPI card value: [Gross Profit Margin %] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Gross Profit Margin %' = FORMAT ( [Gross Profit Margin %], "0.0%" )
-		displayFolder: 11 KPI Cards
-		lineageTag: d1cc38ab-9084-5879-8b8c-cf402146b4da
-
-	/// KPI card value: [EBITDA] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV EBITDA' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [EBITDA] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 17ccf333-993f-5db9-bfbc-9b030362a626
-
-	/// KPI card value: [Net Income] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Net Income' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Net Income] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 780d189b-813e-538e-8126-d0c1b3b4365e
-
-	/// KPI card value: [Net Income Outlook FY] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Net Income Outlook FY' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Net Income Outlook FY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 5a3a7ec1-ee28-5d45-be17-f1013244990e
-
-	/// KPI card value: [Cash] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Cash' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Cash] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: de7298f1-5f05-5598-962d-c4f32485a4a4
-
-	/// KPI card value: [Organic Growth %] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Organic Growth %' = FORMAT ( [Organic Growth %], "0.0%" )
-		displayFolder: 11 KPI Cards
-		lineageTag: e57bbd69-6584-5b82-a444-dc95f9fc2147
-
-	/// KPI card value: [Revenue New Entities] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Revenue New Entities' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Revenue New Entities] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 3c8b521b-f30f-5af1-9e57-46a913cfac6d
-
-	/// KPI card value: [Entities Reporting] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Entities Reporting' = FORMAT ( [Entities Reporting], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 9f122aaa-3083-53a4-a3ff-530a825cc5b5
-
-	/// KPI card value: [Metric Actual] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Metric Actual' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Metric Actual] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 15c2f917-33a5-5a4f-99ca-e9525ffa95bc
-
-	/// KPI card value: [Metric Budget] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Metric Budget' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Metric Budget] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 4579ed55-73be-58f2-9826-13aba8e4aed6
-
-	/// KPI card value: [Metric PY] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Metric PY' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Metric PY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 8c4779be-8876-550b-96b7-744bb6bf9f2d
-
-	/// KPI card value: [Metric Outlook FY] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Metric Outlook FY' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Metric Outlook FY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: d9eab4cc-5d7f-5ac4-a1f6-2b9e599c0dca
 
 	/// Revenue year to date as a share of the full-year budget.
 	measure 'Revenue FY Progress' =
@@ -2646,7 +2555,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR ye = DATE ( ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) ) - 1, 3, 1 )
 			RETURN CALCULATE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] > EDATE ( ye, -12 ) && 'Date'[Month] <= ye )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 4 Balance Sheet KPIs\Year-end comparatives
 		lineageTag: ff249abd-b74a-5ccd-9592-68df5849a1f5
 
@@ -2656,7 +2565,7 @@ table _Measures
 			// Date pattern: the date slicers are removed and replaced by an explicit month window built from [Selected Month], so every visual agrees on the period.
 			VAR ye = DATE ( ( YEAR ( [Selected Month] ) + IF ( MONTH ( [Selected Month] ) >= 4, 1, 0 ) ) - 1, 3, 1 )
 			RETURN CALCULATE ( CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 4 ), Account[AccountKey] ) ), REMOVEFILTERS ( 'Date' ), 'Date'[Month] > EDATE ( ye, -12 ) && 'Date'[Month] <= ye )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 4 Balance Sheet KPIs\Year-end comparatives
 		lineageTag: 933c4b7c-ab35-5b70-953d-d170d8eacfa1
 
@@ -2694,7 +2603,7 @@ table _Measures
 	measure 'Current Ratio (year end)' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			DIVIDE ( CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 105 ), Account[AccountKey] ) ), CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 113 ), Account[AccountKey] ) ) )
-		formatString: 0.00
+		formatString: 0.00\x
 		displayFolder: 4 Balance Sheet KPIs\Year-end comparatives
 		lineageTag: 84d0886c-f278-589e-97b3-f1fa62be02e6
 
@@ -2702,7 +2611,7 @@ table _Measures
 	measure 'Debt to Equity (year end)' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			DIVIDE ( CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 111 ), Account[AccountKey] ) ) + CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 114 ), Account[AccountKey] ) ), CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 119 ), Account[AccountKey] ) ) )
-		formatString: 0.00
+		formatString: 0.00\x
 		displayFolder: 4 Balance Sheet KPIs\Year-end comparatives
 		lineageTag: 62ad9804-a60f-556c-90f0-14cbd5e8747f
 
@@ -2825,7 +2734,7 @@ table _Measures
 			    "Other liabilities", ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 110 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 110 ), Account[AccountKey] ) ) ) + ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 112 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 112 ), Account[AccountKey] ) ) ) + ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 115 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 115 ), Account[AccountKey] ) ) ),
 			    "Debt", ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 111 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 111 ), Account[AccountKey] ) ) ) + ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 114 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 114 ), Account[AccountKey] ) ) ),
 			    "Equity", ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 117 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 117 ), Account[AccountKey] ) ) ) + ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 118 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 118 ), Account[AccountKey] ) ) ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: b800ea2f-23ba-5cc7-a3f5-d4d3da7aad5a
 
@@ -2848,7 +2757,7 @@ table _Measures
 
 	/// Actuals translated at the budget exchange rate (constant currency). P&L only.
 	measure 'Actual at Budget Rate' = CALCULATE ( IF ( SELECTEDVALUE ( 'Reporting Currency'[Currency], "CAD" ) = "USD", SUM ( GL[Amount USD (budget rate)] ), SUM ( GL[Amount CAD (budget rate)] ) ), GL[Scenario] = "Actual" )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Currency effect
 		lineageTag: 7b9dbcc4-3fec-525c-8142-2992c73ce3d3
 
@@ -2861,7 +2770,7 @@ table _Measures
 			    "QTD", DATE ( YEAR ( m ), INT ( ( MONTH ( m ) - 1 ) / 3 ) * 3 + 1, 1 ),
 			    DATE ( ( YEAR ( m ) + IF ( MONTH ( m ) >= 4, 1, 0 ) ) - 1, 4, 1 ) )
 			RETURN CALCULATE ( [Actual at Budget Rate], REMOVEFILTERS ( 'Date' ), 'Date'[Month] >= winStart && 'Date'[Month] <= m )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Currency effect
 		lineageTag: b85d1faa-ae2c-5f86-819f-adf42b3c29ff
 
@@ -2869,19 +2778,19 @@ table _Measures
 	measure 'Revenue at Budget Rate' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual at Budget Rate (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Currency effect
 		lineageTag: 5757cf9c-33e0-5b7d-955f-16315086d107
 
 	/// Part of revenue that comes from exchange rates differing from the budget rate (translation effect). Positive = currencies moved in the group's favour.
 	measure 'Revenue FX Effect' = [Revenue] - [Revenue at Budget Rate]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Currency effect
 		lineageTag: b2831d4c-15dc-5d69-b31f-a01eaf885755
 
 	/// Revenue variance to budget with the currency effect removed: the trading variance.
 	measure 'Revenue Var vs Budget (constant currency)' = [Revenue at Budget Rate] - [Revenue Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Currency effect
 		lineageTag: 8346e16a-e5fb-5f98-accd-7aabeae1e2a9
 
@@ -2889,19 +2798,19 @@ table _Measures
 	measure 'EBITDA at Budget Rate' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual at Budget Rate (Period)], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Currency effect
 		lineageTag: a3be4c4a-4592-563e-867d-4c7416f6b9f4
 
 	/// Part of ebitda that comes from exchange rates differing from the budget rate (translation effect). Positive = currencies moved in the group's favour.
 	measure 'EBITDA FX Effect' = [EBITDA] - [EBITDA at Budget Rate]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Currency effect
 		lineageTag: dd1fe87c-7ac5-5bdd-9134-0a4ea3484cd9
 
 	/// EBITDA variance to budget with the currency effect removed: the trading variance.
 	measure 'EBITDA Var vs Budget (constant currency)' = [EBITDA at Budget Rate] - [EBITDA Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 3 KPIs\Currency effect
 		lineageTag: fa755655-335c-5b79-9c1a-726b54c589b2
 
@@ -2920,93 +2829,6 @@ table _Measures
 			        & IF ( fe >= 0, "added ", "removed " ) & ( VAR _x = ABS ( fe ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of EBITDA. At constant currency revenue is " & FORMAT ( [Revenue Var % vs Budget (constant currency)], "+0.0%;-0.0%" ) & " vs budget." )
 		displayFolder: 6 Narrative
 		lineageTag: 8982f72e-e41b-5552-9093-c33f2cc178ab
-
-	/// KPI card value: [EBITDA Margin %] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV EBITDA Margin %' = FORMAT ( [EBITDA Margin %], "0.0%" )
-		displayFolder: 11 KPI Cards
-		lineageTag: ffdc8f5f-a35c-5843-b5c4-770d55765c96
-
-	/// KPI card value: [OpEx % of Revenue] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV OpEx % of Revenue' = FORMAT ( [OpEx % of Revenue], "0.0%" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 233432c1-633a-517b-bf68-d447ffea4e99
-
-	/// KPI card value: [Salary Cost per Head] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Salary Cost per Head' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Salary Cost per Head] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 06d23e25-815e-53fd-b593-06f9c2af8b69
-
-	/// KPI card value: [Current Ratio] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Current Ratio' = FORMAT ( [Current Ratio], "0.00" ) & "x"
-		displayFolder: 11 KPI Cards
-		lineageTag: a206e1ee-1c1e-5dad-9d9e-1faea5138f20
-
-	/// KPI card value: [Debt to Equity] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Debt to Equity' = FORMAT ( [Debt to Equity], "0.00" ) & "x"
-		displayFolder: 11 KPI Cards
-		lineageTag: ee29c5ad-33b3-55bb-a404-44567c57f21e
-
-	/// KPI card value: [Cash Conversion Cycle (days)] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Cash Conversion Cycle (days)' = FORMAT ( [Cash Conversion Cycle (days)], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 3173dd7f-a940-5c13-8aaf-1d557623dbc6
-
-	/// KPI card value: [DSO (days)] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DSO (days)' = FORMAT ( [DSO (days)], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: a5b6796d-1dbd-5496-a0ac-a37cb2f48479
-
-	/// KPI card value: [DIO (days)] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DIO (days)' = FORMAT ( [DIO (days)], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 1d111fba-201b-548d-80be-5e056779ba64
-
-	/// KPI card value: [DPO (days)] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DPO (days)' = FORMAT ( [DPO (days)], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: b353568e-4857-5104-a8d1-a815967b809e
-
-	/// KPI card value: [DQ Files Loaded] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DQ Files Loaded' = FORMAT ( [DQ Files Loaded], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 92c74551-0b9c-5dff-8b0a-8a17b034ae01
-
-	/// KPI card value: [DQ Duplicates Removed] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DQ Duplicates Removed' = FORMAT ( [DQ Duplicates Removed], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 359f630f-9115-5e83-b1de-c1d1be6f8f4c
-
-	/// KPI card value: [DQ Blank Departments Fixed] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DQ Blank Departments Fixed' = FORMAT ( [DQ Blank Departments Fixed], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 43b5423f-101c-5ae7-b84a-692f195c1366
-
-	/// KPI card value: [DQ Files With Schema Drift] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DQ Files With Schema Drift' = FORMAT ( [DQ Files With Schema Drift], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 040e459e-d552-50c4-8289-d0844f8d4a50
-
-	/// KPI card value: [DQ Balance Sheet Difference] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DQ Balance Sheet Difference' = FORMAT ( [DQ Balance Sheet Difference], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 79fc2f4c-40e6-5b07-b516-6e5e965a3277
-
-	/// KPI card value: [DQ Rows Missing FX Rate] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DQ Rows Missing FX Rate' = FORMAT ( [DQ Rows Missing FX Rate], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: f9bae9cb-7c2d-575d-bdb3-9341b08078dd
-
-	/// KPI card value: [DQ Accounts Missing From Chart] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DQ Accounts Missing From Chart' = FORMAT ( [DQ Accounts Missing From Chart], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 0513efb4-f776-5338-ac4c-0fd14034dd6b
-
-	/// KPI card value: [DQ Synthetic Budget Share] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DQ Synthetic Budget Share' = FORMAT ( [DQ Synthetic Budget Share], "0.0%" )
-		displayFolder: 11 KPI Cards
-		lineageTag: c563a904-afc4-5e15-a612-de839c6408fe
 
 	/// Page title of the Notes page.
 	measure 'PT Notes' = "Notes & Assumptions · read before quoting a number"
@@ -3043,13 +2865,6 @@ table _Measures
 		displayFolder: 10 Layout
 		lineageTag: 5040e70e-cd13-5b67-b8c7-93c0565e4be1
 
-	/// KPI card value: [Net Income Attributable to Group] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Net Income Attributable to Group' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Net Income Attributable to Group] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 42eb220f-9424-5930-94c9-0e9c5b87fdf1
-
 	/// Net income belonging to non-controlling interests, as an amount and a share of total net income.
 	measure 'NCI Text' =
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
@@ -3069,21 +2884,11 @@ table _Measures
 		displayFolder: 12 Data Dictionary
 		lineageTag: afb43f4d-f103-5546-9898-b6ef4b510419
 
-	/// KPI card value: [DD Tables] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DD Tables' = FORMAT ( [DD Tables], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 9e860f16-080e-5aa5-8d62-65038fd8f277
-
 	/// Number of columns in the current dictionary selection.
 	measure 'DD Columns' = CALCULATE ( COUNTROWS ( 'Data Dictionary' ), KEEPFILTERS ( 'Data Dictionary'[Object Type] = "Column" ) ) + 0
 		formatString: 0
 		displayFolder: 12 Data Dictionary
 		lineageTag: f5fb1c2d-28d4-5e82-9aa0-7e990d64da09
-
-	/// KPI card value: [DD Columns] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DD Columns' = FORMAT ( [DD Columns], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 8b0d2efe-6945-586a-9957-885163687e48
 
 	/// Number of measures in the current dictionary selection.
 	measure 'DD Measures' = CALCULATE ( COUNTROWS ( 'Data Dictionary' ), KEEPFILTERS ( 'Data Dictionary'[Object Type] = "Measure" ) ) + 0
@@ -3091,21 +2896,11 @@ table _Measures
 		displayFolder: 12 Data Dictionary
 		lineageTag: b459e5fb-1be5-5f06-a5f4-e030527fec9c
 
-	/// KPI card value: [DD Measures] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DD Measures' = FORMAT ( [DD Measures], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: f5f04ec3-28d0-567b-9fb3-ce12f02c1d2d
-
 	/// Number of relationships in the current dictionary selection.
 	measure 'DD Relationships' = CALCULATE ( COUNTROWS ( 'Data Dictionary' ), KEEPFILTERS ( 'Data Dictionary'[Object Type] = "Relationship" ) ) + 0
 		formatString: 0
 		displayFolder: 12 Data Dictionary
 		lineageTag: cffba213-8efb-5573-8f4d-6d4ebdc33c6f
-
-	/// KPI card value: [DD Relationships] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV DD Relationships' = FORMAT ( [DD Relationships], "#,0" )
-		displayFolder: 11 KPI Cards
-		lineageTag: 4a58bc4e-f9f5-5e04-9fe3-8a6b5b413228
 
 	/// Share of the selected objects that carry a description.
 	measure 'DD Documented %' = DIVIDE ( COUNTROWS ( FILTER ( 'Data Dictionary', NOT ISBLANK ( 'Data Dictionary'[Description] ) ) ), COUNTROWS ( 'Data Dictionary' ) )
@@ -3156,7 +2951,7 @@ table _Measures
 			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
 			    RETURN CALCULATE ( [Actual (Period)], TREATAS ( accts, Account[AccountKey] ) )
 			)
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 13 Statement Explorer
 		lineageTag: 7545b6fa-95eb-541b-878c-944e5df625b4
 
@@ -3167,19 +2962,19 @@ table _Measures
 			    VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), TREATAS ( VALUES ( 'Report Line'[LineKey] ), 'Report Line Map'[LineKey] ) )
 			    RETURN CALCULATE ( [Prior Year (Period)], TREATAS ( accts, Account[AccountKey] ) )
 			)
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 13 Statement Explorer
 		lineageTag: 8582c869-2866-559d-ad51-1af33852e9c7
 
-	/// Current period, in the unit chosen with the toggle.
-	measure 'IS CY' = DIVIDE ( [IS CY Raw], [Unit Divisor] )
-		formatString: #,0;(#,0);-
+	/// Current period. The Thousand / Absolute toggle sets the format string; the value is not divided.
+	measure 'IS CY' = [IS CY Raw]
+		formatStringDefinition = IF ( [Unit Divisor] = 1000, "#,0,;(#,0,);-", "#,0;(#,0);-" )
 		displayFolder: 13 Statement Explorer
 		lineageTag: 769921c0-6a55-5e0c-a5fc-d4de84a4952f
 
-	/// Prior year, in the unit chosen with the toggle.
-	measure 'IS PY' = DIVIDE ( [IS PY Raw], [Unit Divisor] )
-		formatString: #,0;(#,0);-
+	/// Prior year. The Thousand / Absolute toggle sets the format string; the value is not divided.
+	measure 'IS PY' = [IS PY Raw]
+		formatStringDefinition = IF ( [Unit Divisor] = 1000, "#,0,;(#,0,);-", "#,0;(#,0);-" )
 		displayFolder: 13 Statement Explorer
 		lineageTag: bef1e4f4-70ef-5532-9a91-64e7a60a8920
 
@@ -3199,9 +2994,9 @@ table _Measures
 		displayFolder: 13 Statement Explorer
 		lineageTag: 4bf3c87c-9288-56b0-8a00-5b990198dc59
 
-	/// Change versus prior year, in the chosen unit. Positive = favourable, because costs are stored negative.
-	measure 'IS Chg PY' = DIVIDE ( [IS CY Raw] - [IS PY Raw], [Unit Divisor] )
-		formatString: #,0;(#,0);-
+	/// Change versus prior year. Positive = favourable, because costs are stored negative. The toggle sets the format string.
+	measure 'IS Chg PY' = [IS CY Raw] - [IS PY Raw]
+		formatStringDefinition = IF ( [Unit Divisor] = 1000, "#,0,;(#,0,);-", "#,0;(#,0);-" )
 		displayFolder: 13 Statement Explorer
 		lineageTag: 473050a1-1dbf-5d8b-aac6-53bcf379fbf4
 
@@ -3263,13 +3058,6 @@ table _Measures
 		displayFolder: 8 Formatting
 		lineageTag: 6ce300ad-fd70-5d1d-b80f-a78d076cc39b
 
-	/// KPI card value: [Cost of Sales] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Cost of Sales' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Cost of Sales] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: a4a88882-dc88-528c-8ca8-84d61361fcd6
-
 	/// Card row: COGS for the same period last year.
 	measure 'IS Cost of Sales PY Text' =
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
@@ -3295,13 +3083,6 @@ table _Measures
 			VAR g = IF ( NOT ISBLANK ( [Cost of Sales PY] ), [Cost of Sales] >= [Cost of Sales PY] ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
 		displayFolder: 8 Formatting
 		lineageTag: c5f8cb64-3c84-58dc-b8f3-aa0574eb6400
-
-	/// KPI card value: [Gross Profit] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV Gross Profit' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Gross Profit] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 93a7bbef-8c58-5062-a2a4-07afaf0bf5a8
 
 	/// Card row: Gross Profit for the same period last year.
 	measure 'IS Gross Profit PY Text' =
@@ -3354,13 +3135,6 @@ table _Measures
 			VAR g = IF ( NOT ISBLANK ( [EBITDA PY] ), [EBITDA] >= [EBITDA PY] ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
 		displayFolder: 8 Formatting
 		lineageTag: 3fc96b9d-1b45-59e5-9541-cd2af124bbe5
-
-	/// KPI card value: [EBIT] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV EBIT' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [EBIT] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: d7e736d5-3ec0-587d-b40c-84cbfc98a80e
 
 	/// Card row: EBIT for the same period last year.
 	measure 'IS EBIT PY Text' =
@@ -3426,7 +3200,7 @@ table _Measures
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			VAR flip = IF ( lk = 4, -1, 1 )   -- cost of sales is stored negative; the trend shows its size
 			RETURN flip * CALCULATE ( [Monthly Actual (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 13 Statement Explorer
 		lineageTag: 1072e62e-2c3d-55d7-addf-14b8bdbd7f9b
 
@@ -3437,7 +3211,7 @@ table _Measures
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			VAR flip = IF ( lk = 4, -1, 1 )   -- cost of sales is stored negative; the trend shows its size
 			RETURN flip * CALCULATE ( [Monthly Prior Year (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 13 Statement Explorer
 		lineageTag: 78cc5826-924c-5f66-afce-d98b29f37d23
 
@@ -3448,7 +3222,7 @@ table _Measures
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			VAR flip = IF ( lk = 4, -1, 1 )   -- cost of sales is stored negative; the trend shows its size
 			RETURN flip * CALCULATE ( [Actual], TREATAS ( accts, Account[AccountKey] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 13 Statement Explorer
 		lineageTag: b55b010a-940b-54be-8e43-42be7741a540
 
@@ -3603,7 +3377,7 @@ table _Measures
 			VAR cut = [RF Cutoff] VAR fy = ( YEAR ( cut ) + IF ( MONTH ( cut ) >= 4, 1, 0 ) )
 			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )   -- the twelve months of the cut-off's fiscal year
 			RETURN SUMX ( FILTER ( t, [@d] <= cut ), VAR d = [@d] RETURN CALCULATE ( [Metric Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: f18d0565-487a-5a56-905b-f4c476ebdc8d
 
@@ -3613,13 +3387,13 @@ table _Measures
 			VAR cut = [RF Cutoff] VAR fy = ( YEAR ( cut ) + IF ( MONTH ( cut ) >= 4, 1, 0 ) )
 			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )   -- the twelve months of the cut-off's fiscal year
 			RETURN SUMX ( FILTER ( t, [@d] > cut ), VAR d = [@d] RETURN CALCULATE ( [Metric Budget (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: 9f54c373-99cd-5d63-99ac-21f1af132880
 
 	/// Rolling forecast for the fiscal year: actual to the cut-off plus budget for the remaining months.
 	measure 'RF Total' = [RF Actual to Date] + [RF Remaining Budget]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: c2b2398e-467b-58a9-9d90-b0555c54c673
 
@@ -3629,13 +3403,13 @@ table _Measures
 			VAR cut = [RF Cutoff] VAR fy = ( YEAR ( cut ) + IF ( MONTH ( cut ) >= 4, 1, 0 ) )
 			VAR t = ADDCOLUMNS ( GENERATESERIES ( 1, 12, 1 ), "@d", DATE ( fy - 1, 3 + [Value], 1 ) )   -- the twelve months of the cut-off's fiscal year
 			RETURN SUMX ( t, VAR d = [@d] RETURN CALCULATE ( [Metric Budget (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = d ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: 22a04b8a-9ad3-59c8-b1e3-8a2e6b11ecdb
 
 	/// Rolling forecast minus target. Positive = on track (also for cost metrics, which are stored negative). Blank when there is no target.
 	measure 'RF Gap' = IF ( NOT ISBLANK ( [RF Target] ), [RF Total] - [RF Target] )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: 2b9f1b83-12b4-562d-a3e1-9ff96d3f4adc
 
@@ -3659,25 +3433,25 @@ table _Measures
 
 	/// What each remaining month must deliver to land exactly on target.
 	measure 'RF Required per Month' = IF ( NOT ISBLANK ( [RF Target] ), DIVIDE ( [RF Target] - [RF Actual to Date], [RF Months Left] ) )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: a230a9c5-0b80-5c53-bf0f-53b6ee101a3d
 
 	/// Average actual per closed month.
 	measure 'RF Average per Month' = DIVIDE ( [RF Actual to Date], [RF Months Elapsed] )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: febaa4ca-92e4-5e70-b9b6-6f68f322cf34
 
 	/// Cross-check (average-month projection): the year if the remaining months repeat the year-to-date average month. Not the same as the run-rate on tab 3, which scales the remaining budget by the year-to-date beat.
 	measure 'RF Run-Rate Total' = [RF Actual to Date] + [RF Average per Month] * [RF Months Left]
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: d0693d84-1a39-51e6-9893-d997dfc1d4bb
 
 	/// Average-month projection minus target.
 	measure 'RF Run-Rate Gap' = IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Total] - [RF Target] )
-		formatString: #,0;(#,0);-
+		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,\K;($#,0,\K);-", "$#,0;($#,0);-" )
 		displayFolder: 14 Rolling Forecast
 		lineageTag: 92616158-65b7-5f6e-9529-e36b2c12a04c
 
@@ -3704,34 +3478,6 @@ table _Measures
 			VAR g = IF ( NOT ISBLANK ( [RF Target] ), [RF Run-Rate Gap] >= 0 ) RETURN IF ( ISBLANK ( g ), [Col Muted], IF ( g, [Col Good], [Col Bad] ) )
 		displayFolder: 8 Formatting
 		lineageTag: 2573049e-8bc0-50b9-8d38-dab712978d85
-
-	/// KPI card value: [RF Total] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV RF Total' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [RF Total] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 50c809bb-aa20-517b-9b3d-38a807380fd8
-
-	/// KPI card value: [RF Target] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV RF Target' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [RF Target] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 2f5e9fb7-d10e-5a92-a7b7-1ff199d60396
-
-	/// KPI card value: [RF Required per Month] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV RF Required per Month' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [RF Required per Month] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 39996c85-9035-534e-a3ca-3bbfb3937e44
-
-	/// KPI card value: [RF Run-Rate Total] as text in the report number format ($ M/K for money, % for rates, x for ratios, whole numbers for counts).
-	measure 'KV RF Run-Rate Total' =
-			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [RF Run-Rate Total] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) )
-		displayFolder: 11 KPI Cards
-		lineageTag: 39ec7028-6920-5452-a041-d0881db58e44
 
 	/// Card text: status, gap and attainment of the rolling forecast.
 	measure 'RF Total Text' =

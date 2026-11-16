@@ -81,7 +81,9 @@ def render_table(t):
             head, body = expr_block(m['expr'], 3)
             L.append(f"\tmeasure {q(m['name'])}{head}")
             L.extend(body)
-            if m.get('fmt'):
+            if m.get('dyn'):        # dynamic format string: a DAX expression instead of a fixed format (the two are mutually exclusive)
+                L.append(f"\t\tformatStringDefinition = {m['dyn']}")
+            elif m.get('fmt'):
                 L.append(f"\t\tformatString: {m['fmt']}")
             if m.get('cat'):
                 L.append(f"\t\tdataCategory: {m['cat']}")
@@ -486,17 +488,25 @@ class Page:
                         filters=[cat_filter(hexid(self.pid, key, 'f'), 'Insight', 'Topic', [topics[k] for k in keys])])
 
     def card(self, key, x, y, w, h, measure, label=None, size=20, colour='Text', colour_measure=None, label_size=8.5, content=True):
-        lab = {'fontSize': L(size), 'color': mcolor(colour_measure) if colour_measure else T(colour)}
-        if MEASURE_FMT.get(measure) == M.F:
-            lab.update({'labelDisplayUnits': L(1000000), 'labelPrecision': L(1)})
+        # display units None (1): the measure's own format string decides the look (required for dynamic format strings)
+        lab = {'fontSize': L(size), 'color': mcolor(colour_measure) if colour_measure else T(colour), 'labelDisplayUnits': L(1)}
         obj = {'labels': [{'properties': lab}],
                'categoryLabels': [{'properties': {'show': L(bool(label)), 'fontSize': L(label_size), 'color': T('Muted')}}],
                'wordWrap': [{'properties': {'show': L(True)}}]}
         return self.add(key, 'card', x, y, w, h, roles={'Values': [(measure, label)]}, objects=obj, content=content, header=False)
 
+    def value_card(self, key, x, y, w, h, measure, size=14, colour='Title'):
+        """KPI value: a card visual bound to the measure itself. The number stays numeric, takes the measure's (dynamic) format string,
+        and cross-filters like any other data visual. Display units None so the visual does not re-abbreviate the value."""
+        obj = {'labels': [{'properties': {'fontSize': L(size), 'color': T(colour), 'labelDisplayUnits': L(1), 'bold': L(True)}}],
+               'categoryLabels': [{'properties': {'show': L(False)}}],
+               'wordWrap': [{'properties': {'show': L(False)}}]}
+        return self.add(key, 'card', x, y, w, h, roles={'Values': [measure]}, objects=obj, content=False, background=False, header=False,
+                        container={'padding': NO_PAD})
+
     def kpi(self, key, x, y, w, h, measure, label, sub=None, sub_colour=None):
         """Compact KPI tile (no icon, sparkline or pacing bar): same blocks, alignment and number format as kpi_full."""
-        self.kpi_full(key, x, y, w, h, 'KV ' + measure, label, None, sub, sub_colour, doc_anchor=ANCHOR(FOLDER[measure]), desc=DESC.get(measure) or label)
+        self.kpi_full(key, x, y, w, h, measure, label, None, sub, sub_colour, doc_anchor=ANCHOR(FOLDER[measure]), desc=DESC.get(measure) or label)
 
     def kpi_full(self, key, x, y, w, h, value, label, glyph, sub=None, sub_colour=None, spark=None, prog_text=None, prog_bar=None, doc_anchor=None, desc=None):
         """Reference-style KPI card: icon circle, value, label (hover = definition, click = DAX), comparison, sparkline, progress to FY budget."""
@@ -508,11 +518,16 @@ class Page:
         ix = 36 if glyph else 6          # compact tiles have no icon, so the text starts at the panel edge
         if glyph:
             self.button(key + '_ic', x0 + 8, y0 + 9, 26, 26, glyph, fill='Accent Soft', text='Accent', outline=None, size=10, round_=13, bold=True)
-        self.button(key + '_v', x0 + ix, y0 + 6, 92 if spark else (w0 - ix - 6), 30, '', measure=value, fill=None, text='Title', outline=None, size=14, align='left', bold=True)
-        self.button(key + '_l', x0 + ix, y0 + 34, w0 - ix - 6, 20, label + ' \u24d8', 'WebUrl', url=DOCS_URL + (doc_anchor or ''),
-                    tooltip=(desc or label)[:250], fill=None, text='Muted', outline=None, size=8, align='left')
+        # a card visual centres its value: icon tiles keep the value in a fixed box beside the icon, compact tiles are centred throughout
+        al = 'left' if glyph else 'center'
+        if glyph:
+            self.value_card(key + '_v', x0 + ix + 8, y0 + 6, 88, 30, value)
+        else:
+            self.value_card(key + '_v', x0 + 4, y0 + 6, w0 - 8, 30, value)
+        self.button(key + '_l', x0 + ix if glyph else x0 + 4, y0 + 34, (w0 - ix - 6) if glyph else (w0 - 8), 20, label + ' \u24d8', 'WebUrl', url=DOCS_URL + (doc_anchor or ''),
+                    tooltip=(desc or label)[:250], fill=None, text='Muted', outline=None, size=8, align=al)
         if sub:
-            self.button(key + '_s', x0 + (4 if glyph else ix - 2), y0 + 56, w0 - 8, 22, '', measure=sub, fill=None, text='Muted', outline=None, size=7.5, align='left')
+            self.button(key + '_s', x0 + 4, y0 + 56, w0 - 8, 22, '', measure=sub, fill=None, text='Muted', outline=None, size=7.5, align=al)
             if sub_colour:
                 self.visuals[-1]['visual']['objects']['text'][1]['properties']['fontColor'] = mcolor(sub_colour)
         if spark:
@@ -539,7 +554,7 @@ class Page:
 
     def bars(self, key, x, y, w, h, category, value, colour_measure, title, subtitle, sort_desc=True):
         obj = self.axes({'dataPoint': [{'properties': {'fill': mcolor(colour_measure)}, 'selector': wildcard()}],
-                         'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000000), 'labelPrecision': L(1), 'fontSize': L(8), 'color': T('Text')}}]}, value_axis=False, legend=False)
+                         'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1), 'fontSize': L(8), 'color': T('Text')}}]}, value_axis=False, legend=False)
         return self.add(key, 'clusteredBarChart', x, y, w, h, roles={'Category': [category], 'Y': [value]}, objects=obj, title=title,
                         subtitle=subtitle, sort=[(value, 'Descending' if sort_desc else 'Ascending')])
 
@@ -582,7 +597,7 @@ FOLDER = {m['name']: m['folder'] for m in M.MEAS}
 
 
 def full(p, key, x, y, w, h, measure, label, glyph, sub=None, sub_colour=None, spark=None, prog=None, bar=None):
-    p.kpi_full(key, x, y, w, h, 'KV ' + measure, label, glyph, sub, sub_colour, spark, prog, bar,
+    p.kpi_full(key, x, y, w, h, measure, label, glyph, sub, sub_colour, spark, prog, bar,
                doc_anchor=ANCHOR(FOLDER[measure]), desc=DESC.get(measure) or label)
 def combo(p, key, x, y, w, h, title, subtitle):
     obj = p.axes({'dataPoint': [{'properties': {'fill': solid(SERIES['actual'])}, 'selector': {'metadata': '_Measures.Metric Monthly Actual'}},
@@ -609,19 +624,19 @@ def page_overview():
     full(p, 'k3', x0 + 3 * (w4 + 10), 74, w4, 136, 'Entities Reporting', 'Entities reporting', '#', 'Sub Entities Short')
     p.add('rev_fy', 'columnChart', 428, 220, 384, 270,
           roles={'Category': ['Date[Fiscal Year]'], 'Series': ['Entity[Region]'], 'Y': [('Revenue Actual (in context)', 'Net revenue')]},
-          objects=p.axes({'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000000), 'labelPrecision': L(1), 'fontSize': L(8), 'color': solid('#FFFFFF')}}]}, value_axis=False),
+          objects=p.axes({'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1), 'fontSize': L(8), 'color': solid('#FFFFFF')}}]}, value_axis=False),
           title='=VT Revenue by FY', subtitle='Sub Revenue Mix', sort=[('Date[Fiscal Year]', 'Ascending')])
-    fields = ['Entity[EntityName]', 'Entity[CurrencyCode]', 'Entity[Effective Ownership]', 'Entity Joined FY', 'Entity Budget Status', 'Revenue (M)']
+    fields = ['Entity[EntityName]', 'Entity[CurrencyCode]', 'Entity[Effective Ownership]', 'Entity Joined FY', 'Entity Budget Status', 'Revenue']
     p.add('entities', 'tableEx', 824, 220, 440, 484,
           roles={'Values': [('Entity[EntityName]', 'Entity'), ('Entity[CurrencyCode]', 'Ccy'), ('Entity[Effective Ownership]', 'Group %'),
-                            ('Entity Joined FY', 'Joined'), ('Entity Budget Status', 'Budget'), ('Revenue (M)', 'Rev (M)')]},
+                            ('Entity Joined FY', 'Joined'), ('Entity Budget Status', 'Budget'), ('Revenue', 'Revenue')]},
           objects=dict(p.table_objects(fields, size=8, colours={'_Measures.Entity Budget Status': 'Entity Budget Status Color'}),
-                       columnWidth=[{'properties': {'value': L(94)}, 'selector': {'metadata': 'Entity.EntityName'}},
+                       columnWidth=[{'properties': {'value': L(90)}, 'selector': {'metadata': 'Entity.EntityName'}},
                                     {'properties': {'value': L(38)}, 'selector': {'metadata': 'Entity.CurrencyCode'}},
                                     {'properties': {'value': L(42)}, 'selector': {'metadata': 'Entity.Effective Ownership'}},
                                     {'properties': {'value': L(50)}, 'selector': {'metadata': '_Measures.Entity Joined FY'}},
-                                    {'properties': {'value': L(82)}, 'selector': {'metadata': '_Measures.Entity Budget Status'}},
-                                    {'properties': {'value': L(38)}, 'selector': {'metadata': '_Measures.Revenue (M)'}}]),
+                                    {'properties': {'value': L(78)}, 'selector': {'metadata': '_Measures.Entity Budget Status'}},
+                                    {'properties': {'value': L(46)}, 'selector': {'metadata': '_Measures.Revenue'}}]),
           title='=VT Entities', subtitle='Sub Entities', sort=[('Entity Joined FY', 'Ascending')])
     p.insights('ins', 428, 498, 384, 206, [1, 3])
     return p
@@ -641,7 +656,7 @@ def page_executive():
     for i, t in enumerate(tiles):
         full(p, f'k{i}', 16 + i * (w + 10), 120, w, 136, *t)
     wf = p.axes({'sentimentColors': [{'properties': {'increaseFill': T('Good'), 'decreaseFill': T('Bad'), 'totalFill': solid(SERIES['total'])}}],
-                 'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000000), 'labelPrecision': L(1), 'fontSize': L(8.5), 'color': T('Text')}}]}, value_axis=False)
+                 'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1), 'fontSize': L(8.5), 'color': T('Text')}}]}, value_axis=False)
     p.add('wf_rev', 'waterfallChart', 16, 266, 404, 190, roles={'Category': ['Revenue Bridge[Step]'], 'Y': [('Revenue Bridge Value', 'Revenue growth')]},
           objects=wf, title='=Title Revenue Bridge', subtitle='Sub Revenue Bridge', sort=[('Revenue Bridge[Step]', 'Ascending')])
     p.add('wf_ebitda', 'waterfallChart', 430, 266, 404, 190, roles={'Category': ['EBITDA Bridge[Step]'], 'Y': [('EBITDA Bridge Value', 'EBITDA variance')]},
@@ -723,7 +738,7 @@ def page_balance():
         p.kpi(f'k{i}', 626 + (i % 4) * (w + 10), 74 + (i // 4) * 98, w, 90, m, lab, sub, col)
     # cash bridge: green = source of cash, red = use of cash; the total is the change in cash since the year end
     wf = p.axes({'sentimentColors': [{'properties': {'increaseFill': T('Good'), 'decreaseFill': T('Bad'), 'totalFill': solid(SERIES['total'])}}],
-                 'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000000), 'labelPrecision': L(1), 'fontSize': L(8.5), 'color': T('Text')}}]}, value_axis=False, legend=False)
+                 'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1), 'fontSize': L(8.5), 'color': T('Text')}}]}, value_axis=False, legend=False)
     p.add('cash_bridge', 'waterfallChart', 626, 272, 638, 212, roles={'Category': ['Cash Bridge[Step]'], 'Y': [('Cash Bridge Value', 'Cash effect')]},
           objects=wf, title='=VT Cash Bridge', subtitle='Sub Cash Bridge', sort=[('Cash Bridge[Step]', 'Ascending')])
     obj = p.axes({'dataPoint': [{'properties': {'fill': solid(SERIES['actual'])}, 'selector': {'metadata': '_Measures.Cash Balance (month)'}},
@@ -854,7 +869,7 @@ def page_isx():
         x0, y0, w0, h0 = X(16 + (i % 3) * (cw + 8)), Y(144 + (i // 3) * 124), cw * SX, 118 * SY
         p.add(f'c{i}_bg', 'textbox', x0, y0, w0, h0, content=False, header=False, objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]})
         p.button(f'c{i}_l', x0 + 4, y0 + 3, w0 - 8, 18, lab, fill=None, text='Muted', outline=None, size=8.5, align='center', valign='middle')
-        p.button(f'c{i}_v', x0 + 4, y0 + 20, w0 - 8, 26, '', measure=f'KV {n}', fill=None, text='Title', outline=None, size=14, align='center', bold=True, valign='middle')
+        p.value_card(f'c{i}_v', x0 + 4, y0 + 20, w0 - 8, 26, n)
         p.button(f'c{i}_p', x0 + 4, y0 + 48, w0 - 8, 18, '', measure=f'IS {n} PY Text', fill=None, text='Muted', outline=None, size=7.5, align='left', valign='middle')
         p.button(f'c{i}_c', x0 + 4, y0 + 66, w0 - 8, 18, '', measure=f'IS {n} Chg Text', fill=None, text='Muted', outline=None, size=7.5, align='left', valign='middle')
         p.button(f'c{i}_g', x0 + 4, y0 + 84, w0 - 8, 18, '', measure=f'IS {n} Pct Text', fill=None, text='Muted', outline=None, size=7.5, align='left', valign='middle')
@@ -868,7 +883,7 @@ def page_isx():
     obj = p.axes({'dataPoint': [{'properties': {'fill': solid(SERIES['actual'])}, 'selector': {'metadata': '_Measures.Focus Monthly CY'}},
                                 {'properties': {'fill': solid(SERIES['py'])}, 'selector': {'metadata': '_Measures.Focus Monthly PY'}}],
                   'lineStyles': [{'properties': {'lineChartType': L('smooth'), 'strokeWidth': L(2), 'showMarker': L(True)}}],
-                  'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1000000), 'labelPrecision': L(1), 'fontSize': L(7.5), 'color': T('Text')}},
+                  'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1), 'fontSize': L(7.5), 'color': T('Text')}},
                              {'properties': {'showSeries': L(False)}, 'selector': {'metadata': '_Measures.Focus Monthly PY'}}]}, value_axis=False)
     p.add('trend', 'lineChart', 16, 530, 470, 174, roles={'Category': ['Date[Month Name]'], 'Y': [('Focus Monthly CY', 'CY'), ('Focus Monthly PY', 'PY')]},
           objects=obj, title='=VT Focus Trend', subtitle='Sub Focus Trend', sort=[('Date[Month Name]', 'Ascending')])

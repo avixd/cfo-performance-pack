@@ -98,12 +98,12 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "Revenue (M)"
+                  "Property": "Revenue"
                 }
               },
-              "queryRef": "_Measures.Revenue (M)",
-              "nativeQueryRef": "Revenue (M)",
-              "displayName": "Rev (M)"
+              "queryRef": "_Measures.Revenue",
+              "nativeQueryRef": "Revenue",
+              "displayName": "Revenue"
             }
           ]
         }
@@ -420,7 +420,7 @@
                 }
               }
             ],
-            "metadata": "_Measures.Revenue (M)"
+            "metadata": "_Measures.Revenue"
           }
         }
       ],
@@ -534,7 +534,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "94D"
+                  "Value": "90D"
                 }
               }
             }
@@ -590,7 +590,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "82D"
+                  "Value": "78D"
                 }
               }
             }
@@ -604,13 +604,13 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "38D"
+                  "Value": "46D"
                 }
               }
             }
           },
           "selector": {
-            "metadata": "_Measures.Revenue (M)"
+            "metadata": "_Measures.Revenue"
           }
         }
       ]
