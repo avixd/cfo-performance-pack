@@ -6,7 +6,7 @@
     "y": 166.2,
     "z": 52000,
     "height": 59.7,
-    "width": 280.3,
+    "width": 339.7,
     "tabOrder": 52000
   },
   "visual": {
@@ -115,7 +115,7 @@
             "selectAllCheckboxEnabled": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
+                  "Value": "false"
                 }
               }
             }

@@ -42,7 +42,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Current ratio  ⓘ'"
+                  "Value": "'Current ratio ⓘ'"
                 }
               }
             },
@@ -93,7 +93,7 @@
             "rightMargin": {
               "expr": {
                 "Literal": {
-                  "Value": "12D"
+                  "Value": "4D"
                 }
               }
             },

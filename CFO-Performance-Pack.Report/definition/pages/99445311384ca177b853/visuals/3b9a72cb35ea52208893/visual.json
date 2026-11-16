@@ -103,7 +103,7 @@
               },
               "queryRef": "_Measures.Revenue (M)",
               "nativeQueryRef": "Revenue (M)",
-              "displayName": "Revenue (M)"
+              "displayName": "Rev (M)"
             }
           ]
         }
@@ -134,7 +134,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "9D"
+                  "Value": "8D"
                 }
               }
             },
@@ -430,7 +430,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "9D"
+                  "Value": "8D"
                 }
               }
             },
@@ -534,7 +534,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "112D"
+                  "Value": "96D"
                 }
               }
             }
@@ -548,7 +548,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "34D"
+                  "Value": "28D"
                 }
               }
             }
@@ -562,7 +562,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "48D"
+                  "Value": "38D"
                 }
               }
             }
@@ -576,7 +576,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "48D"
+                  "Value": "42D"
                 }
               }
             }
@@ -590,13 +590,27 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "92D"
+                  "Value": "70D"
                 }
               }
             }
           },
           "selector": {
             "metadata": "_Measures.Entity Budget Status"
+          }
+        },
+        {
+          "properties": {
+            "value": {
+              "expr": {
+                "Literal": {
+                  "Value": "42D"
+                }
+              }
+            }
+          },
+          "selector": {
+            "metadata": "_Measures.Revenue (M)"
           }
         }
       ]
