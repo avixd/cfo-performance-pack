@@ -368,8 +368,10 @@ class Page:
                         objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]}, container=container)
 
     def glass_toggle(self, key, x, y, w, h, spec, icon_measure, sync):
-        """Light / Dark toggle: a button slicer with one icon per tile and no text. Unselected tiles are see-through; the selected tile
-        is the lit glass knob (translucent white fill, thin light edge, soft shadow, inner glow). The track behind it is a themed rect."""
+        """Light / Dark toggle in three layers: themed pill track (rect, added by the caller), an SVG image with the sun and moon,
+        and on top a button slicer with no text. Its unselected tile is see-through; the selected tile is the glass knob
+        (mostly transparent white, thin light edge, soft shadow, inner glow), so the icon underneath shows through it."""
+        self.image(key + '_icons', x, y, w, h, icon_measure)
         def st(state, **props):
             return {'properties': {k: (v if isinstance(v, dict) else L(v)) for k, v in props.items()}, 'selector': {'id': state}}
         white, black = solid('#FFFFFF'), solid('#000000')
@@ -378,13 +380,13 @@ class Page:
                'shapeCustomRectangle': [st('default', tileShape='pill')],
                'value': [st('default', show=False)], 'label': [st('default', show=False)],
                'selectionIcon': [st('default', show=False)], 'accentBar': [st('default', show=False)],
-               'image': [st('default', show=True, sourceType='imageUrl', url={'expr': mfield(icon_measure)}, position='Top', imageAreaSize=100)],
-               'fillCustom': [st('default', show=True, fillColor=white, transparency=100), st('interaction:hover', show=True, fillColor=white, transparency=75),
-                              st('selection:selected', show=True, fillColor=white, transparency=30)],
-               'outline': [st('default', show=False), st('selection:selected', show=True, lineColor=white, transparency=25, weight=1)],
+               'image': [st('default', show=False)],
+               'fillCustom': [st('default', show=True, fillColor=white, transparency=100), st('interaction:hover', show=True, fillColor=white, transparency=85),
+                              st('selection:selected', show=True, fillColor=white, transparency=72)],
+               'outline': [st('default', show=False), st('selection:selected', show=True, lineColor=white, transparency=15, weight=1)],
                'shadowCustom': [st('default', show=False),
-                                st('selection:selected', show=True, color=black, transparency=72, shadowBlur=5, shadowDistance=1, angle=90, position='Outer')],
-               'glowCustom': [st('default', show=False), st('selection:selected', show=True, color=white, transparency=45, shadowBlur=4, position='Inner')]}
+                                st('selection:selected', show=True, color=black, transparency=70, shadowBlur=6, shadowDistance=1, angle=90, position='Outer')],
+               'glowCustom': [st('default', show=False), st('selection:selected', show=True, color=white, transparency=30, shadowBlur=4, position='Inner')]}
         vid = self.add(key, 'advancedSlicerVisual', x, y, w, h, roles={'Values': [spec]}, objects=obj, background=False, content=False, header=False,
                        container={'padding': NO_PAD})
         self.visuals[-1]['visual']['syncGroup'] = {'groupName': sync, 'fieldChanges': True, 'filterChanges': True}
@@ -498,7 +500,7 @@ class Page:
                     REPO_URL + '/issues/new?labels=question&title=%5BSupport%5D%20', 'Ask a question about the report or model', inset=True)
         tx = CX + CW - 76
         self.rect('theme_track', tx, 5, 76, 30, 'Panel', radius=15, border='Line', transparency=20)
-        self.glass_toggle('s_theme', tx + 3, 7, 70, 26, 'Theme Mode[Mode]', 'Theme Icon', 'Theme')
+        self.glass_toggle('s_theme', tx + 3, 7, 70, 26, 'Theme Mode[Mode]', 'Theme Toggle Icons', 'Theme')
         self.textline('refreshed', ux + 40, 36, CX + CW - ux - 40, 22, 'Last Refreshed', 7.5, 'Muted', align='right')
         self.rect('hdr_line', CX, 86, CW, 1, 'Line')
         # footer: numbered notes + page-specific source note

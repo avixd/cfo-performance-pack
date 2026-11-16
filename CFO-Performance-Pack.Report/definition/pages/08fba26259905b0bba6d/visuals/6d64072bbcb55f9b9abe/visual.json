@@ -4,10 +4,10 @@
   "position": {
     "x": 1195,
     "y": 7,
-    "z": 34000,
+    "z": 35000,
     "height": 26,
     "width": 70,
-    "tabOrder": 34000
+    "tabOrder": 35000
   },
   "visual": {
     "visualType": "advancedSlicerVisual",
@@ -174,40 +174,7 @@
             "show": {
               "expr": {
                 "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "sourceType": {
-              "expr": {
-                "Literal": {
-                  "Value": "'imageUrl'"
-                }
-              }
-            },
-            "url": {
-              "expr": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "Theme Icon"
-                }
-              }
-            },
-            "position": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Top'"
-                }
-              }
-            },
-            "imageAreaSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "100D"
+                  "Value": "false"
                 }
               }
             }
@@ -273,7 +240,7 @@
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "75D"
+                  "Value": "85D"
                 }
               }
             }
@@ -305,7 +272,7 @@
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "30D"
+                  "Value": "72D"
                 }
               }
             }
@@ -353,7 +320,7 @@
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "25D"
+                  "Value": "15D"
                 }
               }
             },
@@ -408,14 +375,14 @@
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "72D"
+                  "Value": "70D"
                 }
               }
             },
             "shadowBlur": {
               "expr": {
                 "Literal": {
-                  "Value": "5D"
+                  "Value": "6D"
                 }
               }
             },
@@ -484,7 +451,7 @@
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "45D"
+                  "Value": "30D"
                 }
               }
             },

@@ -1354,13 +1354,15 @@ redefine('Footer Note 2', '"2  n.m. = not meaningful · K = thousands · M = mil
          desc='Numbered footer note 2 (same on every page): legend for the abbreviations used in the report.')
 
 # ======================================================================== v8: glass theme toggle
-# ---- 8.1 icons for the Light / Dark toggle (a button slicer shows one image per tile; the measure is evaluated once per tile)
-# A slicer does not apply its own selection to its own query, so the icon cannot know which mode is active: the sun is amber and the
-# moon indigo in both modes, and the selected state (the lit glass knob) is slicer formatting, not DAX.
-add('Theme Icon', """VAR sun = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#E8A013' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='12' r='4.2' fill='#F6C445'/><path d='M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7l1.7-1.7M17 7l1.7-1.7'/></svg>"
-VAR moon = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7z' fill='#7C8CF8' stroke='#5B6BE6' stroke-width='1.2' stroke-linejoin='round'/></svg>"
-RETURN "data:image/svg+xml;utf8," & SUBSTITUTE ( IF ( SELECTEDVALUE ( 'Theme Mode'[Mode] ) = "Dark", moon, sun ), "#", "%23" )""",
-    '10 Theme', None, 'Icon of a theme-toggle tile as an SVG image: a sun on the Light tile, a moon on the Dark tile.')
+# ---- 8.1 icons for the Light / Dark toggle
+# The toggle is three layers: a themed pill (track), this SVG image (sun and moon), and on top a button slicer whose tiles are
+# see-through, the selected one a translucent "glass" knob. The icons are drawn here, not in the slicer, because a slicer does not
+# apply its own selection to its own query: only a measure outside it knows which mode is active (lit icon vs muted icon).
+add('Theme Toggle Icons', """VAR dark = [Is Dark]
+VAR cs = IF ( dark, [Col Muted], "#E8A013" )
+VAR cm = IF ( dark, "#9AA8FF", [Col Muted] )
+RETURN "data:image/svg+xml;utf8," & SUBSTITUTE ( "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 26'><g fill='none' stroke='" & cs & "' stroke-width='1.8' stroke-linecap='round' transform='translate(8.5 4) scale(0.75)'><circle cx='12' cy='12' r='4.2' fill='" & cs & "'/><path d='M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7l1.7-1.7M17 7l1.7-1.7'/></g><path transform='translate(43.5 4) scale(0.75)' d='M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7z' fill='" & cm & "'/></svg>", "#", "%23" )""",
+    '10 Theme', None, 'Sun and moon of the theme toggle as one SVG image: the active mode is lit (amber sun or indigo moon), the other is muted.')
 MEAS[-1]['cat'] = 'ImageUrl'
 
 # ======================================================================== v5: documentation pass (TOM descriptions, DAX and M comments, query groups, diagram)

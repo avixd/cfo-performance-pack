@@ -3173,13 +3173,15 @@ Theme colour "Budget Tint": cell shading on the Rolling Forecast page.
 IF ( [Is Dark], "#4A2622", "#FBE3E0" )
 ```
 
-**Theme Icon**  
-Icon of a theme-toggle tile as an SVG image: a sun on the Light tile, a moon on the Dark tile.
+**Theme Toggle Icons**  
+Sun and moon of the theme toggle as one SVG image: the active mode is lit (amber sun or indigo moon), the other is muted.
 ```dax
 // SVG pattern: the measure returns an image as text (data category Image URL); # is written %23 so colours survive URL encoding.
-VAR sun = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='#E8A013' stroke-width='2' stroke-linecap='round'><circle cx='12' cy='12' r='4.2' fill='#F6C445'/><path d='M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7l1.7-1.7M17 7l1.7-1.7'/></svg>"
-VAR moon = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7z' fill='#7C8CF8' stroke='#5B6BE6' stroke-width='1.2' stroke-linejoin='round'/></svg>"
-RETURN "data:image/svg+xml;utf8," & SUBSTITUTE ( IF ( SELECTEDVALUE ( 'Theme Mode'[Mode] ) = "Dark", moon, sun ), "#", "%23" )
+// Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
+VAR dark = [Is Dark]
+VAR cs = IF ( dark, [Col Muted], "#E8A013" )
+VAR cm = IF ( dark, "#9AA8FF", [Col Muted] )
+RETURN "data:image/svg+xml;utf8," & SUBSTITUTE ( "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 26'><g fill='none' stroke='" & cs & "' stroke-width='1.8' stroke-linecap='round' transform='translate(8.5 4) scale(0.75)'><circle cx='12' cy='12' r='4.2' fill='" & cs & "'/><path d='M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7l1.7-1.7M17 7l1.7-1.7'/></g><path transform='translate(43.5 4) scale(0.75)' d='M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7z' fill='" & cm & "'/></svg>", "#", "%23" )
 ```
 
 ### 10 Layout
