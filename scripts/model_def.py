@@ -958,7 +958,7 @@ NOTES = [
     ('Notes', 2, 'Close and as-of month', 'The reporting month is the latest month with an actuals file ("books closed"). Selecting a later month falls back to the close.'),
     ('Notes', 3, 'Sign convention', 'Revenue is positive and costs are negative, so subtotals add up. Every variance is actual minus budget: positive is favourable, on revenue and on cost lines.'),
     ('Notes', 4, 'Colour', 'Green = favourable, red = unfavourable, amber = caution (budget not credible), blue = actual, light blue = outlook, grey = budget or prior year. Arrows show direction only.'),
-    ('Notes', 5, 'Number format', 'Cards, chart labels and summary tables: $ with millions to one decimal, thousands whole, negatives in brackets. One dynamic format string on each measure sets this, so the value stays a number. Statements: thousands. Percentages to one decimal. "n.m." or blank = not meaningful.'),
+    ('Notes', 5, 'Number format', 'Cards, chart labels and summary tables: $ with millions to one decimal, thousands whole, negatives in brackets. One dynamic format string on each measure sets this, so the value stays a number. Statements: thousands. Percentages to one decimal. "n.m." = not meaningful: no base to compare with, actual and base of opposite sign, or a change above 999%.'),
     ('Notes', 6, 'Currency', 'Bank of Canada rates, CAD per unit. P&L at monthly average, balance sheet at month end, budget at the prior fiscal-year average. USD view translates the CAD result at the USD rate.'),
     ('Notes', 7, 'Currency effect', 'Constant currency = actuals translated at budget rates. The difference to reported actuals is translation, not trading. Rates after the last published month are carried forward.'),
     ('Notes', 8, 'Budget', 'FY2026 to FY2028 budgets are synthetic (prior-year actual x growth x seeded noise). Entities that joined after the budget was set have no budget and are flagged.'),
@@ -1325,6 +1325,33 @@ _d = ('& "EBITDA " & IF ( ISBLANK ( [EBITDA Var % vs Budget] ), "budget comparis
       'FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" ) &')
 assert _a in _h['expr'] and _c in _h['expr']
 _h['expr'] = _h['expr'].replace(_a, _b).replace(_c, _d)
+
+# ---- 7.4 "n.m." (not meaningful) above 999%: a variance against a tiny base is noise, not information
+# Numeric measures keep their value; the format string expression prints the literal n.m. instead (dynamic format string again).
+_NM = r'(Var %|Growth %|Attainment %|Chg %|Progress$)'
+for _m in MEAS:
+    if _m.get('fmt') in (P, PTS, '0%') and _re.search(_NM, _m['name']) and not _m.get('dyn'):
+        _m['dyn'] = 'IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "' + _m['fmt'] + '" )'
+# Sentences and card texts: every FORMAT ( x, "...%..." ) gets the same rule.
+_pf = _re.compile(r'FORMAT \( (\[[^\]]+\]|\w+|ABS \( \w+ \)|ABS \( \[[^\]]+\] \)), ("[^"]*%[^"]*") \)')
+_nm_count = 0
+for _m in MEAS:
+    _new, _k = _pf.subn(lambda mo: f'IF ( ABS ( {mo.group(1)} ) > 9.99, "n.m.", FORMAT ( {mo.group(1)}, {mo.group(2)} ) )', _m['expr'])
+    if _k:
+        _m['expr'] = _new
+        _nm_count += _k
+assert _nm_count >= 40, _nm_count
+
+# ---- 7.5 charts that show a value axis keep a fixed format: an axis has no single value to pick a dynamic format from
+# (with a dynamic format the axis printed "$0MK"). Their axis stays in millions through the visual's display units.
+for _m in MEAS:
+    if _m['name'] in ('Cash Balance (month)', 'Working Capital (month)', 'Metric Monthly Actual', 'Metric Monthly Budget', 'Metric Monthly Outlook',
+                      'Metric Monthly Prior Year', 'Metric Cumulative Actual', 'Metric Cumulative Budget', 'Metric Cumulative Outlook'):
+        _m.pop('dyn', None)
+
+# ---- 7.6 footer note 2 is the legend for the short forms used on every page
+redefine('Footer Note 2', '"2  n.m. = not meaningful · K = thousands · M = millions · pts = percentage points · bps = basis points · x = times"',
+         desc='Numbered footer note 2 (same on every page): legend for the abbreviations used in the report.')
 
 # ======================================================================== v5: documentation pass (TOM descriptions, DAX and M comments, query groups, diagram)
 # ---- 5.1 remove presentation leftovers that no visual or measure uses (analytical KPI measures are kept as reusable building blocks)

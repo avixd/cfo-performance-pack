@@ -397,7 +397,9 @@ class Page:
     def slicer(self, key, x, y, w, h, spec, title, mode='Dropdown', single=False, horizontal=False, sync=None, content=False):
         obj = {'data': [{'properties': {'mode': L(mode)}}],
                'header': [{'properties': {'show': L(False)}}],
-               'items': [{'properties': {'textSize': L(9), 'fontColor': solid('#1F2A37'), 'background': solid('#FFFFFF')}}],
+               # sidebar slicers stay light on the dark sidebar in both modes; slicers inside the page follow the theme measures
+               'items': [{'properties': {'textSize': L(9), 'fontColor': T('Text') if content else solid('#1F2A37'),
+                                         'background': T('Panel') if content else solid('#FFFFFF')}}],
                # singleSelect = "multi-select with CTRL" (off: plain clicks add to the selection); strictSingleSelect = single select
                'selection': [{'properties': {'singleSelect': L(False), 'strictSingleSelect': L(single), 'selectAllCheckboxEnabled': L(not single)}}]}
         if horizontal:
@@ -798,7 +800,7 @@ def page_notes():
 def cslicer(p, key, x, y, w, h, spec, title, mode='Dropdown', single=False, horizontal=False, search=False, sort=None):
     """Slicer inside the content area (page-specific filters), styled as a panel. search=True adds the slicer's own search box."""
     obj = {'data': [{'properties': {'mode': L(mode)}}], 'header': [{'properties': {'show': L(False)}}],
-           'items': [{'properties': {'textSize': L(9), 'fontColor': solid('#1F2A37'), 'background': solid('#FFFFFF')}}],
+           'items': [{'properties': {'textSize': L(9), 'fontColor': T('Text'), 'background': T('Panel')}}],     # follow Light / Dark
            'selection': [{'properties': {'singleSelect': L(False), 'strictSingleSelect': L(single), 'selectAllCheckboxEnabled': L(not single and mode != 'Basic')}}],
            'general': [{'properties': dict({'orientation': L(1)} if horizontal else {}, **({'selfFilterEnabled': L(True)} if search else {}))}]}
     return p.add(key, 'slicer', x, y, w, h, roles={'Values': [spec]}, objects=obj, title=title, header=False, sort=sort,

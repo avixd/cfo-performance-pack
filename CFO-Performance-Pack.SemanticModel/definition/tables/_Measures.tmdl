@@ -342,9 +342,10 @@ table _Measures
 
 	/// Budget variance %. Blank (n.m.) when actual and budget have different signs or the variance exceeds 1,000% (base too small to be meaningful).
 	measure 'Line Var % vs Budget' = VAR p = IF ( [Line Actual] * [Line Budget] > 0, DIVIDE ( [Line Actual] - [Line Budget], ABS ( [Line Budget] ) ) ) RETURN IF ( ABS ( p ) < 10, p )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 2 Statement Lines
 		lineageTag: 829a5441-3fb0-5833-a612-a8c9d6e19d43
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Line actual minus the same period last year.
 	measure 'Line Var vs Prior Year' = [Line Actual] - [Line Prior Year]
@@ -355,9 +356,10 @@ table _Measures
 
 	/// Growth vs the same period last year. Blank (n.m.) when the signs differ or the change exceeds 1,000%.
 	measure 'Line Growth %' = VAR p = IF ( [Line Actual] * [Line Prior Year] > 0, DIVIDE ( [Line Actual] - [Line Prior Year], ABS ( [Line Prior Year] ) ) ) RETURN IF ( ABS ( p ) < 10, p )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 2 Statement Lines
 		lineageTag: b48d2990-a997-565d-8982-cf1e9735b98f
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Report line as a share of net revenue (common-size P&L).
 	measure 'Line % of Revenue' =
@@ -458,15 +460,17 @@ table _Measures
 
 	/// Revenue variance as % of absolute budget. Blank when actual and budget have different signs.
 	measure 'Revenue Var % vs Budget' = IF ( [Revenue] * [Revenue Budget] > 0, DIVIDE ( [Revenue] - [Revenue Budget], ABS ( [Revenue Budget] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: ef136c89-69ae-5b7b-b3ed-89a00172faae
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
+
 	/// Revenue growth versus the same period last year. Blank when the signs differ.
 	measure 'Revenue Growth %' = IF ( [Revenue] * [Revenue PY] > 0, DIVIDE ( [Revenue] - [Revenue PY], ABS ( [Revenue PY] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: d115b660-0745-54c3-ad3e-076f09b16d02
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Revenue full-year outlook: actual to the selected month + budget for the remaining months.
 	measure 'Revenue Outlook FY' =
@@ -487,7 +491,7 @@ table _Measures
 		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// Card text for revenue: variance % to budget and growth % versus last year, with direction arrows.
-	measure 'Revenue vs Budget Text' = VAR v = [Revenue Var % vs Budget] VAR g = [Revenue Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
+	measure 'Revenue vs Budget Text' = VAR v = [Revenue Var % vs Budget] VAR g = [Revenue Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", IF ( ABS ( v ) > 9.99, "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", IF ( ABS ( g ) > 9.99, "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs PY"
 		displayFolder: 3 KPIs\Revenue
 		lineageTag: 11006cfa-5fc5-5858-b02a-96cc6f1f3625
 
@@ -532,15 +536,17 @@ table _Measures
 
 	/// Cost of Sales variance as % of absolute budget. Blank when actual and budget have different signs.
 	measure 'Cost of Sales Var % vs Budget' = IF ( [Cost of Sales] * [Cost of Sales Budget] > 0, DIVIDE ( [Cost of Sales] - [Cost of Sales Budget], ABS ( [Cost of Sales Budget] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Cost of Sales
 		lineageTag: fc741759-aed8-5fdd-815f-69b9083053f1
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
+
 	/// Cost of Sales growth versus the same period last year. Blank when the signs differ.
 	measure 'Cost of Sales Growth %' = IF ( [Cost of Sales] * [Cost of Sales PY] > 0, DIVIDE ( [Cost of Sales] - [Cost of Sales PY], ABS ( [Cost of Sales PY] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Cost of Sales
 		lineageTag: 10097a7d-44d4-5749-b5e0-12a4bd4c9efd
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Cost of Sales full-year outlook: actual to the selected month + budget for the remaining months.
 	measure 'Cost of Sales Outlook FY' =
@@ -596,15 +602,17 @@ table _Measures
 
 	/// Gross Profit variance as % of absolute budget. Blank when actual and budget have different signs.
 	measure 'Gross Profit Var % vs Budget' = IF ( [Gross Profit] * [Gross Profit Budget] > 0, DIVIDE ( [Gross Profit] - [Gross Profit Budget], ABS ( [Gross Profit Budget] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Gross Profit
 		lineageTag: 04f27e85-5305-5ccf-9249-fa3fed016612
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
+
 	/// Gross Profit growth versus the same period last year. Blank when the signs differ.
 	measure 'Gross Profit Growth %' = IF ( [Gross Profit] * [Gross Profit PY] > 0, DIVIDE ( [Gross Profit] - [Gross Profit PY], ABS ( [Gross Profit PY] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Gross Profit
 		lineageTag: 7d52e2ea-a15e-5cad-ba0e-47c8fa7335b0
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Gross Profit full-year outlook: actual to the selected month + budget for the remaining months.
 	measure 'Gross Profit Outlook FY' =
@@ -660,15 +668,17 @@ table _Measures
 
 	/// Operating Expenses variance as % of absolute budget. Blank when actual and budget have different signs.
 	measure 'Operating Expenses Var % vs Budget' = IF ( [Operating Expenses] * [Operating Expenses Budget] > 0, DIVIDE ( [Operating Expenses] - [Operating Expenses Budget], ABS ( [Operating Expenses Budget] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Operating Expenses
 		lineageTag: df0cd2ac-8fbc-596f-95a5-2896ca798d75
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
+
 	/// Operating Expenses growth versus the same period last year. Blank when the signs differ.
 	measure 'Operating Expenses Growth %' = IF ( [Operating Expenses] * [Operating Expenses PY] > 0, DIVIDE ( [Operating Expenses] - [Operating Expenses PY], ABS ( [Operating Expenses PY] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Operating Expenses
 		lineageTag: 88b656e9-9c51-56ae-a2ac-ab8ceb961b17
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Operating Expenses full-year outlook: actual to the selected month + budget for the remaining months.
 	measure 'Operating Expenses Outlook FY' =
@@ -729,15 +739,17 @@ table _Measures
 
 	/// EBITDA variance as % of absolute budget. Blank when actual and budget have different signs.
 	measure 'EBITDA Var % vs Budget' = IF ( [EBITDA] * [EBITDA Budget] > 0, DIVIDE ( [EBITDA] - [EBITDA Budget], ABS ( [EBITDA Budget] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: b1dfb2ca-7fee-54d4-b4cb-10088982b6d3
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
+
 	/// EBITDA growth versus the same period last year. Blank when the signs differ.
 	measure 'EBITDA Growth %' = IF ( [EBITDA] * [EBITDA PY] > 0, DIVIDE ( [EBITDA] - [EBITDA PY], ABS ( [EBITDA PY] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: 4ff5c96f-1020-583e-b21f-2a6ba1eac5db
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// EBITDA full-year outlook: actual to the selected month + budget for the remaining months.
 	measure 'EBITDA Outlook FY' =
@@ -758,7 +770,7 @@ table _Measures
 		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// Card text for ebitda: variance % to budget and growth % versus last year, with direction arrows.
-	measure 'EBITDA vs Budget Text' = VAR v = [EBITDA Var % vs Budget] VAR g = [EBITDA Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
+	measure 'EBITDA vs Budget Text' = VAR v = [EBITDA Var % vs Budget] VAR g = [EBITDA Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", IF ( ABS ( v ) > 9.99, "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", IF ( ABS ( g ) > 9.99, "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs PY"
 		displayFolder: 3 KPIs\EBITDA
 		lineageTag: 114e2319-4c5a-568a-9b8b-812d959eb892
 
@@ -803,15 +815,17 @@ table _Measures
 
 	/// EBIT variance as % of absolute budget. Blank when actual and budget have different signs.
 	measure 'EBIT Var % vs Budget' = IF ( [EBIT] * [EBIT Budget] > 0, DIVIDE ( [EBIT] - [EBIT Budget], ABS ( [EBIT Budget] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\EBIT
 		lineageTag: 9f222a22-f122-5cba-bc01-6578b6650dc9
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
+
 	/// EBIT growth versus the same period last year. Blank when the signs differ.
 	measure 'EBIT Growth %' = IF ( [EBIT] * [EBIT PY] > 0, DIVIDE ( [EBIT] - [EBIT PY], ABS ( [EBIT PY] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\EBIT
 		lineageTag: b8f57a2d-046d-5b9f-9c5a-e5e0c369cb24
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// EBIT full-year outlook: actual to the selected month + budget for the remaining months.
 	measure 'EBIT Outlook FY' =
@@ -867,15 +881,17 @@ table _Measures
 
 	/// Net Income variance as % of absolute budget. Blank when actual and budget have different signs.
 	measure 'Net Income Var % vs Budget' = IF ( [Net Income] * [Net Income Budget] > 0, DIVIDE ( [Net Income] - [Net Income Budget], ABS ( [Net Income Budget] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: 3333b168-c010-5f87-9b3d-3d0d3b4790f1
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
+
 	/// Net Income growth versus the same period last year. Blank when the signs differ.
 	measure 'Net Income Growth %' = IF ( [Net Income] * [Net Income PY] > 0, DIVIDE ( [Net Income] - [Net Income PY], ABS ( [Net Income PY] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: 040eb307-7b6d-576a-9567-55228d4e463d
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Net Income full-year outlook: actual to the selected month + budget for the remaining months.
 	measure 'Net Income Outlook FY' =
@@ -896,7 +912,7 @@ table _Measures
 		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// Card text for net income: variance % to budget and growth % versus last year, with direction arrows.
-	measure 'Net Income vs Budget Text' = VAR v = [Net Income Var % vs Budget] VAR g = [Net Income Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
+	measure 'Net Income vs Budget Text' = VAR v = [Net Income Var % vs Budget] VAR g = [Net Income Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", IF ( ABS ( v ) > 9.99, "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", IF ( ABS ( g ) > 9.99, "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs PY"
 		displayFolder: 3 KPIs\Net Income
 		lineageTag: e24eccbc-2438-561d-a2ef-6a13b7ac7f4e
 
@@ -991,9 +1007,10 @@ table _Measures
 
 	/// Growth of like-for-like revenue versus the same period last year (entities that traded in both periods).
 	measure 'Organic Growth %' = DIVIDE ( [Revenue Like-for-Like] - [Revenue PY], ABS ( [Revenue PY] ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: f7e7dd33-e745-50f3-923d-c281ecd89a84
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Revenue earned by entities with no budget for the period (acquired after the budget was set).
 	measure 'Revenue Unbudgeted' = SUMX ( VALUES ( Entity[EntityKey] ), IF ( ISBLANK ( [Revenue Budget] ), [Revenue] ) )
@@ -1011,9 +1028,10 @@ table _Measures
 
 	/// Revenue variance % to budget counting only entities that have a budget.
 	measure 'Revenue Var % vs Budget (Budgeted Entities)' = DIVIDE ( [Revenue Var vs Budget (Budgeted Entities)], ABS ( [Revenue Budget] ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: cc6d7f53-b4e9-5b4d-9eaf-6df33341550f
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Number of entities with actuals in the selected month.
 	measure 'Entities Reporting' =
@@ -1095,19 +1113,17 @@ table _Measures
 	measure 'Cash Balance (month)' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: 43755276-93c2-56dc-ac29-dc8756a840b5
-
-		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// Trade working capital at each month end: receivables + inventory - payables.
 	measure 'Working Capital (month)' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 102 ), Account[AccountKey] ) ) + CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 103 ), Account[AccountKey] ) ) - CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 109 ), Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
 		displayFolder: 4 Balance Sheet KPIs
 		lineageTag: 48348524-80a0-5003-94c7-0c08f9e920ce
-
-		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// Row shading for statement tables: subtotal and total rows are tinted, detail rows use the panel colour.
 	measure 'Line Row Background' =
@@ -1173,15 +1189,17 @@ table _Measures
 
 	/// "Var % vs Budget" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 	measure 'Metric Var % vs Budget' = IF ( [Metric Actual] * [Metric Budget] > 0, DIVIDE ( [Metric Actual] - [Metric Budget], ABS ( [Metric Budget] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 5 Metric Selector
 		lineageTag: 4ae2e548-e910-59e6-b9d6-248c0fbdcbea
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
+
 	/// "Growth %" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 	measure 'Metric Growth %' = IF ( [Metric Actual] * [Metric PY] > 0, DIVIDE ( [Metric Actual] - [Metric PY], ABS ( [Metric PY] ) ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 5 Metric Selector
 		lineageTag: 16e03872-389b-5e23-a80f-facee50e8843
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// "Outlook FY" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 	measure 'Metric Outlook FY' =
@@ -1218,10 +1236,9 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Monthly Actual (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
 		displayFolder: 5 Metric Selector
 		lineageTag: 01265a22-5445-5735-b2ed-3082c5ddd0ad
-
-		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// "Monthly Budget" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 	measure 'Metric Monthly Budget' =
@@ -1229,10 +1246,9 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Monthly Budget (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
 		displayFolder: 5 Metric Selector
 		lineageTag: 55c3efbc-6d04-56a2-859a-62f591648aca
-
-		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// "Monthly Outlook" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 	measure 'Metric Monthly Outlook' =
@@ -1240,10 +1256,9 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Monthly Outlook (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
 		displayFolder: 5 Metric Selector
 		lineageTag: 7659de5a-f85b-581a-b731-89574db84062
-
-		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// "Monthly Prior Year" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 	measure 'Metric Monthly Prior Year' =
@@ -1251,10 +1266,9 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Monthly Prior Year (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
 		displayFolder: 5 Metric Selector
 		lineageTag: 72af7ad3-420b-514a-ac5f-a64694e6208d
-
-		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// "Cumulative Actual" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 	measure 'Metric Cumulative Actual' =
@@ -1262,10 +1276,9 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Cumulative Actual (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
 		displayFolder: 5 Metric Selector
 		lineageTag: f35fa356-a3a4-522b-8e67-664504b92e00
-
-		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// "Cumulative Outlook" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 	measure 'Metric Cumulative Outlook' =
@@ -1273,10 +1286,9 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Cumulative Outlook (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
 		displayFolder: 5 Metric Selector
 		lineageTag: 5285cd21-2598-5e1c-9334-4a6713ca3de8
-
-		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// "Cumulative Budget" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 	measure 'Metric Cumulative Budget' =
@@ -1284,10 +1296,9 @@ table _Measures
 			VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Cumulative Budget (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
+		formatString: #,0;(#,0);-
 		displayFolder: 5 Metric Selector
 		lineageTag: 395f0724-92c4-54bd-aba9-bbc93f6d6b46
-
-		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// Green when the selected metric is favourable to budget, red when unfavourable.
 	measure 'Metric Var Color' = IF ( [Metric Var vs Budget] < 0, [Col Bad], [Col Good] )
@@ -1387,10 +1398,10 @@ table _Measures
 	measure Headline =
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
 			VAR core = [Core Region] VAR rv = [Revenue Var vs Budget] VAR rc = [Revenue Var Core] VAR share = DIVIDE ( rv - rc, rv ) VAR ec = [EBITDA Var Core]
-			RETURN [Currency Label] & " " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " revenue, " & IF ( ISBLANK ( [Revenue Var % vs Budget] ), "budget comparison not meaningful", FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" ) & ". "
+			RETURN [Currency Label] & " " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " revenue, " & IF ( ISBLANK ( [Revenue Var % vs Budget] ), "budget comparison not meaningful", IF ( ABS ( [Revenue Var % vs Budget] ) > 9.99, "n.m.", FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) ) & " vs budget" ) & ". "
 			    & IF ( ISBLANK ( rc ), "",
-			        "Core " & core & " " & FORMAT ( [Revenue Var % Core], "+0.0%;-0.0%" ) & IF ( rv > 0 && share > 0.5, "; newer regions deliver " & FORMAT ( share, "0%" ) & " of the beat", "" ) & ". " )
-			    & "EBITDA " & IF ( ISBLANK ( [EBITDA Var % vs Budget] ), "budget comparison not meaningful", FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" ) & IF ( ISBLANK ( ec ), ".", ", " & core & " " & ( VAR _x = ec RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "." )
+			        "Core " & core & " " & IF ( ABS ( [Revenue Var % Core] ) > 9.99, "n.m.", FORMAT ( [Revenue Var % Core], "+0.0%;-0.0%" ) ) & IF ( rv > 0 && share > 0.5, "; newer regions deliver " & IF ( ABS ( share ) > 9.99, "n.m.", FORMAT ( share, "0%" ) ) & " of the beat", "" ) & ". " )
+			    & "EBITDA " & IF ( ISBLANK ( [EBITDA Var % vs Budget] ), "budget comparison not meaningful", IF ( ABS ( [EBITDA Var % vs Budget] ) > 9.99, "n.m.", FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) ) & " vs budget" ) & IF ( ISBLANK ( ec ), ".", ", " & core & " " & ( VAR _x = ec RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "." )
 		displayFolder: 6 Narrative
 		lineageTag: f25fa65d-ea2e-538e-810f-79f356ba544a
 
@@ -1400,7 +1411,7 @@ table _Measures
 			VAR nu = [Revenue New Entities] VAR ub = [Revenue Unbudgeted]
 			RETURN IF ( nu > 0 || ub > 0,
 			    "Entities new to the group added " & [Currency Label] & " " & ( VAR _x = nu RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & "; " & [Currency Label] & " " & ( VAR _x = ub RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of revenue has no budget behind it. Excluding unbudgeted entities, revenue is "
-			        & FORMAT ( [Revenue Var % vs Budget (Budgeted Entities)], "+0.0%;-0.0%" ) & " vs budget.",
+			        & IF ( ABS ( [Revenue Var % vs Budget (Budgeted Entities)] ) > 9.99, "n.m.", FORMAT ( [Revenue Var % vs Budget (Budgeted Entities)], "+0.0%;-0.0%" ) ) & " vs budget.",
 			    "No change in the group perimeter versus last year." )
 		displayFolder: 6 Narrative
 		lineageTag: 1d0c2e8d-f8fa-5fa8-af9e-617136b3ac5a
@@ -1427,7 +1438,7 @@ table _Measures
 	/// Subtitle of the Budget vs Actual page: selected metric, amount and variance % to budget.
 	measure 'Title BvA' =
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			[Metric Name] & " · " & [Period Label] & ": " & ( VAR _x = [Metric Actual] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & ", " & FORMAT ( ABS ( [Metric Var % vs Budget] ), "0.0%" ) & IF ( [Metric Var vs Budget] >= 0, " favourable", " unfavourable" ) & " to budget"
+			[Metric Name] & " · " & [Period Label] & ": " & ( VAR _x = [Metric Actual] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & ", " & IF ( ABS ( ABS ( [Metric Var % vs Budget] ) ) > 9.99, "n.m.", FORMAT ( ABS ( [Metric Var % vs Budget] ), "0.0%" ) ) & IF ( [Metric Var vs Budget] >= 0, " favourable", " unfavourable" ) & " to budget"
 		displayFolder: 6 Narrative
 		lineageTag: 0d12a3fb-1ec7-5261-875b-3eed66af936c
 
@@ -1514,7 +1525,7 @@ table _Measures
 	/// Card text: variance of the selected metric to budget, amount and %.
 	measure 'Metric Var Text' =
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			( VAR _x = [Metric Var vs Budget] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " (" & FORMAT ( [Metric Var % vs Budget], "+0.0%;-0.0%" ) & ") vs budget"
+			( VAR _x = [Metric Var vs Budget] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " (" & IF ( ABS ( [Metric Var % vs Budget] ) > 9.99, "n.m.", FORMAT ( [Metric Var % vs Budget], "+0.0%;-0.0%" ) ) & ") vs budget"
 		displayFolder: 6 Narrative
 		lineageTag: 7bd59d81-9391-5383-a79a-913e594623f1
 
@@ -1526,12 +1537,12 @@ table _Measures
 		lineageTag: cb3e042a-dbb5-5b09-884a-caaa22ae26ce
 
 	/// Card text: growth of the selected metric versus last year.
-	measure 'Metric Growth Text' = FORMAT ( [Metric Growth %], "+0.0%;-0.0%" ) & " vs prior year"
+	measure 'Metric Growth Text' = IF ( ABS ( [Metric Growth %] ) > 9.99, "n.m.", FORMAT ( [Metric Growth %], "+0.0%;-0.0%" ) ) & " vs prior year"
 		displayFolder: 6 Narrative
 		lineageTag: 5aa86697-c963-5237-942c-5fa81737b3af
 
 	/// Title of the revenue growth bridge: total and organic growth.
-	measure 'Title Revenue Bridge' = "Revenue growth vs prior year: " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & ", of which organic " & FORMAT ( [Organic Growth %], "+0.0%;-0.0%" )
+	measure 'Title Revenue Bridge' = "Revenue growth vs prior year: " & IF ( ABS ( [Revenue Growth %] ) > 9.99, "n.m.", FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) ) & ", of which organic " & IF ( ABS ( [Organic Growth %] ) > 9.99, "n.m.", FORMAT ( [Organic Growth %], "+0.0%;-0.0%" ) )
 		displayFolder: 6 Narrative
 		lineageTag: f86a93e8-49ed-5fac-9859-530eb2001665
 
@@ -1765,9 +1776,10 @@ table _Measures
 
 	/// Revenue variance % to budget for the core region only.
 	measure 'Revenue Var % Core' = VAR r = [Core Region] RETURN CALCULATE ( [Revenue Var % vs Budget], KEEPFILTERS ( Entity[Region] = r ) )
-		formatString: +0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: b71eda3b-0aec-5a62-86d1-772bf0cbc27a
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "+0.0%;-0.0%;-" )
 
 	/// EBITDA variance to budget for the core region only.
 	measure 'EBITDA Var Core' = VAR r = [Core Region] RETURN CALCULATE ( [EBITDA Var vs Budget], KEEPFILTERS ( Entity[Region] = r ) )
@@ -1778,9 +1790,10 @@ table _Measures
 
 	/// EBITDA variance % to budget for the core region only.
 	measure 'EBITDA Var % Core' = VAR r = [Core Region] RETURN CALCULATE ( [EBITDA Var % vs Budget], KEEPFILTERS ( Entity[Region] = r ) )
-		formatString: +0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Perimeter
 		lineageTag: 8bdc5647-b643-5d3f-98f0-22658128eebf
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "+0.0%;-0.0%;-" )
 
 	/// Revenue variance from entities whose budget is credible (actual within 2x budget).
 	measure 'Revenue Var Credible' =
@@ -1810,9 +1823,10 @@ table _Measures
 
 	/// Budget variance % for the top-5 exception rows.
 	measure 'Exception Var %' = IF ( [Exception Rank] <= 5, [Line Var % vs Budget] )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 7 Exceptions
 		lineageTag: e9a77f74-3e3f-57ee-ac6c-f5fa40e092f2
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Actual for the top-5 exception rows.
 	measure 'Exception Actual' = IF ( [Exception Rank] <= 5, [Line Actual] )
@@ -2132,7 +2146,7 @@ table _Measures
 	/// Page subtitle of the Overview page: the key figures in one line.
 	measure 'PS Overview' =
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			[Entities Reporting] & " entities, " & COUNTROWS ( FILTER ( VALUES ( Entity[Region] ), NOT ISBLANK ( [Revenue] ) ) ) & " regions · revenue " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & " vs PY (organic " & FORMAT ( [Organic Growth %], "+0.0%;-0.0%" ) & ")"
+			[Entities Reporting] & " entities, " & COUNTROWS ( FILTER ( VALUES ( Entity[Region] ), NOT ISBLANK ( [Revenue] ) ) ) & " regions · revenue " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " " & IF ( ABS ( [Revenue Growth %] ) > 9.99, "n.m.", FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) ) & " vs PY (organic " & IF ( ABS ( [Organic Growth %] ) > 9.99, "n.m.", FORMAT ( [Organic Growth %], "+0.0%;-0.0%" ) ) & ")"
 		displayFolder: 6 Narrative\Page headers
 		lineageTag: 56922022-8b61-588a-9434-a27b902984f0
 
@@ -2152,7 +2166,7 @@ table _Measures
 		lineageTag: e6179a93-8f3d-5951-9430-5df46de6b866
 
 	/// Page subtitle of the P&L page: the key figures in one line.
-	measure 'PS IS' = "Gross margin " & FORMAT ( [Gross Profit Margin %], "0.0%" ) & " (" & FORMAT ( [Gross Profit Margin pts vs Budget] * 100, "+0.0;-0.0" ) & " pts vs budget) · EBITDA margin " & FORMAT ( [EBITDA Margin %], "0.0%" ) & " · opex " & FORMAT ( [OpEx % of Revenue], "0.0%" ) & " of revenue."
+	measure 'PS IS' = "Gross margin " & IF ( ABS ( [Gross Profit Margin %] ) > 9.99, "n.m.", FORMAT ( [Gross Profit Margin %], "0.0%" ) ) & " (" & FORMAT ( [Gross Profit Margin pts vs Budget] * 100, "+0.0;-0.0" ) & " pts vs budget) · EBITDA margin " & IF ( ABS ( [EBITDA Margin %] ) > 9.99, "n.m.", FORMAT ( [EBITDA Margin %], "0.0%" ) ) & " · opex " & IF ( ABS ( [OpEx % of Revenue] ) > 9.99, "n.m.", FORMAT ( [OpEx % of Revenue], "0.0%" ) ) & " of revenue."
 		displayFolder: 6 Narrative\Page headers
 		lineageTag: 9f9ef4ca-24d0-554c-b5c9-177995cf6a76
 
@@ -2167,14 +2181,14 @@ table _Measures
 		lineageTag: 18ee4f4c-2ad1-53d0-af0e-f44690090536
 
 	/// Page subtitle of the Data Quality page: the key figures in one line.
-	measure 'PS DQ' = "Balance-sheet difference " & FORMAT ( [DQ Balance Sheet Difference], "#,0" ) & " · rows missing FX " & [DQ Rows Missing FX Rate] & " · accounts not in chart " & [DQ Accounts Missing From Chart] & " · synthetic budget rows " & FORMAT ( [DQ Synthetic Budget Share], "0%" ) & "."
+	measure 'PS DQ' = "Balance-sheet difference " & FORMAT ( [DQ Balance Sheet Difference], "#,0" ) & " · rows missing FX " & [DQ Rows Missing FX Rate] & " · accounts not in chart " & [DQ Accounts Missing From Chart] & " · synthetic budget rows " & IF ( ABS ( [DQ Synthetic Budget Share] ) > 9.99, "n.m.", FORMAT ( [DQ Synthetic Budget Share], "0%" ) ) & "."
 		displayFolder: 6 Narrative\Page headers
 		lineageTag: 8a9a3799-ce47-554d-a2b3-a43ed169302c
 
 	/// Page subtitle of the Executive page: the key figures in one line.
 	measure 'PS Executive' =
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			"Revenue " & FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget · EBITDA " & FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " · net income outlook " & ( VAR _x = [Net Income Outlook FY] - [Net Income Budget FY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " vs FY budget"
+			"Revenue " & IF ( ABS ( [Revenue Var % vs Budget] ) > 9.99, "n.m.", FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) ) & " vs budget · EBITDA " & IF ( ABS ( [EBITDA Var % vs Budget] ) > 9.99, "n.m.", FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) ) & " · net income outlook " & ( VAR _x = [Net Income Outlook FY] - [Net Income Budget FY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " vs FY budget"
 		displayFolder: 6 Narrative\Page headers
 		lineageTag: d5f50349-82ea-5ad0-a2b7-0ab13ed0e3cb
 
@@ -2245,8 +2259,8 @@ table _Measures
 		displayFolder: 10 Layout
 		lineageTag: f013e149-4b6a-520c-8144-3610d8e2304c
 
-	/// Numbered footer note 2 (same on every page).
-	measure 'Footer Note 2' = "2  Described in the model: every measure has a description (docs/01-semantic-model.md)."
+	/// Numbered footer note 2 (same on every page): legend for the abbreviations used in the report.
+	measure 'Footer Note 2' = "2  n.m. = not meaningful · K = thousands · M = millions · pts = percentage points · bps = basis points · x = times"
 		displayFolder: 10 Layout
 		lineageTag: 1d572535-ae21-5df0-bbe7-982e97f52dd2
 
@@ -2254,12 +2268,13 @@ table _Measures
 	measure 'Revenue FY Progress' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			DIVIDE ( CALCULATE ( [Actual YTD], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ), CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 3 ), Account[AccountKey] ) ) )
-		formatString: 0%
 		displayFolder: 11 KPI Cards
 		lineageTag: 688fd78e-efd2-5c82-9079-add89f5047e9
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0%" )
+
 	/// Card text: revenue year to date as a share of the full-year budget, next to the share of the year elapsed.
-	measure 'Revenue Progress Text' = FORMAT ( [Revenue FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+	measure 'Revenue Progress Text' = IF ( ABS ( [Revenue FY Progress] ) > 9.99, "n.m.", FORMAT ( [Revenue FY Progress], "0%" ) ) & " of FY budget · " & IF ( ABS ( [Year Elapsed %] ) > 9.99, "n.m.", FORMAT ( [Year Elapsed %], "0%" ) ) & " of year"
 		displayFolder: 11 KPI Cards
 		lineageTag: df3f19f2-53c3-5636-8c10-69aafc1ad65e
 
@@ -2267,12 +2282,13 @@ table _Measures
 	measure 'EBITDA FY Progress' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			DIVIDE ( CALCULATE ( [Actual YTD], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) ), CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 13 ), Account[AccountKey] ) ) )
-		formatString: 0%
 		displayFolder: 11 KPI Cards
 		lineageTag: 8b5d3857-c8cb-594b-9382-a1a179a86a63
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0%" )
+
 	/// Card text: ebitda year to date as a share of the full-year budget, next to the share of the year elapsed.
-	measure 'EBITDA Progress Text' = FORMAT ( [EBITDA FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+	measure 'EBITDA Progress Text' = IF ( ABS ( [EBITDA FY Progress] ) > 9.99, "n.m.", FORMAT ( [EBITDA FY Progress], "0%" ) ) & " of FY budget · " & IF ( ABS ( [Year Elapsed %] ) > 9.99, "n.m.", FORMAT ( [Year Elapsed %], "0%" ) ) & " of year"
 		displayFolder: 11 KPI Cards
 		lineageTag: e3c12d26-f1fb-56a0-96d6-c21cf9b4ccbe
 
@@ -2280,23 +2296,25 @@ table _Measures
 	measure 'Net Income FY Progress' =
 			// Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 			DIVIDE ( CALCULATE ( [Actual YTD], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) ), CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 20 ), Account[AccountKey] ) ) )
-		formatString: 0%
 		displayFolder: 11 KPI Cards
 		lineageTag: ddf48718-a702-55c5-83da-7e119d0c70b7
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0%" )
+
 	/// Card text: net income year to date as a share of the full-year budget, next to the share of the year elapsed.
-	measure 'Net Income Progress Text' = FORMAT ( [Net Income FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+	measure 'Net Income Progress Text' = IF ( ABS ( [Net Income FY Progress] ) > 9.99, "n.m.", FORMAT ( [Net Income FY Progress], "0%" ) ) & " of FY budget · " & IF ( ABS ( [Year Elapsed %] ) > 9.99, "n.m.", FORMAT ( [Year Elapsed %], "0%" ) ) & " of year"
 		displayFolder: 11 KPI Cards
 		lineageTag: ba943be0-05fe-53d8-a1ff-e2cc26179872
 
 	/// Full-year net income outlook as a share of the full-year budget.
 	measure 'Net Income Outlook Progress' = DIVIDE ( [Net Income Outlook FY], [Net Income Budget FY] )
-		formatString: 0%
 		displayFolder: 11 KPI Cards
 		lineageTag: 87612d58-3860-5ea1-a55a-7ded23c0fee4
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0%" )
+
 	/// Card text: full-year net income outlook as a share of the full-year budget.
-	measure 'Net Income Outlook Progress Text' = FORMAT ( [Net Income Outlook Progress], "0%" ) & " of FY budget"
+	measure 'Net Income Outlook Progress Text' = IF ( ABS ( [Net Income Outlook Progress] ) > 9.99, "n.m.", FORMAT ( [Net Income Outlook Progress], "0%" ) ) & " of FY budget"
 		displayFolder: 11 KPI Cards
 		lineageTag: 65d46501-e0db-523a-8675-f9db4476ca6c
 
@@ -2306,28 +2324,30 @@ table _Measures
 			DIVIDE ( VAR lk = SELECTEDVALUE ( Metric[LineKey], 3 )
 			VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = lk )
 			RETURN CALCULATE ( [Actual YTD], TREATAS ( accts, Account[AccountKey] ) ), [Metric Budget FY] )
-		formatString: 0%
 		displayFolder: 11 KPI Cards
 		lineageTag: a244c29b-3ddf-535d-a22b-d8910e3a0811
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0%" )
+
 	/// "Progress Text" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
-	measure 'Metric Progress Text' = FORMAT ( [Metric FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+	measure 'Metric Progress Text' = IF ( ABS ( [Metric FY Progress] ) > 9.99, "n.m.", FORMAT ( [Metric FY Progress], "0%" ) ) & " of FY budget · " & IF ( ABS ( [Year Elapsed %] ) > 9.99, "n.m.", FORMAT ( [Year Elapsed %], "0%" ) ) & " of year"
 		displayFolder: 11 KPI Cards
 		lineageTag: 491c634a-4397-57f1-9946-0f342f1e615b
 
 	/// Full-year outlook of the selected metric as a share of its full-year budget.
 	measure 'Metric Outlook Progress' = DIVIDE ( [Metric Outlook FY], [Metric Budget FY] )
-		formatString: 0%
 		displayFolder: 11 KPI Cards
 		lineageTag: 9204713b-d3a1-5b6d-85aa-1cb99dc270f1
 
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0%" )
+
 	/// "Outlook Progress Text" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
-	measure 'Metric Outlook Progress Text' = FORMAT ( [Metric Outlook Progress], "0%" ) & " of FY budget (outlook)"
+	measure 'Metric Outlook Progress Text' = IF ( ABS ( [Metric Outlook Progress] ) > 9.99, "n.m.", FORMAT ( [Metric Outlook Progress], "0%" ) ) & " of FY budget (outlook)"
 		displayFolder: 11 KPI Cards
 		lineageTag: ca2f6bcc-f12f-5d2a-9198-0c3c6063331e
 
 	/// Card text: budget and prior-year gross margin for reference.
-	measure 'Gross Margin Progress Text' = "Budget " & FORMAT ( [Gross Profit Margin % Budget], "0.0%" ) & " · PY " & FORMAT ( DIVIDE ( [Gross Profit PY], [Revenue PY] ), "0.0%" )
+	measure 'Gross Margin Progress Text' = "Budget " & IF ( ABS ( [Gross Profit Margin % Budget] ) > 9.99, "n.m.", FORMAT ( [Gross Profit Margin % Budget], "0.0%" ) ) & " · PY " & FORMAT ( DIVIDE ( [Gross Profit PY], [Revenue PY] ), "0.0%" )
 		displayFolder: 11 KPI Cards
 		lineageTag: 5a4d4fbb-79dc-54c2-ad25-c221cc97f0bf
 
@@ -2357,7 +2377,7 @@ table _Measures
 		lineageTag: bb136ec4-67b1-5672-a05e-a14734057934
 
 	/// Card text: total revenue growth versus last year.
-	measure 'Revenue Growth Short' = "Total growth " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & " vs PY"
+	measure 'Revenue Growth Short' = "Total growth " & IF ( ABS ( [Revenue Growth %] ) > 9.99, "n.m.", FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) ) & " vs PY"
 		displayFolder: 11 KPI Cards
 		lineageTag: 29fe8f84-f7e8-514f-8da7-0ad7317e3659
 
@@ -2641,7 +2661,7 @@ table _Measures
 		lineageTag: b5b67f8f-30c2-55fc-930b-489539bd94a5
 
 	/// Change in salary cost per head versus last year, with closing headcount.
-	measure 'Salary per Head Text' = VAR g = DIVIDE ( [Salary Cost per Head], [Salary Cost per Head PY] ) - 1 RETURN IF ( NOT ISBLANK ( [Salary Cost per Head PY] ), FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs PY · headcount " & FORMAT ( [Headcount], "#,0" ) )
+	measure 'Salary per Head Text' = VAR g = DIVIDE ( [Salary Cost per Head], [Salary Cost per Head PY] ) - 1 RETURN IF ( NOT ISBLANK ( [Salary Cost per Head PY] ), IF ( ABS ( g ) > 9.99, "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY · headcount " & FORMAT ( [Headcount], "#,0" ) )
 		displayFolder: 3 KPIs\People
 		lineageTag: e7550785-c0d0-5611-a5b6-5d44c6b2d513
 
@@ -2935,9 +2955,10 @@ table _Measures
 
 	/// Revenue variance % to budget at constant currency.
 	measure 'Revenue Var % vs Budget (constant currency)' = DIVIDE ( [Revenue Var vs Budget (constant currency)], ABS ( [Revenue Budget] ) )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 3 KPIs\Currency effect
 		lineageTag: 0a695c19-0b67-5f2b-ab47-fb960a15a03a
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Narrative: how much of the revenue and EBITDA result is exchange-rate translation rather than trading.
 	measure 'Insight Currency' =
@@ -2945,7 +2966,7 @@ table _Measures
 			VAR fr = [Revenue FX Effect] VAR fe = [EBITDA FX Effect] VAR rv = [Revenue Var vs Budget]
 			RETURN IF ( ISBLANK ( fr ), "No foreign-currency activity in this selection.",
 			    "Exchange rates versus budget rates " & IF ( fr >= 0, "added ", "removed " ) & ( VAR _x = ABS ( fr ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of revenue (equal to " & FORMAT ( ABS ( DIVIDE ( fr, rv ) ), "0%" ) & " of the variance) and "
-			        & IF ( fe >= 0, "added ", "removed " ) & ( VAR _x = ABS ( fe ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of EBITDA. At constant currency revenue is " & FORMAT ( [Revenue Var % vs Budget (constant currency)], "+0.0%;-0.0%" ) & " vs budget." )
+			        & IF ( fe >= 0, "added ", "removed " ) & ( VAR _x = ABS ( fe ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of EBITDA. At constant currency revenue is " & IF ( ABS ( [Revenue Var % vs Budget (constant currency)] ) > 9.99, "n.m.", FORMAT ( [Revenue Var % vs Budget (constant currency)], "+0.0%;-0.0%" ) ) & " vs budget." )
 		displayFolder: 6 Narrative
 		lineageTag: 8982f72e-e41b-5552-9093-c33f2cc178ab
 
@@ -3028,7 +3049,7 @@ table _Measures
 		lineageTag: d2330873-02af-5659-988c-8fe46a3ef361
 
 	/// Card text: documentation coverage of the current selection.
-	measure 'DD Documented Text' = FORMAT ( [DD Documented %], "0%" ) & " of the selection has a description"
+	measure 'DD Documented Text' = IF ( ABS ( [DD Documented %] ) > 9.99, "n.m.", FORMAT ( [DD Documented %], "0%" ) ) & " of the selection has a description"
 		displayFolder: 12 Data Dictionary
 		lineageTag: 8f246f02-9c01-56a9-b3c8-089fe348f631
 
@@ -3126,9 +3147,10 @@ table _Measures
 
 	/// Change versus prior year in %. Blank when the signs differ or the change exceeds 1,000%.
 	measure 'IS Chg % PY' = VAR p = IF ( [IS CY Raw] * [IS PY Raw] > 0, DIVIDE ( [IS CY Raw] - [IS PY Raw], ABS ( [IS PY Raw] ) ) ) RETURN IF ( ABS ( p ) < 10, p )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 13 Statement Explorer
 		lineageTag: bec556db-a04d-5b20-9b7d-5ab5acc4321b
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Change in the share of revenue, in basis points (100 bps = 1 percentage point).
 	measure 'IS Chg Rev bps' = ( [IS CY % Rev] - [IS PY % Rev] ) * 10000
@@ -3364,7 +3386,7 @@ table _Measures
 			VAR last3 = AVERAGEX ( FILTER ( t2, [Value] > n - 3 ), [@cy] ) VAR prev3 = AVERAGEX ( FILTER ( t2, [Value] > n - 6 && [Value] <= n - 3 ), [@cy] )
 			VAR chg = DIVIDE ( last3 - prev3, ABS ( prev3 ) )
 			RETURN "• " & IF ( n < 6, "Fewer than six months closed: no trend statement yet.",
-			    [Focus Name] & IF ( chg >= 0.02, " strengthened", IF ( chg <= -0.02, " softened", " held steady" ) ) & " toward period end: last 3 months " & FORMAT ( chg, "+0%;-0%" ) & " vs the 3 before." )
+			    [Focus Name] & IF ( chg >= 0.02, " strengthened", IF ( chg <= -0.02, " softened", " held steady" ) ) & " toward period end: last 3 months " & IF ( ABS ( chg ) > 9.99, "n.m.", FORMAT ( chg, "+0%;-0%" ) ) & " vs the 3 before." )
 		displayFolder: 13 Statement Explorer
 		lineageTag: 5e612997-708f-5788-9a44-8aff2a4888a0
 
@@ -3391,7 +3413,7 @@ table _Measures
 			                         "@py", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) ) )
 			VAR n = COUNTROWS ( t2 )
 			VAR cy = SUMX ( t2, [@cy] ) VAR py = SUMX ( t2, [@py] ) VAR g = DIVIDE ( cy - py, ABS ( py ) )
-			RETURN "• Year to date " & IF ( ISBLANK ( py ), "has no prior-year comparison.", IF ( cy >= py, "is above", "is below" ) & " prior year by " & FORMAT ( ABS ( g ), "0.0%" ) & "; "
+			RETURN "• Year to date " & IF ( ISBLANK ( py ), "has no prior-year comparison.", IF ( cy >= py, "is above", "is below" ) & " prior year by " & IF ( ABS ( ABS ( g ) ) > 9.99, "n.m.", FORMAT ( ABS ( g ), "0.0%" ) ) & "; "
 			    & COUNTROWS ( FILTER ( t2, [@cy] >= [@py] ) ) + 0 & " of " & n & " months beat their prior-year month." )
 		displayFolder: 13 Statement Explorer
 		lineageTag: dcbe2e63-9404-5f55-85ff-6b81de919fc4
@@ -3405,7 +3427,7 @@ table _Measures
 			                         "@py", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) ) )
 			VAR n = COUNTROWS ( t2 )
 			VAR cv = DIVIDE ( STDEVX.P ( t2, [@cy] ), ABS ( AVERAGEX ( t2, [@cy] ) ) )
-			RETURN "• Monthly pattern is " & IF ( cv > 0.2, "volatile", "steady" ) & ": months vary by " & FORMAT ( cv, "0%" ) & " around the average." 
+			RETURN "• Monthly pattern is " & IF ( cv > 0.2, "volatile", "steady" ) & ": months vary by " & IF ( ABS ( cv ) > 9.99, "n.m.", FORMAT ( cv, "0%" ) ) & " around the average." 
 		displayFolder: 13 Statement Explorer
 		lineageTag: 93978922-32eb-5f5c-8802-4f158ee90290
 
@@ -3547,9 +3569,10 @@ table _Measures
 
 	/// Rolling forecast as a share of the target.
 	measure 'RF Attainment %' = DIVIDE ( [RF Total], [RF Target] )
-		formatString: 0.0%;-0.0%;-
 		displayFolder: 14 Rolling Forecast
 		lineageTag: aefeb35f-a4ab-5a14-b466-2b8cc2a6fefd
+
+		formatStringDefinition = IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0.0%;-0.0%;-" )
 
 	/// Fiscal months closed at the cut-off (April = 1).
 	measure 'RF Months Elapsed' = VAR cut = [RF Cutoff] RETURN MOD ( MONTH ( cut ) + 8, 12 ) + 1
@@ -3618,7 +3641,7 @@ table _Measures
 	/// Card text: status, gap and attainment of the rolling forecast.
 	measure 'RF Total Text' =
 			// Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-			[RF Status] & " · " & ( VAR _x = [RF Gap] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " vs target (" & FORMAT ( [RF Attainment %], "0%" ) & ")"
+			[RF Status] & " · " & ( VAR _x = [RF Gap] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " vs target (" & IF ( ABS ( [RF Attainment %] ) > 9.99, "n.m.", FORMAT ( [RF Attainment %], "0%" ) ) & ")"
 		displayFolder: 14 Rolling Forecast
 		lineageTag: 6eea0551-63f5-580c-84c6-6e149c697d2e
 

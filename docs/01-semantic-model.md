@@ -1009,7 +1009,7 @@ let
         {"Notes", 2, "Close and as-of month", "The reporting month is the latest month with an actuals file (""books closed""). Selecting a later month falls back to the close."},
         {"Notes", 3, "Sign convention", "Revenue is positive and costs are negative, so subtotals add up. Every variance is actual minus budget: positive is favourable, on revenue and on cost lines."},
         {"Notes", 4, "Colour", "Green = favourable, red = unfavourable, amber = caution (budget not credible), blue = actual, light blue = outlook, grey = budget or prior year. Arrows show direction only."},
-        {"Notes", 5, "Number format", "Cards, chart labels and summary tables: $ with millions to one decimal, thousands whole, negatives in brackets. One dynamic format string on each measure sets this, so the value stays a number. Statements: thousands. Percentages to one decimal. ""n.m."" or blank = not meaningful."},
+        {"Notes", 5, "Number format", "Cards, chart labels and summary tables: $ with millions to one decimal, thousands whole, negatives in brackets. One dynamic format string on each measure sets this, so the value stays a number. Statements: thousands. Percentages to one decimal. ""n.m."" = not meaningful: no base to compare with, actual and base of opposite sign, or a change above 999%."},
         {"Notes", 6, "Currency", "Bank of Canada rates, CAD per unit. P&L at monthly average, balance sheet at month end, budget at the prior fiscal-year average. USD view translates the CAD result at the USD rate."},
         {"Notes", 7, "Currency effect", "Constant currency = actuals translated at budget rates. The difference to reported actuals is translation, not trading. Rates after the last published month are carried forward."},
         {"Notes", 8, "Budget", "FY2026 to FY2028 budgets are synthetic (prior-year actual x growth x seeded noise). Entities that joined after the budget was set have no budget and are flagged."},
@@ -1551,7 +1551,7 @@ Positive = favourable (costs are stored negative).
 [Line Actual] - [Line Budget]
 ```
 
-**Line Var % vs Budget** · format `0.0%;-0.0%;-`  
+**Line Var % vs Budget** · format: dynamic (DAX format-string expression)  
 Budget variance %. Blank (n.m.) when actual and budget have different signs or the variance exceeds 1,000% (base too small to be meaningful).
 ```dax
 VAR p = IF ( [Line Actual] * [Line Budget] > 0, DIVIDE ( [Line Actual] - [Line Budget], ABS ( [Line Budget] ) ) ) RETURN IF ( ABS ( p ) < 10, p )
@@ -1563,7 +1563,7 @@ Line actual minus the same period last year.
 [Line Actual] - [Line Prior Year]
 ```
 
-**Line Growth %** · format `0.0%;-0.0%;-`  
+**Line Growth %** · format: dynamic (DAX format-string expression)  
 Growth vs the same period last year. Blank (n.m.) when the signs differ or the change exceeds 1,000%.
 ```dax
 VAR p = IF ( [Line Actual] * [Line Prior Year] > 0, DIVIDE ( [Line Actual] - [Line Prior Year], ABS ( [Line Prior Year] ) ) ) RETURN IF ( ABS ( p ) < 10, p )
@@ -1929,13 +1929,13 @@ Revenue: actual minus budget. Positive = favourable (costs are stored negative).
 [Revenue] - [Revenue Budget]
 ```
 
-**Revenue Var % vs Budget** · format `0.0%;-0.0%;-`  
+**Revenue Var % vs Budget** · format: dynamic (DAX format-string expression)  
 Revenue variance as % of absolute budget. Blank when actual and budget have different signs.
 ```dax
 IF ( [Revenue] * [Revenue Budget] > 0, DIVIDE ( [Revenue] - [Revenue Budget], ABS ( [Revenue Budget] ) ) )
 ```
 
-**Revenue Growth %** · format `0.0%;-0.0%;-`  
+**Revenue Growth %** · format: dynamic (DAX format-string expression)  
 Revenue growth versus the same period last year. Blank when the signs differ.
 ```dax
 IF ( [Revenue] * [Revenue PY] > 0, DIVIDE ( [Revenue] - [Revenue PY], ABS ( [Revenue PY] ) ) )
@@ -1958,7 +1958,7 @@ CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[A
 **Revenue vs Budget Text**  
 Card text for revenue: variance % to budget and growth % versus last year, with direction arrows.
 ```dax
-VAR v = [Revenue Var % vs Budget] VAR g = [Revenue Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
+VAR v = [Revenue Var % vs Budget] VAR g = [Revenue Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", IF ( ABS ( v ) > 9.99, "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", IF ( ABS ( g ) > 9.99, "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs PY"
 ```
 
 **Revenue Actual (in context)** · format: dynamic (DAX format-string expression)  
@@ -1997,13 +1997,13 @@ Cost of Sales: actual minus budget. Positive = favourable (costs are stored nega
 [Cost of Sales] - [Cost of Sales Budget]
 ```
 
-**Cost of Sales Var % vs Budget** · format `0.0%;-0.0%;-`  
+**Cost of Sales Var % vs Budget** · format: dynamic (DAX format-string expression)  
 Cost of Sales variance as % of absolute budget. Blank when actual and budget have different signs.
 ```dax
 IF ( [Cost of Sales] * [Cost of Sales Budget] > 0, DIVIDE ( [Cost of Sales] - [Cost of Sales Budget], ABS ( [Cost of Sales Budget] ) ) )
 ```
 
-**Cost of Sales Growth %** · format `0.0%;-0.0%;-`  
+**Cost of Sales Growth %** · format: dynamic (DAX format-string expression)  
 Cost of Sales growth versus the same period last year. Blank when the signs differ.
 ```dax
 IF ( [Cost of Sales] * [Cost of Sales PY] > 0, DIVIDE ( [Cost of Sales] - [Cost of Sales PY], ABS ( [Cost of Sales PY] ) ) )
@@ -2052,13 +2052,13 @@ Gross Profit: actual minus budget. Positive = favourable (costs are stored negat
 [Gross Profit] - [Gross Profit Budget]
 ```
 
-**Gross Profit Var % vs Budget** · format `0.0%;-0.0%;-`  
+**Gross Profit Var % vs Budget** · format: dynamic (DAX format-string expression)  
 Gross Profit variance as % of absolute budget. Blank when actual and budget have different signs.
 ```dax
 IF ( [Gross Profit] * [Gross Profit Budget] > 0, DIVIDE ( [Gross Profit] - [Gross Profit Budget], ABS ( [Gross Profit Budget] ) ) )
 ```
 
-**Gross Profit Growth %** · format `0.0%;-0.0%;-`  
+**Gross Profit Growth %** · format: dynamic (DAX format-string expression)  
 Gross Profit growth versus the same period last year. Blank when the signs differ.
 ```dax
 IF ( [Gross Profit] * [Gross Profit PY] > 0, DIVIDE ( [Gross Profit] - [Gross Profit PY], ABS ( [Gross Profit PY] ) ) )
@@ -2107,13 +2107,13 @@ Operating Expenses: actual minus budget. Positive = favourable (costs are stored
 [Operating Expenses] - [Operating Expenses Budget]
 ```
 
-**Operating Expenses Var % vs Budget** · format `0.0%;-0.0%;-`  
+**Operating Expenses Var % vs Budget** · format: dynamic (DAX format-string expression)  
 Operating Expenses variance as % of absolute budget. Blank when actual and budget have different signs.
 ```dax
 IF ( [Operating Expenses] * [Operating Expenses Budget] > 0, DIVIDE ( [Operating Expenses] - [Operating Expenses Budget], ABS ( [Operating Expenses Budget] ) ) )
 ```
 
-**Operating Expenses Growth %** · format `0.0%;-0.0%;-`  
+**Operating Expenses Growth %** · format: dynamic (DAX format-string expression)  
 Operating Expenses growth versus the same period last year. Blank when the signs differ.
 ```dax
 IF ( [Operating Expenses] * [Operating Expenses PY] > 0, DIVIDE ( [Operating Expenses] - [Operating Expenses PY], ABS ( [Operating Expenses PY] ) ) )
@@ -2162,13 +2162,13 @@ EBITDA: actual minus budget. Positive = favourable (costs are stored negative).
 [EBITDA] - [EBITDA Budget]
 ```
 
-**EBITDA Var % vs Budget** · format `0.0%;-0.0%;-`  
+**EBITDA Var % vs Budget** · format: dynamic (DAX format-string expression)  
 EBITDA variance as % of absolute budget. Blank when actual and budget have different signs.
 ```dax
 IF ( [EBITDA] * [EBITDA Budget] > 0, DIVIDE ( [EBITDA] - [EBITDA Budget], ABS ( [EBITDA Budget] ) ) )
 ```
 
-**EBITDA Growth %** · format `0.0%;-0.0%;-`  
+**EBITDA Growth %** · format: dynamic (DAX format-string expression)  
 EBITDA growth versus the same period last year. Blank when the signs differ.
 ```dax
 IF ( [EBITDA] * [EBITDA PY] > 0, DIVIDE ( [EBITDA] - [EBITDA PY], ABS ( [EBITDA PY] ) ) )
@@ -2191,7 +2191,7 @@ CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[A
 **EBITDA vs Budget Text**  
 Card text for ebitda: variance % to budget and growth % versus last year, with direction arrows.
 ```dax
-VAR v = [EBITDA Var % vs Budget] VAR g = [EBITDA Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
+VAR v = [EBITDA Var % vs Budget] VAR g = [EBITDA Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", IF ( ABS ( v ) > 9.99, "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", IF ( ABS ( g ) > 9.99, "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs PY"
 ```
 
 **EBITDA Bridge Value** · format: dynamic (DAX format-string expression)  
@@ -2229,13 +2229,13 @@ EBIT: actual minus budget. Positive = favourable (costs are stored negative).
 [EBIT] - [EBIT Budget]
 ```
 
-**EBIT Var % vs Budget** · format `0.0%;-0.0%;-`  
+**EBIT Var % vs Budget** · format: dynamic (DAX format-string expression)  
 EBIT variance as % of absolute budget. Blank when actual and budget have different signs.
 ```dax
 IF ( [EBIT] * [EBIT Budget] > 0, DIVIDE ( [EBIT] - [EBIT Budget], ABS ( [EBIT Budget] ) ) )
 ```
 
-**EBIT Growth %** · format `0.0%;-0.0%;-`  
+**EBIT Growth %** · format: dynamic (DAX format-string expression)  
 EBIT growth versus the same period last year. Blank when the signs differ.
 ```dax
 IF ( [EBIT] * [EBIT PY] > 0, DIVIDE ( [EBIT] - [EBIT PY], ABS ( [EBIT PY] ) ) )
@@ -2284,13 +2284,13 @@ Net Income: actual minus budget. Positive = favourable (costs are stored negativ
 [Net Income] - [Net Income Budget]
 ```
 
-**Net Income Var % vs Budget** · format `0.0%;-0.0%;-`  
+**Net Income Var % vs Budget** · format: dynamic (DAX format-string expression)  
 Net Income variance as % of absolute budget. Blank when actual and budget have different signs.
 ```dax
 IF ( [Net Income] * [Net Income Budget] > 0, DIVIDE ( [Net Income] - [Net Income Budget], ABS ( [Net Income Budget] ) ) )
 ```
 
-**Net Income Growth %** · format `0.0%;-0.0%;-`  
+**Net Income Growth %** · format: dynamic (DAX format-string expression)  
 Net Income growth versus the same period last year. Blank when the signs differ.
 ```dax
 IF ( [Net Income] * [Net Income PY] > 0, DIVIDE ( [Net Income] - [Net Income PY], ABS ( [Net Income PY] ) ) )
@@ -2313,7 +2313,7 @@ CALCULATE ( [Budget FY], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[A
 **Net Income vs Budget Text**  
 Card text for net income: variance % to budget and growth % versus last year, with direction arrows.
 ```dax
-VAR v = [Net Income Var % vs Budget] VAR g = [Net Income Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY"
+VAR v = [Net Income Var % vs Budget] VAR g = [Net Income Growth %] RETURN IF ( ISBLANK ( v ), "n.m.", IF ( ABS ( v ) > 9.99, "n.m.", FORMAT ( v, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs Bud  ·  " & IF ( ISBLANK ( g ), "n.m.", IF ( ABS ( g ) > 9.99, "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) ) & " vs PY"
 ```
 
 ### 3 KPIs\Margins
@@ -2416,7 +2416,7 @@ Revenue from entities that joined the group within the last twelve months.
 [Revenue] - [Revenue Like-for-Like]
 ```
 
-**Organic Growth %** · format `0.0%;-0.0%;-`  
+**Organic Growth %** · format: dynamic (DAX format-string expression)  
 Growth of like-for-like revenue versus the same period last year (entities that traded in both periods).
 ```dax
 DIVIDE ( [Revenue Like-for-Like] - [Revenue PY], ABS ( [Revenue PY] ) )
@@ -2434,7 +2434,7 @@ Revenue variance to budget counting only entities that have a budget for the per
 SUMX ( VALUES ( Entity[EntityKey] ), IF ( NOT ISBLANK ( [Revenue Budget] ), [Revenue] - [Revenue Budget] ) )
 ```
 
-**Revenue Var % vs Budget (Budgeted Entities)** · format `0.0%;-0.0%;-`  
+**Revenue Var % vs Budget (Budgeted Entities)** · format: dynamic (DAX format-string expression)  
 Revenue variance % to budget counting only entities that have a budget.
 ```dax
 DIVIDE ( [Revenue Var vs Budget (Budgeted Entities)], ABS ( [Revenue Budget] ) )
@@ -2494,7 +2494,7 @@ Revenue variance to budget for the core region only.
 VAR r = [Core Region] RETURN CALCULATE ( [Revenue Var vs Budget], KEEPFILTERS ( Entity[Region] = r ) )
 ```
 
-**Revenue Var % Core** · format `+0.0%;-0.0%;-`  
+**Revenue Var % Core** · format: dynamic (DAX format-string expression)  
 Revenue variance % to budget for the core region only.
 ```dax
 VAR r = [Core Region] RETURN CALCULATE ( [Revenue Var % vs Budget], KEEPFILTERS ( Entity[Region] = r ) )
@@ -2506,7 +2506,7 @@ EBITDA variance to budget for the core region only.
 VAR r = [Core Region] RETURN CALCULATE ( [EBITDA Var vs Budget], KEEPFILTERS ( Entity[Region] = r ) )
 ```
 
-**EBITDA Var % Core** · format `+0.0%;-0.0%;-`  
+**EBITDA Var % Core** · format: dynamic (DAX format-string expression)  
 EBITDA variance % to budget for the core region only.
 ```dax
 VAR r = [Core Region] RETURN CALCULATE ( [EBITDA Var % vs Budget], KEEPFILTERS ( Entity[Region] = r ) )
@@ -2543,14 +2543,14 @@ Net income belonging to non-controlling interests, as an amount and a share of t
 
 ### 4 Balance Sheet KPIs
 
-**Cash Balance (month)** · format: dynamic (DAX format-string expression)  
+**Cash Balance (month)** · format `#,0;(#,0);-`  
 Month-end cash for each month on the axis.
 ```dax
 // Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
 CALCULATE ( [Actual], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) )
 ```
 
-**Working Capital (month)** · format: dynamic (DAX format-string expression)  
+**Working Capital (month)** · format `#,0;(#,0);-`  
 Trade working capital at each month end: receivables + inventory - payables.
 ```dax
 // Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
@@ -2685,13 +2685,13 @@ RETURN CALCULATE ( [Prior Year (Period)], TREATAS ( accts, Account[AccountKey] )
 [Metric Actual] - [Metric Budget]
 ```
 
-**Metric Var % vs Budget** · format `0.0%;-0.0%;-`  
+**Metric Var % vs Budget** · format: dynamic (DAX format-string expression)  
 "Var % vs Budget" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
 IF ( [Metric Actual] * [Metric Budget] > 0, DIVIDE ( [Metric Actual] - [Metric Budget], ABS ( [Metric Budget] ) ) )
 ```
 
-**Metric Growth %** · format `0.0%;-0.0%;-`  
+**Metric Growth %** · format: dynamic (DAX format-string expression)  
 "Growth %" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
 IF ( [Metric Actual] * [Metric PY] > 0, DIVIDE ( [Metric Actual] - [Metric PY], ABS ( [Metric PY] ) ) )
@@ -2721,7 +2721,7 @@ Full-year outlook minus full-year budget for the selected metric.
 [Metric Outlook FY] - [Metric Budget FY]
 ```
 
-**Metric Monthly Actual** · format: dynamic (DAX format-string expression)  
+**Metric Monthly Actual** · format `#,0;(#,0);-`  
 "Monthly Actual" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
 // Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
@@ -2730,7 +2730,7 @@ VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report L
 RETURN CALCULATE ( [Monthly Actual (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
 ```
 
-**Metric Monthly Budget** · format: dynamic (DAX format-string expression)  
+**Metric Monthly Budget** · format `#,0;(#,0);-`  
 "Monthly Budget" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
 // Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
@@ -2739,7 +2739,7 @@ VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report L
 RETURN CALCULATE ( [Monthly Budget (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
 ```
 
-**Metric Monthly Outlook** · format: dynamic (DAX format-string expression)  
+**Metric Monthly Outlook** · format `#,0;(#,0);-`  
 "Monthly Outlook" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
 // Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
@@ -2748,7 +2748,7 @@ VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report L
 RETURN CALCULATE ( [Monthly Outlook (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
 ```
 
-**Metric Monthly Prior Year** · format: dynamic (DAX format-string expression)  
+**Metric Monthly Prior Year** · format `#,0;(#,0);-`  
 "Monthly Prior Year" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
 // Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
@@ -2757,7 +2757,7 @@ VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report L
 RETURN CALCULATE ( [Monthly Prior Year (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
 ```
 
-**Metric Cumulative Actual** · format: dynamic (DAX format-string expression)  
+**Metric Cumulative Actual** · format `#,0;(#,0);-`  
 "Cumulative Actual" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
 // Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
@@ -2766,7 +2766,7 @@ VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report L
 RETURN CALCULATE ( [Cumulative Actual (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
 ```
 
-**Metric Cumulative Outlook** · format: dynamic (DAX format-string expression)  
+**Metric Cumulative Outlook** · format `#,0;(#,0);-`  
 "Cumulative Outlook" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
 // Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
@@ -2775,7 +2775,7 @@ VAR accts = CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report L
 RETURN CALCULATE ( [Cumulative Outlook (Selected FY)], TREATAS ( accts, Account[AccountKey] ) )
 ```
 
-**Metric Cumulative Budget** · format: dynamic (DAX format-string expression)  
+**Metric Cumulative Budget** · format `#,0;(#,0);-`  
 "Cumulative Budget" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
 // Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
@@ -2821,10 +2821,10 @@ Executive headline: total result, then the core region on its own, so newer, unb
 ```dax
 // Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
 VAR core = [Core Region] VAR rv = [Revenue Var vs Budget] VAR rc = [Revenue Var Core] VAR share = DIVIDE ( rv - rc, rv ) VAR ec = [EBITDA Var Core]
-RETURN [Currency Label] & " " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " revenue, " & IF ( ISBLANK ( [Revenue Var % vs Budget] ), "budget comparison not meaningful", FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" ) & ". "
+RETURN [Currency Label] & " " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " revenue, " & IF ( ISBLANK ( [Revenue Var % vs Budget] ), "budget comparison not meaningful", IF ( ABS ( [Revenue Var % vs Budget] ) > 9.99, "n.m.", FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) ) & " vs budget" ) & ". "
     & IF ( ISBLANK ( rc ), "",
-        "Core " & core & " " & FORMAT ( [Revenue Var % Core], "+0.0%;-0.0%" ) & IF ( rv > 0 && share > 0.5, "; newer regions deliver " & FORMAT ( share, "0%" ) & " of the beat", "" ) & ". " )
-    & "EBITDA " & IF ( ISBLANK ( [EBITDA Var % vs Budget] ), "budget comparison not meaningful", FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget" ) & IF ( ISBLANK ( ec ), ".", ", " & core & " " & ( VAR _x = ec RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "." )
+        "Core " & core & " " & IF ( ABS ( [Revenue Var % Core] ) > 9.99, "n.m.", FORMAT ( [Revenue Var % Core], "+0.0%;-0.0%" ) ) & IF ( rv > 0 && share > 0.5, "; newer regions deliver " & IF ( ABS ( share ) > 9.99, "n.m.", FORMAT ( share, "0%" ) ) & " of the beat", "" ) & ". " )
+    & "EBITDA " & IF ( ISBLANK ( [EBITDA Var % vs Budget] ), "budget comparison not meaningful", IF ( ABS ( [EBITDA Var % vs Budget] ) > 9.99, "n.m.", FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) ) & " vs budget" ) & IF ( ISBLANK ( ec ), ".", ", " & core & " " & ( VAR _x = ec RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "." )
 ```
 
 **Insight Perimeter**  
@@ -2834,7 +2834,7 @@ Narrative: revenue from new entities, revenue without a budget, and the variance
 VAR nu = [Revenue New Entities] VAR ub = [Revenue Unbudgeted]
 RETURN IF ( nu > 0 || ub > 0,
     "Entities new to the group added " & [Currency Label] & " " & ( VAR _x = nu RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & "; " & [Currency Label] & " " & ( VAR _x = ub RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of revenue has no budget behind it. Excluding unbudgeted entities, revenue is "
-        & FORMAT ( [Revenue Var % vs Budget (Budgeted Entities)], "+0.0%;-0.0%" ) & " vs budget.",
+        & IF ( ABS ( [Revenue Var % vs Budget (Budgeted Entities)] ) > 9.99, "n.m.", FORMAT ( [Revenue Var % vs Budget (Budgeted Entities)], "+0.0%;-0.0%" ) ) & " vs budget.",
     "No change in the group perimeter versus last year." )
 ```
 
@@ -2861,7 +2861,7 @@ RETURN "Full-year outlook: net income " & [Currency Label] & " " & ( VAR _x = [N
 Subtitle of the Budget vs Actual page: selected metric, amount and variance % to budget.
 ```dax
 // Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-[Metric Name] & " · " & [Period Label] & ": " & ( VAR _x = [Metric Actual] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & ", " & FORMAT ( ABS ( [Metric Var % vs Budget] ), "0.0%" ) & IF ( [Metric Var vs Budget] >= 0, " favourable", " unfavourable" ) & " to budget"
+[Metric Name] & " · " & [Period Label] & ": " & ( VAR _x = [Metric Actual] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & ", " & IF ( ABS ( ABS ( [Metric Var % vs Budget] ) ) > 9.99, "n.m.", FORMAT ( ABS ( [Metric Var % vs Budget] ), "0.0%" ) ) & IF ( [Metric Var vs Budget] >= 0, " favourable", " unfavourable" ) & " to budget"
 ```
 
 **Title BvA Trend**  
@@ -2894,7 +2894,7 @@ Fixed on operating expenses: in the source ledger all revenue and cost of sales 
 Card text: variance of the selected metric to budget, amount and %.
 ```dax
 // Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-( VAR _x = [Metric Var vs Budget] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " (" & FORMAT ( [Metric Var % vs Budget], "+0.0%;-0.0%" ) & ") vs budget"
+( VAR _x = [Metric Var vs Budget] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " (" & IF ( ABS ( [Metric Var % vs Budget] ) > 9.99, "n.m.", FORMAT ( [Metric Var % vs Budget], "+0.0%;-0.0%" ) ) & ") vs budget"
 ```
 
 **Metric Gap Text**  
@@ -2907,13 +2907,13 @@ Card text: full-year outlook minus full-year budget.
 **Metric Growth Text**  
 Card text: growth of the selected metric versus last year.
 ```dax
-FORMAT ( [Metric Growth %], "+0.0%;-0.0%" ) & " vs prior year"
+IF ( ABS ( [Metric Growth %] ) > 9.99, "n.m.", FORMAT ( [Metric Growth %], "+0.0%;-0.0%" ) ) & " vs prior year"
 ```
 
 **Title Revenue Bridge**  
 Title of the revenue growth bridge: total and organic growth.
 ```dax
-"Revenue growth vs prior year: " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & ", of which organic " & FORMAT ( [Organic Growth %], "+0.0%;-0.0%" )
+"Revenue growth vs prior year: " & IF ( ABS ( [Revenue Growth %] ) > 9.99, "n.m.", FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) ) & ", of which organic " & IF ( ABS ( [Organic Growth %] ) > 9.99, "n.m.", FORMAT ( [Organic Growth %], "+0.0%;-0.0%" ) )
 ```
 
 **Title EBITDA Bridge**  
@@ -2961,7 +2961,7 @@ Narrative: how much of the revenue and EBITDA result is exchange-rate translatio
 VAR fr = [Revenue FX Effect] VAR fe = [EBITDA FX Effect] VAR rv = [Revenue Var vs Budget]
 RETURN IF ( ISBLANK ( fr ), "No foreign-currency activity in this selection.",
     "Exchange rates versus budget rates " & IF ( fr >= 0, "added ", "removed " ) & ( VAR _x = ABS ( fr ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of revenue (equal to " & FORMAT ( ABS ( DIVIDE ( fr, rv ) ), "0%" ) & " of the variance) and "
-        & IF ( fe >= 0, "added ", "removed " ) & ( VAR _x = ABS ( fe ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of EBITDA. At constant currency revenue is " & FORMAT ( [Revenue Var % vs Budget (constant currency)], "+0.0%;-0.0%" ) & " vs budget." )
+        & IF ( fe >= 0, "added ", "removed " ) & ( VAR _x = ABS ( fe ) RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " of EBITDA. At constant currency revenue is " & IF ( ABS ( [Revenue Var % vs Budget (constant currency)] ) > 9.99, "n.m.", FORMAT ( [Revenue Var % vs Budget (constant currency)], "+0.0%;-0.0%" ) ) & " vs budget." )
 ```
 
 ### 9 Data Quality
@@ -3317,9 +3317,9 @@ Numbered footer note 1 (same on every page).
 ```
 
 **Footer Note 2**  
-Numbered footer note 2 (same on every page).
+Numbered footer note 2 (same on every page): legend for the abbreviations used in the report.
 ```dax
-"2  Described in the model: every measure has a description (docs/01-semantic-model.md)."
+"2  n.m. = not meaningful · K = thousands · M = millions · pts = percentage points · bps = basis points · x = times"
 ```
 
 **Footer Notes**  
@@ -3370,7 +3370,7 @@ Budget variance for rows ranked in the top 5 exceptions; blank otherwise, which 
 IF ( [Exception Rank] <= 5, [Line Var vs Budget] )
 ```
 
-**Exception Var %** · format `0.0%;-0.0%;-`  
+**Exception Var %** · format: dynamic (DAX format-string expression)  
 Budget variance % for the top-5 exception rows.
 ```dax
 IF ( [Exception Rank] <= 5, [Line Var % vs Budget] )
@@ -3428,7 +3428,7 @@ DIVIDE ( -CALCULATE ( [Prior Year (Period)], TREATAS ( CALCULATETABLE ( VALUES (
 **Salary per Head Text**  
 Change in salary cost per head versus last year, with closing headcount.
 ```dax
-VAR g = DIVIDE ( [Salary Cost per Head], [Salary Cost per Head PY] ) - 1 RETURN IF ( NOT ISBLANK ( [Salary Cost per Head PY] ), FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) & " vs PY · headcount " & FORMAT ( [Headcount], "#,0" ) )
+VAR g = DIVIDE ( [Salary Cost per Head], [Salary Cost per Head PY] ) - 1 RETURN IF ( NOT ISBLANK ( [Salary Cost per Head PY] ), IF ( ABS ( g ) > 9.99, "n.m.", FORMAT ( g, "▲ 0.0%;▼ 0.0%;0.0%" ) ) & " vs PY · headcount " & FORMAT ( [Headcount], "#,0" ) )
 ```
 
 ### 6 Narrative\Visual titles
@@ -3822,7 +3822,7 @@ Page title of the Overview page.
 Page subtitle of the Overview page: the key figures in one line.
 ```dax
 // Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-[Entities Reporting] & " entities, " & COUNTROWS ( FILTER ( VALUES ( Entity[Region] ), NOT ISBLANK ( [Revenue] ) ) ) & " regions · revenue " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & " vs PY (organic " & FORMAT ( [Organic Growth %], "+0.0%;-0.0%" ) & ")"
+[Entities Reporting] & " entities, " & COUNTROWS ( FILTER ( VALUES ( Entity[Region] ), NOT ISBLANK ( [Revenue] ) ) ) & " regions · revenue " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " " & IF ( ABS ( [Revenue Growth %] ) > 9.99, "n.m.", FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) ) & " vs PY (organic " & IF ( ABS ( [Organic Growth %] ) > 9.99, "n.m.", FORMAT ( [Organic Growth %], "+0.0%;-0.0%" ) ) & ")"
 ```
 
 **PT Executive**  
@@ -3846,7 +3846,7 @@ Page title of the P&L page.
 **PS IS**  
 Page subtitle of the P&L page: the key figures in one line.
 ```dax
-"Gross margin " & FORMAT ( [Gross Profit Margin %], "0.0%" ) & " (" & FORMAT ( [Gross Profit Margin pts vs Budget] * 100, "+0.0;-0.0" ) & " pts vs budget) · EBITDA margin " & FORMAT ( [EBITDA Margin %], "0.0%" ) & " · opex " & FORMAT ( [OpEx % of Revenue], "0.0%" ) & " of revenue."
+"Gross margin " & IF ( ABS ( [Gross Profit Margin %] ) > 9.99, "n.m.", FORMAT ( [Gross Profit Margin %], "0.0%" ) ) & " (" & FORMAT ( [Gross Profit Margin pts vs Budget] * 100, "+0.0;-0.0" ) & " pts vs budget) · EBITDA margin " & IF ( ABS ( [EBITDA Margin %] ) > 9.99, "n.m.", FORMAT ( [EBITDA Margin %], "0.0%" ) ) & " · opex " & IF ( ABS ( [OpEx % of Revenue] ) > 9.99, "n.m.", FORMAT ( [OpEx % of Revenue], "0.0%" ) ) & " of revenue."
 ```
 
 **PT BS**  
@@ -3864,14 +3864,14 @@ Page title of the Data Quality page.
 **PS DQ**  
 Page subtitle of the Data Quality page: the key figures in one line.
 ```dax
-"Balance-sheet difference " & FORMAT ( [DQ Balance Sheet Difference], "#,0" ) & " · rows missing FX " & [DQ Rows Missing FX Rate] & " · accounts not in chart " & [DQ Accounts Missing From Chart] & " · synthetic budget rows " & FORMAT ( [DQ Synthetic Budget Share], "0%" ) & "."
+"Balance-sheet difference " & FORMAT ( [DQ Balance Sheet Difference], "#,0" ) & " · rows missing FX " & [DQ Rows Missing FX Rate] & " · accounts not in chart " & [DQ Accounts Missing From Chart] & " · synthetic budget rows " & IF ( ABS ( [DQ Synthetic Budget Share] ) > 9.99, "n.m.", FORMAT ( [DQ Synthetic Budget Share], "0%" ) ) & "."
 ```
 
 **PS Executive**  
 Page subtitle of the Executive page: the key figures in one line.
 ```dax
 // Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-"Revenue " & FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) & " vs budget · EBITDA " & FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) & " · net income outlook " & ( VAR _x = [Net Income Outlook FY] - [Net Income Budget FY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " vs FY budget"
+"Revenue " & IF ( ABS ( [Revenue Var % vs Budget] ) > 9.99, "n.m.", FORMAT ( [Revenue Var % vs Budget], "+0.0%;-0.0%" ) ) & " vs budget · EBITDA " & IF ( ABS ( [EBITDA Var % vs Budget] ) > 9.99, "n.m.", FORMAT ( [EBITDA Var % vs Budget], "+0.0%;-0.0%" ) ) & " · net income outlook " & ( VAR _x = [Net Income Outlook FY] - [Net Income Budget FY] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " vs FY budget"
 ```
 
 **PT Notes**  
@@ -3937,7 +3937,7 @@ Page subtitle of the Sankey page: the key figures in one line.
 
 ### 11 KPI Cards
 
-**Revenue FY Progress** · format `0%`  
+**Revenue FY Progress** · format: dynamic (DAX format-string expression)  
 Revenue year to date as a share of the full-year budget.
 ```dax
 // Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
@@ -3947,10 +3947,10 @@ DIVIDE ( CALCULATE ( [Actual YTD], TREATAS ( CALCULATETABLE ( VALUES ( 'Report L
 **Revenue Progress Text**  
 Card text: revenue year to date as a share of the full-year budget, next to the share of the year elapsed.
 ```dax
-FORMAT ( [Revenue FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+IF ( ABS ( [Revenue FY Progress] ) > 9.99, "n.m.", FORMAT ( [Revenue FY Progress], "0%" ) ) & " of FY budget · " & IF ( ABS ( [Year Elapsed %] ) > 9.99, "n.m.", FORMAT ( [Year Elapsed %], "0%" ) ) & " of year"
 ```
 
-**EBITDA FY Progress** · format `0%`  
+**EBITDA FY Progress** · format: dynamic (DAX format-string expression)  
 EBITDA year to date as a share of the full-year budget.
 ```dax
 // Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
@@ -3960,10 +3960,10 @@ DIVIDE ( CALCULATE ( [Actual YTD], TREATAS ( CALCULATETABLE ( VALUES ( 'Report L
 **EBITDA Progress Text**  
 Card text: ebitda year to date as a share of the full-year budget, next to the share of the year elapsed.
 ```dax
-FORMAT ( [EBITDA FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+IF ( ABS ( [EBITDA FY Progress] ) > 9.99, "n.m.", FORMAT ( [EBITDA FY Progress], "0%" ) ) & " of FY budget · " & IF ( ABS ( [Year Elapsed %] ) > 9.99, "n.m.", FORMAT ( [Year Elapsed %], "0%" ) ) & " of year"
 ```
 
-**Net Income FY Progress** · format `0%`  
+**Net Income FY Progress** · format: dynamic (DAX format-string expression)  
 Net Income year to date as a share of the full-year budget.
 ```dax
 // Report-line pattern: the accounts mapped to a report line (Report Line Map) are applied to Account with TREATAS, so a line is data, not hard-coded DAX.
@@ -3973,10 +3973,10 @@ DIVIDE ( CALCULATE ( [Actual YTD], TREATAS ( CALCULATETABLE ( VALUES ( 'Report L
 **Net Income Progress Text**  
 Card text: net income year to date as a share of the full-year budget, next to the share of the year elapsed.
 ```dax
-FORMAT ( [Net Income FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+IF ( ABS ( [Net Income FY Progress] ) > 9.99, "n.m.", FORMAT ( [Net Income FY Progress], "0%" ) ) & " of FY budget · " & IF ( ABS ( [Year Elapsed %] ) > 9.99, "n.m.", FORMAT ( [Year Elapsed %], "0%" ) ) & " of year"
 ```
 
-**Net Income Outlook Progress** · format `0%`  
+**Net Income Outlook Progress** · format: dynamic (DAX format-string expression)  
 Full-year net income outlook as a share of the full-year budget.
 ```dax
 DIVIDE ( [Net Income Outlook FY], [Net Income Budget FY] )
@@ -3985,10 +3985,10 @@ DIVIDE ( [Net Income Outlook FY], [Net Income Budget FY] )
 **Net Income Outlook Progress Text**  
 Card text: full-year net income outlook as a share of the full-year budget.
 ```dax
-FORMAT ( [Net Income Outlook Progress], "0%" ) & " of FY budget"
+IF ( ABS ( [Net Income Outlook Progress] ) > 9.99, "n.m.", FORMAT ( [Net Income Outlook Progress], "0%" ) ) & " of FY budget"
 ```
 
-**Metric FY Progress** · format `0%`  
+**Metric FY Progress** · format: dynamic (DAX format-string expression)  
 Selected metric year to date as a share of its full-year budget.
 ```dax
 // Template pattern: the report line (or metric) in context decides which accounts are summed, via TREATAS.
@@ -4000,10 +4000,10 @@ RETURN CALCULATE ( [Actual YTD], TREATAS ( accts, Account[AccountKey] ) ), [Metr
 **Metric Progress Text**  
 "Progress Text" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
-FORMAT ( [Metric FY Progress], "0%" ) & " of FY budget · " & FORMAT ( [Year Elapsed %], "0%" ) & " of year"
+IF ( ABS ( [Metric FY Progress] ) > 9.99, "n.m.", FORMAT ( [Metric FY Progress], "0%" ) ) & " of FY budget · " & IF ( ABS ( [Year Elapsed %] ) > 9.99, "n.m.", FORMAT ( [Year Elapsed %], "0%" ) ) & " of year"
 ```
 
-**Metric Outlook Progress** · format `0%`  
+**Metric Outlook Progress** · format: dynamic (DAX format-string expression)  
 Full-year outlook of the selected metric as a share of its full-year budget.
 ```dax
 DIVIDE ( [Metric Outlook FY], [Metric Budget FY] )
@@ -4012,13 +4012,13 @@ DIVIDE ( [Metric Outlook FY], [Metric Budget FY] )
 **Metric Outlook Progress Text**  
 "Outlook Progress Text" for the P&L measure picked in the Metric slicer on the Budget vs Actual page (Revenue by default).
 ```dax
-FORMAT ( [Metric Outlook Progress], "0%" ) & " of FY budget (outlook)"
+IF ( ABS ( [Metric Outlook Progress] ) > 9.99, "n.m.", FORMAT ( [Metric Outlook Progress], "0%" ) ) & " of FY budget (outlook)"
 ```
 
 **Gross Margin Progress Text**  
 Card text: budget and prior-year gross margin for reference.
 ```dax
-"Budget " & FORMAT ( [Gross Profit Margin % Budget], "0.0%" ) & " · PY " & FORMAT ( DIVIDE ( [Gross Profit PY], [Revenue PY] ), "0.0%" )
+"Budget " & IF ( ABS ( [Gross Profit Margin % Budget] ) > 9.99, "n.m.", FORMAT ( [Gross Profit Margin % Budget], "0.0%" ) ) & " · PY " & FORMAT ( DIVIDE ( [Gross Profit PY], [Revenue PY] ), "0.0%" )
 ```
 
 **Cash Progress Text**  
@@ -4051,7 +4051,7 @@ Card text: full-year budget for the selected metric.
 **Revenue Growth Short**  
 Card text: total revenue growth versus last year.
 ```dax
-"Total growth " & FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) & " vs PY"
+"Total growth " & IF ( ABS ( [Revenue Growth %] ) > 9.99, "n.m.", FORMAT ( [Revenue Growth %], "+0.0%;-0.0%" ) ) & " vs PY"
 ```
 
 **SVG Spark Revenue**  
@@ -4436,7 +4436,7 @@ EBITDA variance to budget with the currency effect removed: the trading variance
 [EBITDA at Budget Rate] - [EBITDA Budget]
 ```
 
-**Revenue Var % vs Budget (constant currency)** · format `0.0%;-0.0%;-`  
+**Revenue Var % vs Budget (constant currency)** · format: dynamic (DAX format-string expression)  
 Revenue variance % to budget at constant currency.
 ```dax
 DIVIDE ( [Revenue Var vs Budget (constant currency)], ABS ( [Revenue Budget] ) )
@@ -4483,7 +4483,7 @@ DIVIDE ( COUNTROWS ( FILTER ( 'Data Dictionary', NOT ISBLANK ( 'Data Dictionary'
 **DD Documented Text**  
 Card text: documentation coverage of the current selection.
 ```dax
-FORMAT ( [DD Documented %], "0%" ) & " of the selection has a description"
+IF ( ABS ( [DD Documented %] ) > 9.99, "n.m.", FORMAT ( [DD Documented %], "0%" ) ) & " of the selection has a description"
 ```
 
 ### 13 Statement Explorer
@@ -4546,7 +4546,7 @@ Change versus prior year. Positive = favourable, because costs are stored negati
 [IS CY Raw] - [IS PY Raw]
 ```
 
-**IS Chg % PY** · format `0.0%;-0.0%;-`  
+**IS Chg % PY** · format: dynamic (DAX format-string expression)  
 Change versus prior year in %. Blank when the signs differ or the change exceeds 1,000%.
 ```dax
 VAR p = IF ( [IS CY Raw] * [IS PY Raw] > 0, DIVIDE ( [IS CY Raw] - [IS PY Raw], ABS ( [IS PY Raw] ) ) ) RETURN IF ( ABS ( p ) < 10, p )
@@ -4734,7 +4734,7 @@ VAR n = COUNTROWS ( t2 )
 VAR last3 = AVERAGEX ( FILTER ( t2, [Value] > n - 3 ), [@cy] ) VAR prev3 = AVERAGEX ( FILTER ( t2, [Value] > n - 6 && [Value] <= n - 3 ), [@cy] )
 VAR chg = DIVIDE ( last3 - prev3, ABS ( prev3 ) )
 RETURN "• " & IF ( n < 6, "Fewer than six months closed: no trend statement yet.",
-    [Focus Name] & IF ( chg >= 0.02, " strengthened", IF ( chg <= -0.02, " softened", " held steady" ) ) & " toward period end: last 3 months " & FORMAT ( chg, "+0%;-0%" ) & " vs the 3 before." )
+    [Focus Name] & IF ( chg >= 0.02, " strengthened", IF ( chg <= -0.02, " softened", " held steady" ) ) & " toward period end: last 3 months " & IF ( ABS ( chg ) > 9.99, "n.m.", FORMAT ( chg, "+0%;-0%" ) ) & " vs the 3 before." )
 ```
 
 **Focus Bullet 2**  
@@ -4761,7 +4761,7 @@ VAR t2 = ADDCOLUMNS ( t, "@cy", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (i
                          "@py", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) ) )
 VAR n = COUNTROWS ( t2 )
 VAR cy = SUMX ( t2, [@cy] ) VAR py = SUMX ( t2, [@py] ) VAR g = DIVIDE ( cy - py, ABS ( py ) )
-RETURN "• Year to date " & IF ( ISBLANK ( py ), "has no prior-year comparison.", IF ( cy >= py, "is above", "is below" ) & " prior year by " & FORMAT ( ABS ( g ), "0.0%" ) & "; "
+RETURN "• Year to date " & IF ( ISBLANK ( py ), "has no prior-year comparison.", IF ( cy >= py, "is above", "is below" ) & " prior year by " & IF ( ABS ( ABS ( g ) ) > 9.99, "n.m.", FORMAT ( ABS ( g ), "0.0%" ) ) & "; "
     & COUNTROWS ( FILTER ( t2, [@cy] >= [@py] ) ) + 0 & " of " & n & " months beat their prior-year month." )
 ```
 
@@ -4775,7 +4775,7 @@ VAR t2 = ADDCOLUMNS ( t, "@cy", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (i
                          "@py", VAR d = [@d] RETURN CALCULATE ( [Focus Actual (in context)], REMOVEFILTERS ( 'Date' ), 'Date'[Month] = EDATE ( d, -12 ) ) )
 VAR n = COUNTROWS ( t2 )
 VAR cv = DIVIDE ( STDEVX.P ( t2, [@cy] ), ABS ( AVERAGEX ( t2, [@cy] ) ) )
-RETURN "• Monthly pattern is " & IF ( cv > 0.2, "volatile", "steady" ) & ": months vary by " & FORMAT ( cv, "0%" ) & " around the average." 
+RETURN "• Monthly pattern is " & IF ( cv > 0.2, "volatile", "steady" ) & ": months vary by " & IF ( ABS ( cv ) > 9.99, "n.m.", FORMAT ( cv, "0%" ) ) & " around the average." 
 ```
 
 ### 14 Rolling Forecast
@@ -4836,7 +4836,7 @@ Rolling forecast minus target. Positive = on track (also for cost metrics, which
 IF ( NOT ISBLANK ( [RF Target] ), [RF Total] - [RF Target] )
 ```
 
-**RF Attainment %** · format `0.0%;-0.0%;-`  
+**RF Attainment %** · format: dynamic (DAX format-string expression)  
 Rolling forecast as a share of the target.
 ```dax
 DIVIDE ( [RF Total], [RF Target] )
@@ -4894,7 +4894,7 @@ IF ( NOT ISBLANK ( [RF Total] ), IF ( NOT ISBLANK ( [RF Target] ), IF ( [RF Run-
 Card text: status, gap and attainment of the rolling forecast.
 ```dax
 // Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-[RF Status] & " · " & ( VAR _x = [RF Gap] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " vs target (" & FORMAT ( [RF Attainment %], "0%" ) & ")"
+[RF Status] & " · " & ( VAR _x = [RF Gap] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & " vs target (" & IF ( ABS ( [RF Attainment %] ) > 9.99, "n.m.", FORMAT ( [RF Attainment %], "0%" ) ) & ")"
 ```
 
 **RF Target Text**  
