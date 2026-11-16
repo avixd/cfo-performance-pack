@@ -288,7 +288,7 @@
             "tooltip": {
               "expr": {
                 "Literal": {
-                  "Value": "'Clear every slicer on every page'"
+                  "Value": "'Clear the slicers on this page'"
                 }
               }
             }

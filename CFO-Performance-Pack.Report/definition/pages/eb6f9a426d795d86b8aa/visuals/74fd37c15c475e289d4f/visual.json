@@ -3,11 +3,11 @@
   "name": "74fd37c15c475e289d4f",
   "position": {
     "x": 10,
-    "y": 678,
-    "z": 21000,
+    "y": 503,
+    "z": 18000,
     "height": 22,
     "width": 176,
-    "tabOrder": 21000
+    "tabOrder": 18000
   },
   "visual": {
     "visualType": "actionButton",
@@ -288,7 +288,7 @@
             "tooltip": {
               "expr": {
                 "Literal": {
-                  "Value": "'Clear every slicer on every page'"
+                  "Value": "'Clear the slicers on this page'"
                 }
               }
             }

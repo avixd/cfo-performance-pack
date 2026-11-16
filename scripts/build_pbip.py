@@ -295,6 +295,17 @@ def T(name):          # theme colour (measure-driven)
 
 NO_PAD = [{'properties': {'top': L(0), 'bottom': L(0), 'left': L(0), 'right': L(0)}}]
 
+# Sidebar slicers per page (reviewed 16 Nov 2026). A synced slicer only filters the pages it is placed on, so leaving one out
+# also keeps its selection from reaching that page.
+#   Department: only where cost-centre analysis is valid (page 3). The ledger books all revenue in one department and cash in
+#               another, so a department filter blanks revenue and the balance sheet everywhere else.
+#   Period:     no effect on a balance sheet (point in time) or on the full-year rolling forecast.
+#   Month:      on the rolling forecast the page's own "Actuals until" does that job.
+#   Data Quality, Data Dictionary, Notes describe the load and the model: no business filters.
+_BASE = ('s_fy', 's_m', 's_p', 's_c', 's_r', 's_e')
+SIDEBAR = {'BvA': _BASE + ('s_d',), 'BS': ('s_fy', 's_m', 's_c', 's_r', 's_e'), 'RF': ('s_fy', 's_c', 's_r', 's_e'), 'DQ': (), 'DD': (), 'Notes': ()}
+CHIP_OF = {'Period': 's_m', 'Currency': 's_c', 'Region': 's_r', 'Entity': 's_e', 'Department': 's_d'}
+
 
 class Page:
     def __init__(self, pid, display, key, hidden=False):
@@ -347,12 +358,37 @@ class Page:
         return vid
 
     # ---------------------------------------------------------------- chrome
-    def rect(self, key, x, y, w, h, colour):
+    def rect(self, key, x, y, w, h, colour, radius=None, border=None, transparency=0):
         """Themed panel/line: an empty text box whose container background follows the theme (shape fills ignored fx)."""
+        container = {'background': [{'properties': {'show': L(True), 'color': T(colour), 'transparency': L(transparency)}}],
+                     'padding': [{'properties': {'top': L(0), 'bottom': L(0), 'left': L(0), 'right': L(0)}}]}
+        if radius or border:
+            container['border'] = [{'properties': dict({'show': L(True), 'color': T(border or colour), 'width': L(1)}, **({'radius': L(radius)} if radius else {}))}]
         return self.add(key, 'textbox', x, y, w, h, content=False, background=False, header=False,
-                        objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]},
-                        container={'background': [{'properties': {'show': L(True), 'color': T(colour), 'transparency': L(0)}}],
-                                   'padding': [{'properties': {'top': L(0), 'bottom': L(0), 'left': L(0), 'right': L(0)}}]})
+                        objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]}, container=container)
+
+    def glass_toggle(self, key, x, y, w, h, spec, icon_measure, sync):
+        """Light / Dark toggle: a button slicer with one icon per tile and no text. Unselected tiles are see-through; the selected tile
+        is the lit glass knob (translucent white fill, thin light edge, soft shadow, inner glow). The track behind it is a themed rect."""
+        def st(state, **props):
+            return {'properties': {k: (v if isinstance(v, dict) else L(v)) for k, v in props.items()}, 'selector': {'id': state}}
+        white, black = solid('#FFFFFF'), solid('#000000')
+        obj = {'layout': [{'properties': {'orientation': L(2), 'maxTiles': L(2), 'cellPadding': L(4), 'alignment': L('center')}}],
+               'selection': [{'properties': {'strictSingleSelect': L(True), 'singleSelect': L(True)}}],
+               'shapeCustomRectangle': [st('default', tileShape='pill')],
+               'value': [st('default', show=False)], 'label': [st('default', show=False)],
+               'selectionIcon': [st('default', show=False)], 'accentBar': [st('default', show=False)],
+               'image': [st('default', show=True, sourceType='imageUrl', url={'expr': mfield(icon_measure)}, position='Top', imageAreaSize=100)],
+               'fillCustom': [st('default', show=True, fillColor=white, transparency=100), st('interaction:hover', show=True, fillColor=white, transparency=75),
+                              st('selection:selected', show=True, fillColor=white, transparency=30)],
+               'outline': [st('default', show=False), st('selection:selected', show=True, lineColor=white, transparency=25, weight=1)],
+               'shadowCustom': [st('default', show=False),
+                                st('selection:selected', show=True, color=black, transparency=72, shadowBlur=5, shadowDistance=1, angle=90, position='Outer')],
+               'glowCustom': [st('default', show=False), st('selection:selected', show=True, color=white, transparency=45, shadowBlur=4, position='Inner')]}
+        vid = self.add(key, 'advancedSlicerVisual', x, y, w, h, roles={'Values': [spec]}, objects=obj, background=False, content=False, header=False,
+                       container={'padding': NO_PAD})
+        self.visuals[-1]['visual']['syncGroup'] = {'groupName': sync, 'fieldChanges': True, 'filterChanges': True}
+        return vid
 
     def textline(self, key, x, y, w, h, measure, size, colour='Text', content=False, align='left', bold=False):
         """Dynamic text line: a transparent, action-less button whose text is a measure (left-aligned, themed)."""
@@ -424,8 +460,10 @@ class Page:
             self.button(f'nav_{pid}', 8, y, PANEL_W - 16, 24, f'{glyph}   {name}', 'PageNavigation', page=pid, fill='Sidebar Active' if on else 'Sidebar',
                         text='Sidebar Text' if on else 'Sidebar Muted', outline=None, size=8.5, align='left', bold=on, round_=6, valign='middle')
             y += 24
-        self.textline('lbl_f', 8, y, PANEL_W - 16, 16, 'Lbl Filters', 7.5, 'Sidebar Muted', bold=True)
-        y += 17
+        keep = SIDEBAR.get(self.key, _BASE)
+        if keep:
+            self.textline('lbl_f', 8, y, PANEL_W - 16, 16, 'Lbl Filters', 7.5, 'Sidebar Muted', bold=True)
+            y += 17
         for k, spec, ttl, mode, single, sync in [
                 ('s_fy', 'Date[Fiscal Year]', 'Fiscal year', 'Dropdown', False, 'Fiscal Year'),
                 ('s_m', 'Date[Month Name]', 'Month', 'Dropdown', False, 'Month Name'),
@@ -434,17 +472,22 @@ class Page:
                 ('s_r', 'Entity[Region]', 'Region', 'Dropdown', False, 'Region'),
                 ('s_e', 'Entity[EntityName]', 'Entity', 'Dropdown', False, 'Entity'),
                 ('s_d', 'Department[DepartmentName]', 'Department', 'Dropdown', False, 'Department')]:
+            if k not in keep:
+                continue
             hh = 54 if mode == 'Basic' else 59   # title row + one control row (dropdown boxes are taller than tiles)
             self.slicer(k, 6, y, PANEL_W - 12, hh, spec, ttl, mode=mode, single=single, horizontal=(mode == 'Basic'), sync=sync)
             y += hh + 1
-        self.button('reset', 10, y + 1, PANEL_W - 20, 22, '\u21ba  Reset all filters', 'ClearAllSlicers', tooltip='Clear every slicer on every page',
-                    fill='Sidebar Active', text='Sidebar Text', outline=None, round_=6)
+        if keep or self.key == 'DD':     # the dictionary has its own slicers inside the page
+            self.button('reset', 10, y + 1, PANEL_W - 20, 22, '\u21ba  Reset all filters', 'ClearAllSlicers', tooltip='Clear the slicers on this page',
+                        fill='Sidebar Active', text='Sidebar Text', outline=None, round_=6)
         self.textline('tagline', 8, H - 21, PANEL_W - 16, 19, 'Tagline', 7.5, 'Sidebar Muted')
         # header: title, insight subtitle, filter chips + refresh stamp; utilities top right
         self.textline('title', CX - 4, 4, 540, 32, title_measure, 16, 'Title', bold=True)
         self.textline('subtitle', CX - 4, 34, 640, 22, subtitle_measure, 8.5, 'Muted')
         x = CX
         for k, wdt in [('Period', 132), ('Currency', 92), ('Region', 128), ('Entity', 128), ('Department', 150)]:
+            if CHIP_OF[k] not in keep:      # a chip only for a filter this page actually has
+                continue
             self.button(f'chip_{k}', x, 58, wdt, 24, '', measure=f'Ctx Line {k}', fill='Accent Soft', text='Accent', outline=None, size=7.5, round_=12, inset=True)
             x += wdt + 6
         ux = 744
@@ -453,7 +496,9 @@ class Page:
                     REPO_URL + '/issues/new?labels=bug&title=%5BReport%20issue%5D%20', 'Opens a GitHub issue for this report', inset=True)
         self.button('support', ux + 224, 6, 106, 28, 'Request support', 'WebUrl',
                     REPO_URL + '/issues/new?labels=question&title=%5BSupport%5D%20', 'Ask a question about the report or model', inset=True)
-        self.slicer('s_theme', ux + 334, 4, CX + CW - ux - 334, 32, 'Theme Mode[Mode]', None, mode='Basic', single=True, horizontal=True, sync='Theme')
+        tx = CX + CW - 76
+        self.rect('theme_track', tx, 5, 76, 30, 'Panel', radius=15, border='Line', transparency=20)
+        self.glass_toggle('s_theme', tx + 3, 7, 70, 26, 'Theme Mode[Mode]', 'Theme Icon', 'Theme')
         self.textline('refreshed', ux + 40, 36, CX + CW - ux - 40, 22, 'Last Refreshed', 7.5, 'Muted', align='right')
         self.rect('hdr_line', CX, 86, CW, 1, 'Line')
         # footer: numbered notes + page-specific source note
