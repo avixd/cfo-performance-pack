@@ -59,7 +59,7 @@ docs/images/                            page images used in this README
 docs/eda/                               data-quality and exploratory analysis report + charts
 scripts/build_data.py                   builds data/ from AdventureWorksDW (seeded, deterministic)
 scripts/eda.py                          data-quality checks and EDA -> docs/eda/
-scripts/model_def.py                    the semantic model: Power Query, tables, 221 measures
+scripts/model_def.py                    the semantic model: Power Query, tables, 503 measures
 scripts/build_pbip.py                   writes the TMDL model and PBIR report from model_def.py
 scripts/document_model.py               writes docs/01-semantic-model.md
 scripts/privacy_check.sh                blocks commits containing local paths or e-mail addresses
@@ -69,7 +69,7 @@ scripts/privacy_check.sh                blocks commits containing local paths or
 
 The model and report were never assembled by hand in the Power BI canvas. The workflow was:
 
-1. **Generate:** `scripts/model_def.py` defines the semantic model as data (Power Query, columns, 221 measures, display folders, descriptions); `scripts/build_pbip.py` renders it to TMDL and renders every page and visual to PBIR JSON (positions, fields, conditional colours, measure-driven titles, synced slicers, theme).
+1. **Generate:** `scripts/model_def.py` defines the semantic model as data (Power Query, columns, 503 measures, display folders, descriptions); `scripts/build_pbip.py` renders it to TMDL and renders every page and visual to PBIR JSON (positions, fields, conditional colours, measure-driven titles, synced slicers, theme).
 2. **Apply:** Power BI Desktop picks up the regenerated files with *Apply external changes* (or a reopen) and refreshes.
 3. **Validate:** DAX queries run against the live model through the Power BI Modeling MCP bridge reconcile every headline number to the independent pandas EDA, and the rendered pages are reviewed visually before each commit.
 

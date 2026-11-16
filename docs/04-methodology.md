@@ -60,3 +60,29 @@ The three levels in the reference video and how they map here:
 | **Strengths** | Simple and auditable; no statistical model to maintain. Replayable: move the selector to see what the forecast said at any month end. Two methods side by side show the range; with a seasonal business the average-month projection overstates or understates depending on where the peak months fall. |
 | **Weaknesses** | The year-to-date variance is carried forward but assumed to stop growing. Seasonality exists only in the budget. The run-rate method ignores seasonality entirely. Entities without a budget have no target and show blank. |
 | **Considerations** | When forecast and run-rate disagree, the answer usually lies between them. In this data three entities have no or a non-credible budget, so their "on track" status reflects a planning gap; read tab 1's budget status first. A driver-based or statistical forecast is the next step if more accuracy is needed. |
+
+## Number formatting: dynamic format strings
+
+**What it is.** Every money measure (136 of them) carries a second DAX expression, its *format string expression*, instead of a fixed format. The measure stays a number; the expression returns the format to use for the value in the current filter context. Pattern after [SQLBI: Introducing dynamic format strings for DAX measures](https://www.sqlbi.com/articles/introducing-dynamic-format-strings-for-dax-measures/).
+
+```dax
+VAR _x = ABS ( SELECTEDMEASURE () )
+RETURN SWITCH ( TRUE (),
+    _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-",    -- $36.2M   ($2.6M)
+    _x >= 1e3, "$#,0,.\K;($#,0,.\K);-",        -- $795K    ($34K)
+    "$#,0;($#,0);-" )                          -- $506     ($506)   zero shows as a dash
+```
+
+The statement explorer (H2) uses the second flavour: the *Thousand / Absolute* slicer picks the format string (`"#,0,;(#,0,);-"` or `"#,0;(#,0);-"`), so the toggle never changes the value, only how it is shown.
+
+**Where it shows.** KPI tiles (card visuals bound to the measure), chart data labels, tooltips and the summary tables. Display units are set to *None* on those visuals; with *Auto* a visual re-abbreviates the number and ignores the format string.
+
+**Why not `FORMAT()`.** `FORMAT()` returns text: the value can no longer be charted, sorted numerically or summed, and each tile needed a text copy of its measure. Moving to format string expressions removed 43 such copies (546 to 503 measures). Narrative sentences still use `FORMAT()` through one helper (`money()` in `scripts/model_def.py`) with the same thresholds, because a sentence is text by nature.
+
+**Assumptions and trade-offs.**
+- One standard for the whole report: one decimal in millions, whole thousands, negatives in brackets. A statement keeps one unit per column (thousands) because mixed units in a column are hard to add up by eye.
+- Cost: the engine evaluates the measure a second time to choose the format (`SELECTEDMEASURE()`), so the expression is kept trivial. It is only evaluated where the measure is shown directly, not where other measures reference it.
+- A measure cannot have both a fixed format and a format string expression. In TMDL the expression (`formatStringDefinition`) must be written after the plain properties.
+- Scaling commas must sit directly before the decimal point (`#,0,.` and `#,0,,.0`). `#,0,\K` scales in the engine's `FORMAT()` but Power BI visuals printed `$501,120K`; found and fixed on screen.
+- A waterfall chart formats its own *Total* column from the neighbouring values, so a total below one million can still read `$0.7M` there while the title says `$675K`.
+- Not available on a live connection to a remote model (report-level measures have no format string expression).
