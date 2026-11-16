@@ -3,9 +3,9 @@
   "name": "5386f662eb7e54769bab",
   "position": {
     "x": 208.0,
-    "y": 491.9,
+    "y": 455.7,
     "z": 59000,
-    "height": 170.1,
+    "height": 206.3,
     "width": 718.6,
     "tabOrder": 59000
   },
@@ -58,7 +58,7 @@
               },
               "queryRef": "_Measures.RF Remaining Budget",
               "nativeQueryRef": "RF Remaining Budget",
-              "displayName": "Remaining budget"
+              "displayName": "Remaining"
             },
             {
               "field": {
@@ -73,7 +73,7 @@
               },
               "queryRef": "_Measures.RF Total",
               "nativeQueryRef": "RF Total",
-              "displayName": "Rolling forecast"
+              "displayName": "Forecast"
             },
             {
               "field": {
@@ -118,7 +118,7 @@
               },
               "queryRef": "_Measures.RF Attainment %",
               "nativeQueryRef": "RF Attainment %",
-              "displayName": "Attainment"
+              "displayName": "Attain %"
             },
             {
               "field": {
@@ -133,7 +133,7 @@
               },
               "queryRef": "_Measures.RF Required per Month",
               "nativeQueryRef": "RF Required per Month",
-              "displayName": "Required / month"
+              "displayName": "Required/mo"
             },
             {
               "field": {
@@ -148,7 +148,7 @@
               },
               "queryRef": "_Measures.RF Average per Month",
               "nativeQueryRef": "RF Average per Month",
-              "displayName": "Average / month"
+              "displayName": "Average/mo"
             },
             {
               "field": {
@@ -194,7 +194,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8.5D"
+                  "Value": "8D"
                 }
               }
             },
@@ -674,7 +674,7 @@
             "fontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "8.5D"
+                  "Value": "8D"
                 }
               }
             },
@@ -729,7 +729,7 @@
             "rowPadding": {
               "expr": {
                 "Literal": {
-                  "Value": "3D"
+                  "Value": "1D"
                 }
               }
             },
@@ -778,7 +778,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "104D"
+                  "Value": "106D"
                 }
               }
             }
@@ -792,7 +792,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "64D"
+                  "Value": "74D"
                 }
               }
             }
@@ -848,7 +848,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "58D"
+                  "Value": "62D"
                 }
               }
             }
@@ -876,7 +876,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "62D"
+                  "Value": "68D"
                 }
               }
             }
@@ -890,7 +890,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "58D"
+                  "Value": "68D"
                 }
               }
             }
@@ -904,7 +904,7 @@
             "value": {
               "expr": {
                 "Literal": {
-                  "Value": "64D"
+                  "Value": "62D"
                 }
               }
             }

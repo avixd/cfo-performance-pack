@@ -288,6 +288,9 @@ def T(name):          # theme colour (measure-driven)
     return mcolor('Col ' + name)
 
 
+NO_PAD = [{'properties': {'top': L(0), 'bottom': L(0), 'left': L(0), 'right': L(0)}}]
+
+
 class Page:
     def __init__(self, pid, display, key, hidden=False):
         self.pid, self.display, self.key, self.visuals, self.z, self.hidden = pid, display, key, [], 0, hidden
@@ -350,25 +353,31 @@ class Page:
         """Dynamic text line: a transparent, action-less button whose text is a measure (left-aligned, themed)."""
         sel = {'id': 'default'}
         txt = {'text': {'expr': mfield(measure)}, 'fontColor': T(colour), 'fontSize': L(size), 'horizontalAlignment': L(align),
-               'verticalAlignment': L('middle'), 'bold': L(bold), 'leftMargin': L(4), 'rightMargin': L(4), 'topMargin': L(0), 'bottomMargin': L(0)}
+               'verticalAlignment': L('middle'), 'bold': L(bold), 'leftMargin': L(12), 'rightMargin': L(12), 'topMargin': L(0), 'bottomMargin': L(0)}
         obj = {'text': [{'properties': {'show': L(True)}}, {'properties': txt, 'selector': sel}],
                'icon': [{'properties': {'show': L(False)}}],
                'fill': [{'properties': {'show': L(False)}}],
                'outline': [{'properties': {'show': L(False)}}]}
-        return self.add(key, 'actionButton', x, y, w, h, objects=obj, content=content, background=False, header=False)
+        return self.add(key, 'actionButton', x, y, w, h, objects=obj, content=content, background=False, header=False, container={'padding': NO_PAD})
 
     def button(self, key, x, y, w, h, label, link_type=None, url=None, tooltip=None, fill='Button', text='Text', outline='Line',
-               size=8.5, align='center', page=None, round_=4, measure=None, content=False, bold=False, valign='middle'):
+               size=8.5, align='center', page=None, round_=4, measure=None, content=False, bold=False, valign='middle', inset=False):
+        """Action button. The theme gives every visual 6/8px padding, which on a 20-26px button leaves no room for the text or the fill,
+        so buttons carry no container padding: the shape fills the authored box and the text margins keep the text where it was.
+        inset=True shrinks the box by that old padding (small pills that sit next to each other: chips, header links)."""
+        if inset:
+            x, y, w, h = x + 8, y + 4, w - 16, h - 8
+        ml, mr = (2, 2) if align == 'center' else (6 if inset else 14, 4 if inset else 12)
         sel = {'id': 'default'}
         txt = {'text': {'expr': mfield(measure)} if measure else L(label), 'fontColor': T(text), 'fontSize': L(size), 'horizontalAlignment': L(align),
-               'bold': L(bold), 'leftMargin': L(6), 'rightMargin': L(4), 'topMargin': L(0), 'bottomMargin': L(0)}
+               'bold': L(bold), 'leftMargin': L(ml), 'rightMargin': L(mr), 'topMargin': L(0), 'bottomMargin': L(0)}
         if valign:
             txt['verticalAlignment'] = L(valign)
         obj = {'icon': [{'properties': {'show': L(False)}}],
                'text': [{'properties': {'show': L(True)}}, {'properties': txt, 'selector': sel}],
                'fill': [{'properties': {'show': L(fill is not None)}}] + ([{'properties': {'fillColor': T(fill), 'transparency': L(0)}, 'selector': sel}] if fill else []),
                'outline': [{'properties': {'show': L(outline is not None)}}] + ([{'properties': {'lineColor': T(outline), 'roundEdge': L(round_)}, 'selector': sel}] if outline else [])}
-        container = None
+        container = {'padding': NO_PAD}
         if link_type:
             link = {'show': L(True), 'type': L(link_type)}
             if url:
@@ -377,7 +386,7 @@ class Page:
                 link['navigationSection'] = L(page)
             if tooltip:
                 link['tooltip'] = L(tooltip)
-            container = {'visualLink': [{'properties': link}]}
+            container['visualLink'] = [{'properties': link}]
         return self.add(key, 'actionButton', x, y, w, h, objects=obj, content=content, background=False, header=False, container=container)
 
     def slicer(self, key, x, y, w, h, spec, title, mode='Dropdown', single=False, horizontal=False, sync=None, content=False):
@@ -405,7 +414,7 @@ class Page:
         y = 58
         for pid, name, glyph in PAGES_NAV:
             on = pid == self.pid
-            self.button(f'nav_{pid}', 8, y, PANEL_W - 16, 22, f'{glyph}   {name}', 'PageNavigation', page=pid, fill='Sidebar Active' if on else 'Sidebar',
+            self.button(f'nav_{pid}', 8, y, PANEL_W - 16, 24, f'{glyph}   {name}', 'PageNavigation', page=pid, fill='Sidebar Active' if on else 'Sidebar',
                         text='Sidebar Text' if on else 'Sidebar Muted', outline=None, size=8.5, align='left', bold=on, round_=6, valign='middle')
             y += 24
         self.textline('lbl_f', 8, y, PANEL_W - 16, 16, 'Lbl Filters', 7.5, 'Sidebar Muted', bold=True)
@@ -429,14 +438,14 @@ class Page:
         self.textline('subtitle', CX - 4, 34, 640, 22, subtitle_measure, 8.5, 'Muted')
         x = CX
         for k, wdt in [('Period', 132), ('Currency', 92), ('Region', 128), ('Entity', 128), ('Department', 150)]:
-            self.button(f'chip_{k}', x, 58, wdt, 24, '', measure=f'Ctx Line {k}', fill='Accent Soft', text='Accent', outline=None, size=7.5, round_=12)
+            self.button(f'chip_{k}', x, 58, wdt, 24, '', measure=f'Ctx Line {k}', fill='Accent Soft', text='Accent', outline=None, size=7.5, round_=12, inset=True)
             x += wdt + 6
         ux = 744
         self.textline('hello', ux, 6, 112, 28, 'Greeting', 9, 'Muted', align='right')
         self.button('issue', ux + 116, 6, 104, 28, 'Report an issue', 'WebUrl',
-                    REPO_URL + '/issues/new?labels=bug&title=%5BReport%20issue%5D%20', 'Opens a GitHub issue for this report')
+                    REPO_URL + '/issues/new?labels=bug&title=%5BReport%20issue%5D%20', 'Opens a GitHub issue for this report', inset=True)
         self.button('support', ux + 224, 6, 106, 28, 'Request support', 'WebUrl',
-                    REPO_URL + '/issues/new?labels=question&title=%5BSupport%5D%20', 'Ask a question about the report or model')
+                    REPO_URL + '/issues/new?labels=question&title=%5BSupport%5D%20', 'Ask a question about the report or model', inset=True)
         self.slicer('s_theme', ux + 334, 4, CX + CW - ux - 334, 32, 'Theme Mode[Mode]', None, mode='Basic', single=True, horizontal=True, sync='Theme')
         self.textline('refreshed', ux + 40, 36, CX + CW - ux - 40, 22, 'Last Refreshed', 7.5, 'Muted', align='right')
         self.rect('hdr_line', CX, 86, CW, 1, 'Line')
@@ -462,7 +471,7 @@ class Page:
     def story(self, key, x, y, w, h, page, title, subtitle, size=9.5, head=('Topic', 'Detail')):
         obj = self.table_objects(['Story[Section]', 'Story[Text]'], size=size, wrap=True)
         obj['columnWidth'] = [{'properties': {'value': L(96)}, 'selector': {'metadata': 'Story.Section'}},
-                              {'properties': {'value': L(w * SX - 120)}, 'selector': {'metadata': 'Story.Text'}}]
+                              {'properties': {'value': L(w * SX - 140)}, 'selector': {'metadata': 'Story.Text'}}]
         return self.add(key, 'tableEx', x, y, w, h, roles={'Values': [('Story[Section]', head[0]), ('Story[Text]', head[1])]},
                         objects=obj, title=title, subtitle=subtitle, sort=[('Story[Section]', 'Ascending')],
                         filters=[cat_filter(hexid(self.pid, key, 'f'), 'Story', 'Page', [page])])
@@ -470,7 +479,7 @@ class Page:
     def insights(self, key, x, y, w, h, keys):
         obj = self.table_objects(['Insight[Topic]', 'Insight Text'], size=9.5, wrap=True)
         obj['columnWidth'] = [{'properties': {'value': L(100)}, 'selector': {'metadata': 'Insight.Topic'}},
-                              {'properties': {'value': L(w * SX - 124)}, 'selector': {'metadata': '_Measures.Insight Text'}}]
+                              {'properties': {'value': L(w * SX - 144)}, 'selector': {'metadata': '_Measures.Insight Text'}}]
         topics = {1: 'Growth quality', 2: 'Cost absorption', 3: 'Full-year outlook', 4: 'People cost', 5: 'Currency effect'}
         return self.add(key, 'tableEx', x, y, w, h, roles={'Values': [('Insight[Topic]', 'Topic'), ('Insight Text', 'What the numbers say')]},
                         objects=obj, title='=VT Insights', subtitle='Sub Insights', sort=[('Insight[Topic]', 'Ascending')],
@@ -893,19 +902,21 @@ def page_rf():
                                             ('RF Required per Month', 'Required per remaining month', 'RF Required Text', 'RF Required Color'),
                                             ('RF Run-Rate Total', 'Average-month projection (cross-check)', 'RF Run-Rate Text', 'RF Run-Rate Color')]):
         p.kpi(f'k{i}', 16 + i * (w + 10), 144, w, 92, m, lab, sub, col)
-    obj = matrix_objects(p, ['RF Value'], back={'_Measures.RF Value': 'RF Cell Color'})
-    p.add('matrix', 'pivotTable', 16, 242, 1248, 268, roles={'Rows': [('Entity[EntityName]', 'Entity')], 'Columns': ['Date[Month Name]'], 'Values': [('RF Value', 'Value')]},
+    obj = matrix_objects(p, ['RF Value'], size=8, back={'_Measures.RF Value': 'RF Cell Color'})
+    obj['grid'][0]['properties']['rowPadding'] = L(1)
+    p.add('matrix', 'pivotTable', 16, 242, 1248, 228, roles={'Rows': [('Entity[EntityName]', 'Entity')], 'Columns': ['Date[Month Name]'], 'Values': [('RF Value', 'Value')]},
           objects=obj, title='=VT RF Matrix', subtitle='Sub RF Matrix')
     fields = ['Entity[EntityName]', 'RF Actual to Date', 'RF Remaining Budget', 'RF Total', 'RF Target', 'RF Gap', 'RF Attainment %', 'RF Required per Month',
               'RF Average per Month', 'RF Status']
-    heads = ['Entity', 'Actual to date', 'Remaining budget', 'Rolling forecast', 'Target', 'Gap', 'Attainment', 'Required / month', 'Average / month', 'Status']
-    obj = p.table_objects(fields, size=8.5, colours={'_Measures.RF Gap': 'RF Status Color', '_Measures.RF Status': 'RF Status Color', '_Measures.RF Attainment %': 'RF Status Color'})
+    heads = ['Entity', 'Actual to date', 'Remaining', 'Forecast', 'Target', 'Gap', 'Attain %', 'Required/mo', 'Average/mo', 'Status']
+    obj = p.table_objects(fields, size=8, colours={'_Measures.RF Gap': 'RF Status Color', '_Measures.RF Status': 'RF Status Color', '_Measures.RF Attainment %': 'RF Status Color'})
     obj['total'] = [{'properties': {'totals': L(True)}}]
+    obj['grid'][0]['properties']['rowPadding'] = L(1)
     obj['columnWidth'] = [{'properties': {'value': L(wd)}, 'selector': {'metadata': m if '[' not in m else m.replace('[', '.').rstrip(']')}}
-                          for m, wd in zip(['Entity.EntityName'] + ['_Measures.' + f for f in fields[1:]], [104, 64, 64, 64, 64, 58, 54, 62, 58, 64])]
-    p.add('table', 'tableEx', 16, 516, 846, 188, roles={'Values': list(zip(fields, heads))}, objects=obj, title='=VT RF Table', subtitle='Sub RF Table',
+                          for m, wd in zip(['Entity.EntityName'] + ['_Measures.' + f for f in fields[1:]], [106, 74, 64, 64, 64, 62, 54, 68, 68, 62])]
+    p.add('table', 'tableEx', 16, 476, 846, 228, roles={'Values': list(zip(fields, heads))}, objects=obj, title='=VT RF Table', subtitle='Sub RF Table',
           sort=[('RF Gap', 'Ascending')])
-    p.story('method', 872, 516, 392, 188, 'RF Method', '=VT RF Method', 'Sub RF Method', size=8, head=('Topic', 'Note'))
+    p.story('method', 872, 476, 392, 228, 'RF Method', '=VT RF Method', 'Sub RF Method', size=8, head=('Topic', 'Note'))
     return p
 
 
