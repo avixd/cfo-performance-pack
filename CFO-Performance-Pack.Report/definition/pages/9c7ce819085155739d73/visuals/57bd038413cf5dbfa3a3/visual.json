@@ -346,13 +346,6 @@
                   "Value": "'left'"
                 }
               }
-            },
-            "contentOrder": {
-              "expr": {
-                "Literal": {
-                  "Value": "'callout_image_referenceLabel'"
-                }
-              }
             }
           }
         }
@@ -509,76 +502,6 @@
               "expr": {
                 "Literal": {
                   "Value": "3D"
-                }
-              }
-            }
-          },
-          "selector": {
-            "metadata": "_Measures.Gross Profit Margin %"
-          }
-        }
-      ],
-      "image": [
-        {
-          "properties": {
-            "show": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "imageType": {
-              "expr": {
-                "Literal": {
-                  "Value": "'imageData'"
-                }
-              }
-            },
-            "imageData": {
-              "expr": {
-                "Measure": {
-                  "Expression": {
-                    "SourceRef": {
-                      "Entity": "_Measures"
-                    }
-                  },
-                  "Property": "SVG Tile Gross Profit Margin %"
-                }
-              }
-            },
-            "position": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Bottom'"
-                }
-              }
-            },
-            "fixedSize": {
-              "expr": {
-                "Literal": {
-                  "Value": "true"
-                }
-              }
-            },
-            "size": {
-              "expr": {
-                "Literal": {
-                  "Value": "26D"
-                }
-              }
-            },
-            "fit": {
-              "expr": {
-                "Literal": {
-                  "Value": "'Stretch'"
-                }
-              }
-            },
-            "padding": {
-              "expr": {
-                "Literal": {
-                  "Value": "4D"
                 }
               }
             }

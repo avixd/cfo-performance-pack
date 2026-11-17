@@ -1182,13 +1182,6 @@
                   "Value": "'left'"
                 }
               }
-            },
-            "contentOrder": {
-              "expr": {
-                "Literal": {
-                  "Value": "'callout_image_referenceLabel'"
-                }
-              }
             }
           }
         }

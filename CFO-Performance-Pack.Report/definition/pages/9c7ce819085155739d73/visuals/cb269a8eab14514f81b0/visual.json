@@ -4,10 +4,10 @@
   "position": {
     "x": 980.9,
     "y": 262.1,
-    "z": 44000,
+    "z": 45000,
     "height": 77.8,
     "width": 287.1,
-    "tabOrder": 44000
+    "tabOrder": 45000
   },
   "visual": {
     "visualType": "cardVisual",
@@ -278,13 +278,6 @@
               "expr": {
                 "Literal": {
                   "Value": "'left'"
-                }
-              }
-            },
-            "contentOrder": {
-              "expr": {
-                "Literal": {
-                  "Value": "'callout_image_referenceLabel'"
                 }
               }
             }

@@ -571,7 +571,7 @@ class Page:
             return 'field-' + str(uuid.uuid5(NS, f'{self.pid}/{key}/{m}/{n}'))
         roles = {'Data': [(t['measure'], t['label']) for t in tiles]}
         meta = lambda t: '_Measures.' + t['measure']
-        ref, refval, img, val, lab, acc = [], [], [], [], [], []
+        ref, refval, val, lab, acc, img_measures = [], [], [], [], [], []
         for t in tiles:
             md = meta(t)
             tgt = getattr(M, 'KPI_TARGET', {}).get(t['measure'])
@@ -591,22 +591,25 @@ class Page:
                 refval.append({'properties': vp, 'selector': {'metadata': md, 'id': rid(t['measure'], n)}})
             val.append({'properties': {'fontSize': L(15), 'bold': L(True), 'fontColor': T('Title'), 'labelDisplayUnits': L(1), 'horizontalAlignment': L('left')}, 'selector': {'metadata': md}})
             lab.append({'properties': {'fontSize': L(8), 'fontColor': T('Muted'), 'position': L('aboveValue'), 'horizontalAlignment': L('left')}, 'selector': {'metadata': md}})
-            if t.get('spark'):
-                img.append({'properties': {'show': L(True), 'imageType': L('imageData'), 'imageData': {'expr': mfield(t['spark'])},
-                                           'position': L('Bottom'), 'fixedSize': L(True), 'size': L(26), 'fit': L('Stretch'),
-                                           'padding': L(4)}, 'selector': {'metadata': md}})
+            img_measures.append(t.get('spark'))
         obj = {'value': val, 'label': lab, 'referenceLabel': ref, 'referenceLabelValue': refval,
                'referenceLabelTitle': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}],
                'referenceLabelLayout': [{'properties': {'horizontalAlignment': L('left'), 'position': L('below')}, 'selector': {'id': 'default'}}],
                'layout': [{'properties': {'orientation': L(2), 'cellPadding': L(10), 'maxTiles': L(len(tiles)), 'backgroundShow': L(False),
-                                          'alignment': L('left'), 'contentOrder': L('callout_image_referenceLabel')}}],
+                                          'alignment': L('left')}}],
                'fillCustom': [{'properties': {'show': L(True), 'fillColor': T('Panel'), 'transparency': L(0)}, 'selector': {'id': 'default'}}],
                'outline': [{'properties': {'show': L(True), 'lineColor': T('Line'), 'weight': L(1)}, 'selector': {'id': 'default'}}],
                'shapeCustomRectangle': [{'properties': {'tileShape': L('rectangleRounded'), 'rectangleRoundedCurve': L(8)}, 'selector': {'id': 'default'}}],
                'accentBar': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}] + acc}
-        if img:
-            obj['image'] = img
-        return self.add(key, 'cardVisual', x, y, w, h, roles=roles, objects=obj, background=False, header=False)
+        vid = self.add(key, 'cardVisual', x, y, w, h, roles=roles, objects=obj, background=False, header=False)
+        # The card visual draws SVG images almost invisibly, so each tile's sparkline / attainment image is a small image visual laid over
+        # the right half of the tile, beside the value (same geometry as the card's equal-width tiles, 10 px apart).
+        n = len(tiles); tw = (w - (n - 1) * 10) / n
+        for i, im in enumerate(img_measures):
+            if im:
+                tx = x + i * (tw + 10)
+                self.image(f'{key}_img{i}', CX + (tx + tw * 0.50 - 16) * SX, CY + (y + 10 - 74) * SY, tw * 0.44 * SX, 40 * SY, im)
+        return vid
 
     def kpi(self, key, x, y, w, h, measure, label, sub=None, sub_colour=None):
         """Compact KPI tile (no icon, sparkline or pacing bar): same blocks, alignment and number format as kpi_full."""
