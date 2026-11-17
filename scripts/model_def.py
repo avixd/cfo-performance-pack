@@ -1397,12 +1397,12 @@ RETURN IF ( NOT ISBLANK ( p ), SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns=
 # ---- 9.3 headline leads with the entities that have a credible budget (core region), then the reported total
 redefine('Headline', '''VAR core = [Core Region] VAR rv = [Revenue Var vs Budget] VAR rc = [Revenue Var Core] VAR share = DIVIDE ( rv - rc, rv ) VAR ec = [EBITDA Var Core]
 VAR pc = [Revenue Var % Core] VAR pt = [Revenue Var % vs Budget] VAR pe = [EBITDA Var % vs Budget]
-RETURN [Currency Label] & " " & ''' + MU('[Revenue]') + ''' & " revenue. "
+RETURN [Currency Label] & " " & ''' + MU('[Revenue]') + ''' & " revenue: "
     & IF ( ISBLANK ( rc ), "",
-        "Against credible budgets (" & core & ") " & IF ( ABS ( pc ) > 9.99, "n.m.", FORMAT ( pc, "+0.0%;-0.0%" ) ) & "; " )
-    & "reported " & IF ( ISBLANK ( pt ), "budget comparison not meaningful", IF ( ABS ( pt ) > 9.99, "n.m.", FORMAT ( pt, "+0.0%;-0.0%" ) ) & " vs budget" )
-    & IF ( rv > 0 && share > 0.5, ", " & FORMAT ( share, "0%" ) & " of it from newer regions", "" ) & ". "
-    & "EBITDA " & IF ( ISBLANK ( pe ), "budget comparison not meaningful", IF ( ABS ( pe ) > 9.99, "n.m.", FORMAT ( pe, "+0.0%;-0.0%" ) ) & " vs budget" )
+        core & " " & IF ( ABS ( pc ) > 9.99, "n.m.", FORMAT ( pc, "+0.0%;-0.0%" ) ) & " vs budget; " )
+    & "reported " & IF ( ISBLANK ( pt ), "n.m.", IF ( ABS ( pt ) > 9.99, "n.m.", FORMAT ( pt, "+0.0%;-0.0%" ) ) )
+    & IF ( rv > 0 && share > 0.5, ", " & FORMAT ( share, "0%" ) & " from newer regions", "" ) & ". "
+    & "EBITDA " & IF ( ISBLANK ( pe ), "n.m.", IF ( ABS ( pe ) > 9.99, "n.m.", FORMAT ( pe, "+0.0%;-0.0%" ) ) )
     & IF ( ISBLANK ( ec ), ".", ", " & core & " " & ''' + MT('ec') + ''' & "." )''',
           desc='Executive headline: first the variance against credible budgets (the core region), then the reported total and how much of it newer, unbudgeted entities contribute.')
 
@@ -1410,7 +1410,7 @@ RETURN [Currency Label] & " " & ''' + MU('[Revenue]') + ''' & " revenue. "
 add('DSO Target (days)', '45', BSF, '0', 'Receivable-days target (assumption agreed 17 Nov 2026: B2B net-30 terms plus collection slippage). Change here.')
 add('Cash to Release at DSO Target', 'VAR d = [DSO (days)] - [DSO Target (days)] RETURN IF ( d > 0, d / 365 * [Revenue TTM] )', BSF, F,
     'Receivables above the target: (receivable days - target days) / 365 x trailing-twelve-month revenue. Blank when at or below target.')
-add('DSO Target Text', 'VAR c = [Cash to Release at DSO Target] RETURN "Target " & [DSO Target (days)] & " days" & IF ( NOT ISBLANK ( c ), " · " & ' + MU('c') + ' & " to collect", " · on target" )',
+add('DSO Target Text', 'VAR c = [Cash to Release at DSO Target] RETURN IF ( NOT ISBLANK ( c ), ' + MU('c') + ' & " above " & [DSO Target (days)] & "-day target", "Within " & [DSO Target (days)] & "-day target" )',
     BSF, None, 'Card text: receivable-days target and the cash that reaching it would release.')
 tone('DSO Target Color', '[DSO (days)] <= [DSO Target (days)]', 'Green when receivable days are at or below the target.')
 
@@ -1422,7 +1422,7 @@ redefine('Sub Department', '''VAR t = ADDCOLUMNS ( VALUES ( Department[Departmen
 VAR worst2 = TOPN ( 2, FILTER ( t, [@v] < 0 ), [@v], ASC )
 VAR o = [Operating Expenses Var vs Budget]
 RETURN IF ( o < 0, CONCATENATEX ( worst2, Department[DepartmentName], " and " ) & " account for " & FORMAT ( DIVIDE ( SUMX ( worst2, [@v] ), o ), "0%" ) & " of the overrun.", "Operating expenses are within budget." )
-    & " Departments are cost centres: revenue and cash are not allocated to them."''')
+    & " Cost centres only: no revenue."''')
 
 STORY_ROWS.append(('Notes', 16, 'Collections target', 'Receivable days are measured against a 45-day target (B2B net-30 terms plus slippage); the balance sheet shows the cash a return to target would release.'))
 STORY_ROWS.append(('Notes', 17, 'Departments', 'Departments are cost centres: operating expenses and headcount are booked to them, revenue and cash are not. The department filter is offered only on Budget vs Actual.'))

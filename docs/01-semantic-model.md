@@ -2832,12 +2832,12 @@ Executive headline: first the variance against credible budgets (the core region
 // Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
 VAR core = [Core Region] VAR rv = [Revenue Var vs Budget] VAR rc = [Revenue Var Core] VAR share = DIVIDE ( rv - rc, rv ) VAR ec = [EBITDA Var Core]
 VAR pc = [Revenue Var % Core] VAR pt = [Revenue Var % vs Budget] VAR pe = [EBITDA Var % vs Budget]
-RETURN [Currency Label] & " " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " revenue. "
+RETURN [Currency Label] & " " & ( VAR _x = [Revenue] RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " revenue: "
     & IF ( ISBLANK ( rc ), "",
-        "Against credible budgets (" & core & ") " & IF ( ABS ( pc ) > 9.99, "n.m.", FORMAT ( pc, "+0.0%;-0.0%" ) ) & "; " )
-    & "reported " & IF ( ISBLANK ( pt ), "budget comparison not meaningful", IF ( ABS ( pt ) > 9.99, "n.m.", FORMAT ( pt, "+0.0%;-0.0%" ) ) & " vs budget" )
-    & IF ( rv > 0 && share > 0.5, ", " & FORMAT ( share, "0%" ) & " of it from newer regions", "" ) & ". "
-    & "EBITDA " & IF ( ISBLANK ( pe ), "budget comparison not meaningful", IF ( ABS ( pe ) > 9.99, "n.m.", FORMAT ( pe, "+0.0%;-0.0%" ) ) & " vs budget" )
+        core & " " & IF ( ABS ( pc ) > 9.99, "n.m.", FORMAT ( pc, "+0.0%;-0.0%" ) ) & " vs budget; " )
+    & "reported " & IF ( ISBLANK ( pt ), "n.m.", IF ( ABS ( pt ) > 9.99, "n.m.", FORMAT ( pt, "+0.0%;-0.0%" ) ) )
+    & IF ( rv > 0 && share > 0.5, ", " & FORMAT ( share, "0%" ) & " from newer regions", "" ) & ". "
+    & "EBITDA " & IF ( ISBLANK ( pe ), "n.m.", IF ( ABS ( pe ) > 9.99, "n.m.", FORMAT ( pe, "+0.0%;-0.0%" ) ) )
     & IF ( ISBLANK ( ec ), ".", ", " & core & " " & ( VAR _x = ec RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "+$#,0.0\M;-$#,0.0\M;$0.0\M" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "+$#,0\K;-$#,0\K;$0\K" ), FORMAT ( _x, "+$#,0;-$#,0;$0" ) ) ) ) & "." )
 ```
 
@@ -3709,7 +3709,7 @@ VAR t = ADDCOLUMNS ( VALUES ( Department[DepartmentName] ), "@v", [Operating Exp
 VAR worst2 = TOPN ( 2, FILTER ( t, [@v] < 0 ), [@v], ASC )
 VAR o = [Operating Expenses Var vs Budget]
 RETURN IF ( o < 0, CONCATENATEX ( worst2, Department[DepartmentName], " and " ) & " account for " & FORMAT ( DIVIDE ( SUMX ( worst2, [@v] ), o ), "0%" ) & " of the overrun.", "Operating expenses are within budget." )
-    & " Departments are cost centres: revenue and cash are not allocated to them."
+    & " Cost centres only: no revenue."
 ```
 
 **Sub PL**  
@@ -4456,7 +4456,7 @@ VAR d = [DSO (days)] - [DSO Target (days)] RETURN IF ( d > 0, d / 365 * [Revenue
 Card text: receivable-days target and the cash that reaching it would release.
 ```dax
 // Money-text pattern: each ( VAR _x = ... ) block returns an amount as text: $ with one decimal in millions, whole thousands below 1M.
-VAR c = [Cash to Release at DSO Target] RETURN "Target " & [DSO Target (days)] & " days" & IF ( NOT ISBLANK ( c ), " · " & ( VAR _x = c RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " to collect", " · on target" )
+VAR c = [Cash to Release at DSO Target] RETURN IF ( NOT ISBLANK ( c ), ( VAR _x = c RETURN IF ( NOT ISBLANK ( _x ), SWITCH ( TRUE (), ABS ( _x ) >= 1e6, FORMAT ( _x / 1e6, "$#,0.0\M;($#,0.0\M)" ), ABS ( _x ) >= 1e3, FORMAT ( _x / 1e3, "$#,0\K;($#,0\K)" ), FORMAT ( _x, "$#,0;($#,0)" ) ) ) ) & " above " & [DSO Target (days)] & "-day target", "Within " & [DSO Target (days)] & "-day target" )
 ```
 
 ### 3 KPIs\Currency effect

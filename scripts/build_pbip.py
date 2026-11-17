@@ -891,9 +891,9 @@ def page_dictionary():
     # free-text slicer: input box themed like the other slicers (its default dark accent bar showed as a black square)
     p.add('f_text', 'textSlicer', 1056, 156, 208, 66, roles={'Values': ['Data Dictionary[Name]']}, title='Name contains (free text)', header=False,
           objects={'inputTextBox': [{'properties': {'accentBarShow': L(False), 'backShow': L(True), 'backColor': T('Panel'), 'borderShow': L(True),
-                                                     'borderColor': T('Line'), 'borderWidth': L(1)}}],
-                   'inputText': [{'properties': {'fontColor': T('Text'), 'placeholder': L('Type part of a name'), 'fontSize': L(9)}}],
-                   'applyButton': [{'properties': {'backShow': L(False), 'iconColor': T('Muted')}}]})
+                                                     'borderColor': T('Line'), 'borderWidth': L(1)}, 'selector': {'id': 'default'}}],
+                   'inputText': [{'properties': {'fontColor': T('Text'), 'placeholder': L('Type part of a name'), 'fontSize': L(9)}, 'selector': {'id': 'default'}}],
+                   'applyButton': [{'properties': {'backShow': L(False), 'iconColor': T('Muted')}, 'selector': {'id': 'default'}}]})
     fields = ['Data Dictionary[Object Type]', 'Data Dictionary[Table]', 'Data Dictionary[Name]', 'Data Dictionary[Description]', 'Data Dictionary[Expression]',
               'Data Dictionary[Folder]']
     obj = p.table_objects(fields, size=8.5, wrap=True)
