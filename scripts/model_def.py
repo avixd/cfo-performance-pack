@@ -1434,6 +1434,39 @@ for _t in TABLES:
     if _t['name'] == 'Story':
         _t['m'] = m_table([('Page', 'text'), ('Sort', 'Int64.Type'), ('Section', 'text'), ('Text', 'text')], STORY_ROWS)
 
+# ======================================================================== v10: KPI cards (new card visual) with actual vs target for the selected period
+# Each KPI card shows: the value, the variance vs target (coloured), the target and attainment for the SAME period as the value (MTD, QTD or YTD
+# from the Period slicer, any entity, region, currency), and one image: the fiscal-year sparkline with an attainment bar under it.
+# Before v10 the bar showed year-to-date progress against the FULL-year budget, so it did not react to the Period slicer.
+KPI_TARGET = {'Revenue': ('Revenue Budget', 'SVG Spark Revenue', F), 'EBITDA': ('EBITDA Budget', 'SVG Spark EBITDA', F),
+              'Net Income': ('Net Income Budget', 'SVG Spark Net Income', F), 'Metric Actual': ('Metric Budget', 'SVG Spark Metric', F),
+              'Gross Profit Margin %': ('Gross Profit Margin % Budget', 'SVG Spark Gross Margin', P)}
+_TILE_HEAD = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' "
+for _k, (_b, _sp, _f) in KPI_TARGET.items():
+    add(f'KPI Attainment {_k}', f'IF ( NOT ISBLANK ( [{_b}] ) && [{_b}] <> 0, DIVIDE ( [{_k}], [{_b}] ) )', '11 KPI Cards', P,
+        f'{_k} as a share of its target (budget) for the same period, entity and currency as the value: 100% = on target.')
+    MEAS[-1]['dyn'] = 'IF ( ABS ( SELECTEDMEASURE () ) > 9.99, """n.m.""", "0%" )'
+    _tgt = (f'FORMAT ( [{_b}], "0.0%" )' if _f == P else money(f'[{_b}]'))
+    add(f'KPI Target Text {_k}', f'VAR a = [KPI Attainment {_k}] RETURN IF ( NOT ISBLANK ( [{_b}] ), "Target " & {_tgt} & " · " & '
+        f'IF ( ABS ( a ) > 9.99, "n.m.", FORMAT ( a, "0%" ) ) & " of target", "No target for this selection" )', '11 KPI Cards', None,
+        f'Card text: the target (budget) for the selected period and the share of it reached.')
+    add(f'SVG Tile {_k}', f"""VAR sp = [{_sp}]
+VAR p = [KPI Attainment {_k}]
+VAR s = MAX ( 1, MIN ( p, 3 ) ) VAR w = MIN ( MAX ( p, 0 ), 3 ) / s * 120 VAR b = 120 / s
+VAR spark = IF ( NOT ISBLANK ( sp ), SUBSTITUTE ( sp, "{_TILE_HEAD}", "<svg x='0' y='0' width='120' height='30' " ) )
+VAR bar = IF ( NOT ISBLANK ( p ),
+    "<rect x='0' y='37' width='120' height='5' rx='2.5' fill='" & [Col Track] & "'/>"
+    & "<rect x='0' y='37' width='" & FORMAT ( MIN ( w, b ), "0.0" ) & "' height='5' rx='2.5' fill='" & [Col Accent] & "'/>"
+    & IF ( w > b, "<rect x='" & FORMAT ( b, "0.0" ) & "' y='37' width='" & FORMAT ( w - b, "0.0" ) & "' height='5' rx='2.5' fill='" & [Col Good] & "'/>", "" )
+    & "<rect x='" & FORMAT ( b - 0.6, "0.0" ) & "' y='34' width='1.2' height='11' fill='" & [Col Title] & "'/>" )
+RETURN IF ( NOT ISBLANK ( spark ) || NOT ISBLANK ( bar ),
+    SUBSTITUTE ( "{_TILE_HEAD}viewBox='0 0 120 46'>" & spark & bar & "</svg>", "#", "%23" ) )""",
+        '11 KPI Cards', None, f'KPI card image: fiscal-year sparkline of {_k} above a bar of attainment against the target for the selected period '
+        '(the dark line is 100%; beyond it the scale extends to 300% and the excess is green).')
+    MEAS[-1]['cat'] = 'ImageUrl'
+
+redefine('Footer Note 1', '"1  Definitions: Notes page and docs/01-semantic-model.md. KPI cards: target = budget for the selected period; bar = share of target (line = 100%)."')
+
 # ======================================================================== v5: documentation pass (TOM descriptions, DAX and M comments, query groups, diagram)
 # ---- 5.1 remove presentation leftovers that no visual or measure uses (analytical KPI measures are kept as reusable building blocks)
 DROP = [r' Spark$', r' Progress Bar$', r'^Title (Overview|Executive|Income Statement|Balance Sheet|Overview Revenue|DQ)$', r'^Lbl Current View$',

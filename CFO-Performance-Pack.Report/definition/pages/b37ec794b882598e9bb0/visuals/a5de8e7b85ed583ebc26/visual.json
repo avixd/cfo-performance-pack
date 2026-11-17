@@ -4,10 +4,10 @@
   "position": {
     "x": 946.9,
     "y": 166.2,
-    "z": 44000,
+    "z": 32000,
     "height": 59.7,
-    "width": 135.9,
-    "tabOrder": 44000
+    "width": 321.1,
+    "tabOrder": 32000
   },
   "visual": {
     "visualType": "slicer",
@@ -160,7 +160,7 @@
             "text": {
               "expr": {
                 "Literal": {
-                  "Value": "'Name (search)'"
+                  "Value": "'Name (type to search)'"
                 }
               }
             },

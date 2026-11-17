@@ -571,9 +571,16 @@ class Page:
             return 'field-' + str(uuid.uuid5(NS, f'{self.pid}/{key}/{m}/{n}'))
         roles = {'Data': [(t['measure'], t['label']) for t in tiles]}
         meta = lambda t: '_Measures.' + t['measure']
-        ref, refval, img, val, lab = [], [], [], [], []
+        ref, refval, img, val, lab, acc = [], [], [], [], [], []
         for t in tiles:
             md = meta(t)
+            tgt = getattr(M, 'KPI_TARGET', {}).get(t['measure'])
+            if tgt:   # actual vs target for the selected period: target line + attainment bar under the sparkline
+                t = dict(t, prog_text=f"KPI Target Text {t['measure']}", spark=f"SVG Tile {t['measure']}")
+            elif not t.get('spark') and t.get('prog_bar'):
+                t = dict(t, spark=t['prog_bar'])
+            if t.get('sub_colour'):
+                acc.append({'properties': {'show': L(True), 'color': mcolor(t['sub_colour']), 'position': L('Left'), 'width': L(3)}, 'selector': {'metadata': md}})
             for n, rm in enumerate([t.get('sub'), t.get('prog_text')]):
                 if not rm:
                     continue
@@ -586,7 +593,7 @@ class Page:
             lab.append({'properties': {'fontSize': L(8), 'fontColor': T('Muted')}, 'selector': {'metadata': md}})
             if t.get('spark'):
                 img.append({'properties': {'show': L(True), 'imageType': L('imageData'), 'imageData': {'expr': mfield(t['spark'])},
-                                           'position': L('Right'), 'imageAreaSize': L(40)}, 'selector': {'metadata': md}})
+                                           'position': L('Right'), 'imageAreaSize': L(42)}, 'selector': {'metadata': md}})
         obj = {'value': val, 'label': lab, 'referenceLabel': ref, 'referenceLabelValue': refval,
                'referenceLabelTitle': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}],
                'referenceLabelLayout': [{'properties': {'horizontalAlignment': L('left'), 'position': L('below')}, 'selector': {'id': 'default'}}],
@@ -594,7 +601,7 @@ class Page:
                'fillCustom': [{'properties': {'show': L(True), 'fillColor': T('Panel'), 'transparency': L(0)}, 'selector': {'id': 'default'}}],
                'outline': [{'properties': {'show': L(True), 'lineColor': T('Line'), 'weight': L(1)}, 'selector': {'id': 'default'}}],
                'shapeCustomRectangle': [{'properties': {'tileShape': L('rectangleRounded'), 'rectangleRoundedCurve': L(8)}, 'selector': {'id': 'default'}}],
-               'accentBar': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}]}
+               'accentBar': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}] + acc}
         if img:
             obj['image'] = img
         return self.add(key, 'cardVisual', x, y, w, h, roles=roles, objects=obj, background=False, header=False)
@@ -604,6 +611,20 @@ class Page:
         self.kpi_full(key, x, y, w, h, measure, label, None, sub, sub_colour, doc_anchor=ANCHOR(FOLDER[measure]), desc=DESC.get(measure) or label)
 
     def kpi_full(self, key, x, y, w, h, value, label, glyph, sub=None, sub_colour=None, spark=None, prog_text=None, prog_bar=None, doc_anchor=None, desc=None):
+        """Since v10 a tile is collected and drawn with the other tiles of its row as ONE new card visual (flush_tiles, called by write)."""
+        self.__dict__.setdefault('tiles', []).append(dict(key=key, x=x, y=y, w=w, h=h, measure=value, label=label, sub=sub, sub_colour=sub_colour,
+                                                          spark=spark, prog_text=prog_text, prog_bar=prog_bar))
+
+    def flush_tiles(self):
+        rows = {}
+        for t in self.__dict__.pop('tiles', []):
+            rows.setdefault((round(t['y']), round(t['h'])), []).append(t)
+        for (y, h), ts in sorted(rows.items()):
+            ts.sort(key=lambda t: t['x'])
+            x0 = ts[0]['x']; x1 = ts[-1]['x'] + ts[-1]['w']
+            self.kpi_row(ts[0]['key'] + '_row', x0, y, x1 - x0, h, ts)
+
+    def kpi_full_old(self, key, x, y, w, h, value, label, glyph, sub=None, sub_colour=None, spark=None, prog_text=None, prog_bar=None, doc_anchor=None, desc=None):
         """Reference-style KPI card: icon circle, value, label (hover = definition, click = DAX), comparison, sparkline, progress to FY budget."""
         X = lambda v: CX + (v - 16) * SX
         Y = lambda v: CY + (v - 74) * SY
@@ -669,6 +690,7 @@ class Page:
                         filters=[cat_filter(hexid(self.pid, key, 'f'), 'Report Line', 'Statement', [statement])])
 
     def write(self, order_index):
+        self.flush_tiles()
         pdir = os.path.join(RP, 'definition', 'pages', self.pid)
         page = {'$schema': PAGE_SCHEMA, 'name': self.pid, 'displayName': self.display, 'displayOption': 'FitToPage', 'height': H, 'width': W,
                 'objects': {'background': [{'properties': {'transparency': L(100)}}]}}
@@ -748,8 +770,8 @@ def page_executive():
              ('Net Income', 'Net income', '\u25c6', 'Net Income vs Budget Text', 'Net Income Var Color', 'SVG Spark Net Income', 'Net Income Progress Text', 'SVG Bar Net Income'),
              ('Net Income Outlook FY', 'FY net income outlook', '\u2197', 'Net Income Outlook Gap Text', 'Net Income Outlook Gap Color', None, 'Net Income Outlook Progress Text', 'SVG Bar Net Income Outlook'),
              ('Cash', 'Cash at month end', '\u00a4', 'Cash Change Text', 'Cash Change Color', 'SVG Spark Cash', 'Cash Progress Text', None)]
-    # faster pages, prototype (17 Nov 2026): the six tiles are one new card visual
-    p.kpi_row('kpis', 16, 120, 1248, 136, [dict(measure=t[0], label=t[1], sub=t[3], sub_colour=t[4], spark=t[5], prog_text=t[6]) for t in tiles])
+    for i, t in enumerate(tiles):
+        full(p, f'k{i}', 16 + i * (w + 10), 120, w, 136, *t)
     wf = p.axes({'sentimentColors': [{'properties': {'increaseFill': T('Good'), 'decreaseFill': T('Bad'), 'totalFill': solid(SERIES['total'])}}],
                  'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1), 'fontSize': L(8.5), 'color': T('Text')}}]}, value_axis=False)
     p.add('wf_rev', 'waterfallChart', 16, 266, 404, 190, roles={'Category': ['Revenue Bridge[Step]'], 'Y': [('Revenue Bridge Value', 'Revenue growth')]},
@@ -773,9 +795,8 @@ def page_bva():
     p = Page(hexid('page', 'bva'), TAB[hexid('page', 'bva')], 'BvA')
     p.chrome('PT BvA', 'Title BvA')
     p.slicer('s_metric', 16, 74, 640, 44, 'Metric[Metric]', None, mode='Basic', single=True, horizontal=True, content=True)
-    w = (1248 - 3 * 10) / 4
+    w = (1248 - 2 * 10) / 3
     tiles = [('Metric Actual', 'Actual', '$', 'Metric Var Text', 'Metric Var Color', 'SVG Spark Metric', 'Metric Progress Text', 'SVG Bar Metric'),
-             ('Metric Budget', 'Budget', '\u25a4', 'Metric Budget FY Text', None, 'SVG Spark Metric Budget', None, None),
              ('Metric PY', 'Prior year', '\u21ba', 'Metric Growth Text', 'Metric Growth Color', 'SVG Spark Metric PY', None, None),
              ('Metric Outlook FY', 'Full-year outlook', '\u2197', 'Metric Gap Text', 'Metric Gap Color', None, 'Metric Outlook Progress Text', 'SVG Bar Metric Outlook')]
     for i, t in enumerate(tiles):
@@ -923,13 +944,8 @@ def page_dictionary():
     cslicer(p, 'f_type', 16, 156, 480, 66, 'Data Dictionary[Object Type]', 'Object type', mode='Basic', horizontal=True)
     cslicer(p, 'f_table', 506, 156, 170, 66, 'Data Dictionary[Table]', 'Table (search)', search=True)
     cslicer(p, 'f_folder', 686, 156, 190, 66, 'Data Dictionary[Folder]', 'Folder (search)', search=True)
-    cslicer(p, 'f_name', 886, 156, 160, 66, 'Data Dictionary[Name]', 'Name (search)', search=True)
-    # free-text slicer: input box themed like the other slicers (its default dark accent bar showed as a black square)
-    p.add('f_text', 'textSlicer', 1056, 156, 208, 66, roles={'Values': ['Data Dictionary[Name]']}, title='Name contains (free text)', header=False,
-          objects={'inputTextBox': [{'properties': {'accentBarShow': L(False), 'backShow': L(True), 'backColor': T('Panel'), 'borderShow': L(True),
-                                                     'borderColor': T('Line'), 'borderWidth': L(1)}, 'selector': {'id': 'default'}}],
-                   'inputText': [{'properties': {'fontColor': T('Text'), 'placeholder': L('Type part of a name'), 'fontSize': L(9)}, 'selector': {'id': 'default'}}],
-                   'applyButton': [{'properties': {'backShow': L(False), 'iconColor': T('Muted')}, 'selector': {'id': 'default'}}]})
+    cslicer(p, 'f_name', 886, 156, 378, 66, 'Data Dictionary[Name]', 'Name (type to search)', search=True)
+    # (a free-text slicer stood here until 17 Nov 2026; it ignored all formatting, and the Name slicer's search box does the same job)
     fields = ['Data Dictionary[Object Type]', 'Data Dictionary[Table]', 'Data Dictionary[Name]', 'Data Dictionary[Description]', 'Data Dictionary[Expression]',
               'Data Dictionary[Folder]']
     obj = p.table_objects(fields, size=8.5, wrap=True)
