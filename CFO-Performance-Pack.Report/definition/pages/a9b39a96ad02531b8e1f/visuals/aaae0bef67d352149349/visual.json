@@ -1086,6 +1086,13 @@
                   "Value": "'left'"
                 }
               }
+            },
+            "calloutSize": {
+              "expr": {
+                "Literal": {
+                  "Value": "45D"
+                }
+              }
             }
           }
         }

@@ -597,7 +597,7 @@ class Page:
                'referenceLabelLayout': [{'properties': {'horizontalAlignment': L('left'), 'position': L('below'), 'verticalAlignment': L('top'),
                                                          'arrangement': L('rows')}, 'selector': {'id': 'default'}}],
                'layout': [{'properties': {'orientation': L(2), 'cellPadding': L(10), 'maxTiles': L(len(tiles)), 'backgroundShow': L(False),
-                                          'alignment': L('left')}}],
+                                          'alignment': L('left'), 'calloutSize': L(45)}}],
                'fillCustom': [{'properties': {'show': L(True), 'fillColor': T('Panel'), 'transparency': L(0)}, 'selector': {'id': 'default'}}],
                'outline': [{'properties': {'show': L(True), 'lineColor': T('Line'), 'weight': L(1)}, 'selector': {'id': 'default'}}],
                'shapeCustomRectangle': [{'properties': {'tileShape': L('rectangleRounded'), 'rectangleRoundedCurve': L(8)}, 'selector': {'id': 'default'}}],
@@ -609,7 +609,9 @@ class Page:
         for i, im in enumerate(img_measures):
             if im:
                 tx = x + i * (tw + 10)
-                self.image(f'{key}_img{i}', CX + (tx + tw * 0.50 - 16) * SX, CY + (y + 10 - 74) * SY, tw * 0.44 * SX, 40 * SY, im)
+                bar_only = im.startswith('SVG Bar ')        # a pacing bar alone is drawn thin, level with the value
+                self.image(f'{key}_img{i}', CX + (tx + tw * 0.50 - 16) * SX, CY + (y + (28 if bar_only else 10) - 74) * SY, tw * 0.44 * SX,
+                           (12 if bar_only else 40) * SY, im)
         return vid
 
     def kpi(self, key, x, y, w, h, measure, label, sub=None, sub_colour=None):
