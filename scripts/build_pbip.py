@@ -597,7 +597,7 @@ class Page:
                'referenceLabelLayout': [{'properties': {'horizontalAlignment': L('left'), 'position': L('below'), 'verticalAlignment': L('top'),
                                                          'arrangement': L('rows')}, 'selector': {'id': 'default'}}],
                'layout': [{'properties': {'orientation': L(2), 'cellPadding': L(6 if h >= 120 else 4), 'maxTiles': L(len(tiles)), 'backgroundShow': L(False),
-                                          'alignment': L('left'), 'calloutSize': L(45 if h >= 120 else 52)}}],   # short tiles: value needs more of the height
+                                          'alignment': L('left'), 'calloutSize': L(45 if h >= 120 else round(min(62, 5400 / h)))}}],   # short tiles: value needs more of the height
                'fillCustom': [{'properties': {'show': L(True), 'fillColor': T('Panel'), 'transparency': L(0)}, 'selector': {'id': 'default'}}],
                'outline': [{'properties': {'show': L(True), 'lineColor': T('Line'), 'weight': L(1)}, 'selector': {'id': 'default'}}],
                'shapeCustomRectangle': [{'properties': {'tileShape': L('rectangleRounded'), 'rectangleRoundedCurve': L(8)}, 'selector': {'id': 'default'}}],
@@ -842,8 +842,8 @@ def page_income():
              ('Salary Cost per Head', 'Salary cost per head', 'Salary per Head Text', 'Salary per Head Color'),
              ('Net Income Attributable to Group', 'Net income attributable to the group', 'NCI Text', None)]
     for i, (m, lab, sub, col) in enumerate(tiles):
-        p.kpi(f'k{i}', 926, 74 + i * 110, 338, 104, m, lab, sub, col)
-    p.insights('ins', 926, 626, 338, 78, [2, 4])
+        p.kpi(f'k{i}', 926, 74 + i * 102, 338, 98, m, lab, sub, col)
+    p.insights('ins', 926, 586, 338, 118, [2, 4])
     return p
 
 

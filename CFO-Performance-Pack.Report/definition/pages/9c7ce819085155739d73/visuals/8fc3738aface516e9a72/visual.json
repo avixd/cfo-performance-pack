@@ -3,9 +3,9 @@
   "name": "8fc3738aface516e9a72",
   "position": {
     "x": 980.9,
-    "y": 490.1,
+    "y": 461.1,
     "z": 47000,
-    "height": 94.1,
+    "height": 88.7,
     "width": 287.1,
     "tabOrder": 47000
   },
@@ -298,7 +298,7 @@
             "calloutSize": {
               "expr": {
                 "Literal": {
-                  "Value": "52D"
+                  "Value": "55D"
                 }
               }
             }

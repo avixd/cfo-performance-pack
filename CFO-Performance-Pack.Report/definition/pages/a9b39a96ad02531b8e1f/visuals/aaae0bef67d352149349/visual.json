@@ -1090,7 +1090,7 @@
             "calloutSize": {
               "expr": {
                 "Literal": {
-                  "Value": "52D"
+                  "Value": "49D"
                 }
               }
             }
