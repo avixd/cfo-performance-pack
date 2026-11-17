@@ -589,15 +589,17 @@ class Page:
                 vp = {'valueFontSize': L(7.5), 'valueDisplayUnits': L(1)}
                 vp['valueFontColor'] = mcolor(t['sub_colour']) if (n == 0 and t.get('sub_colour')) else T('Muted')
                 refval.append({'properties': vp, 'selector': {'metadata': md, 'id': rid(t['measure'], n)}})
-            val.append({'properties': {'fontSize': L(15), 'bold': L(True), 'fontColor': T('Title'), 'labelDisplayUnits': L(1)}, 'selector': {'metadata': md}})
-            lab.append({'properties': {'fontSize': L(8), 'fontColor': T('Muted')}, 'selector': {'metadata': md}})
+            val.append({'properties': {'fontSize': L(15), 'bold': L(True), 'fontColor': T('Title'), 'labelDisplayUnits': L(1), 'horizontalAlignment': L('left')}, 'selector': {'metadata': md}})
+            lab.append({'properties': {'fontSize': L(8), 'fontColor': T('Muted'), 'position': L('aboveValue'), 'horizontalAlignment': L('left')}, 'selector': {'metadata': md}})
             if t.get('spark'):
                 img.append({'properties': {'show': L(True), 'imageType': L('imageData'), 'imageData': {'expr': mfield(t['spark'])},
-                                           'position': L('Right'), 'imageAreaSize': L(42)}, 'selector': {'metadata': md}})
+                                           'position': L('Bottom'), 'fixedSize': L(True), 'size': L(26), 'fit': L('Stretch'),
+                                           'padding': L(4)}, 'selector': {'metadata': md}})
         obj = {'value': val, 'label': lab, 'referenceLabel': ref, 'referenceLabelValue': refval,
                'referenceLabelTitle': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}],
                'referenceLabelLayout': [{'properties': {'horizontalAlignment': L('left'), 'position': L('below')}, 'selector': {'id': 'default'}}],
-               'layout': [{'properties': {'orientation': L(2), 'cellPadding': L(10), 'maxTiles': L(len(tiles)), 'backgroundShow': L(False)}}],
+               'layout': [{'properties': {'orientation': L(2), 'cellPadding': L(10), 'maxTiles': L(len(tiles)), 'backgroundShow': L(False),
+                                          'alignment': L('left'), 'contentOrder': L('callout_image_referenceLabel')}}],
                'fillCustom': [{'properties': {'show': L(True), 'fillColor': T('Panel'), 'transparency': L(0)}, 'selector': {'id': 'default'}}],
                'outline': [{'properties': {'show': L(True), 'lineColor': T('Line'), 'weight': L(1)}, 'selector': {'id': 'default'}}],
                'shapeCustomRectangle': [{'properties': {'tileShape': L('rectangleRounded'), 'rectangleRoundedCurve': L(8)}, 'selector': {'id': 'default'}}],
