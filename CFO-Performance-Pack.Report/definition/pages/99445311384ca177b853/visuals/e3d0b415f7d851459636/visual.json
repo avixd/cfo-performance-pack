@@ -864,7 +864,7 @@
             "cellPadding": {
               "expr": {
                 "Literal": {
-                  "Value": "10D"
+                  "Value": "6D"
                 }
               }
             },
