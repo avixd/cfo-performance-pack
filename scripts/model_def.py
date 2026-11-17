@@ -1398,9 +1398,9 @@ RETURN IF ( NOT ISBLANK ( p ), SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns=
 redefine('Headline', '''VAR core = [Core Region] VAR rv = [Revenue Var vs Budget] VAR rc = [Revenue Var Core] VAR share = DIVIDE ( rv - rc, rv ) VAR ec = [EBITDA Var Core]
 VAR pc = [Revenue Var % Core] VAR pt = [Revenue Var % vs Budget] VAR pe = [EBITDA Var % vs Budget]
 RETURN [Currency Label] & " " & ''' + MU('[Revenue]') + ''' & " revenue: "
-    & IF ( ISBLANK ( rc ), "",
-        core & " " & IF ( ABS ( pc ) > 9.99, "n.m.", FORMAT ( pc, "+0.0%;-0.0%" ) ) & " vs budget; " )
-    & "reported " & IF ( ISBLANK ( pt ), "n.m.", IF ( ABS ( pt ) > 9.99, "n.m.", FORMAT ( pt, "+0.0%;-0.0%" ) ) )
+    & IF ( ISBLANK ( rc ) || ABS ( rv - rc ) < 1, "",                -- one region in view (a filter or a security role): no separate core line
+        core & " " & IF ( ABS ( pc ) > 9.99, "n.m.", FORMAT ( pc, "+0.0%;-0.0%" ) ) & " vs budget; reported " )
+    & IF ( ISBLANK ( pt ), "n.m.", IF ( ABS ( pt ) > 9.99, "n.m.", FORMAT ( pt, "+0.0%;-0.0%" ) ) ) & IF ( ISBLANK ( rc ) || ABS ( rv - rc ) < 1, " vs budget", "" )
     & IF ( rv > 0 && share > 0.5, ", " & FORMAT ( share, "0%" ) & " from newer regions", "" ) & ". "
     & "EBITDA " & IF ( ISBLANK ( pe ), "n.m.", IF ( ABS ( pe ) > 9.99, "n.m.", FORMAT ( pe, "+0.0%;-0.0%" ) ) )
     & IF ( ISBLANK ( ec ), ".", ", " & core & " " & ''' + MT('ec') + ''' & "." )''',
