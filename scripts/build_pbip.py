@@ -611,7 +611,7 @@ class Page:
                 tx = x + i * (tw + 10)
                 bar_only = im.startswith('SVG Bar ')        # a pacing bar alone is drawn thin, level with the value
                 iw = tw * (0.30 if bar_only else 0.42)                             # right-aligned beside the value, below the label row
-                self.image(f'{key}_img{i}', CX + (tx + tw - iw - (20 if bar_only else 10)) * SX, CY + (y + (44 if bar_only else 36) - 74) * SY, iw * SX,
+                self.image(f'{key}_img{i}', CX + (tx + tw - iw - (36 if bar_only else 10)) * SX, CY + (y + (44 if bar_only else 36) - 74) * SY, iw * SX,
                            (12 if bar_only else 28) * SY, im)
         return vid
 
