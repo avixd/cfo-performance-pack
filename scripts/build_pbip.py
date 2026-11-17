@@ -596,8 +596,8 @@ class Page:
                'referenceLabelTitle': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}],
                'referenceLabelLayout': [{'properties': {'horizontalAlignment': L('left'), 'position': L('below'), 'verticalAlignment': L('top'),
                                                          'arrangement': L('rows')}, 'selector': {'id': 'default'}}],
-               'layout': [{'properties': {'orientation': L(2), 'cellPadding': L(6), 'maxTiles': L(len(tiles)), 'backgroundShow': L(False),
-                                          'alignment': L('left'), 'calloutSize': L(45)}}],
+               'layout': [{'properties': {'orientation': L(2), 'cellPadding': L(6 if h >= 120 else 4), 'maxTiles': L(len(tiles)), 'backgroundShow': L(False),
+                                          'alignment': L('left'), 'calloutSize': L(45 if h >= 120 else 62)}}],   # short tiles: value needs more of the height
                'fillCustom': [{'properties': {'show': L(True), 'fillColor': T('Panel'), 'transparency': L(0)}, 'selector': {'id': 'default'}}],
                'outline': [{'properties': {'show': L(True), 'lineColor': T('Line'), 'weight': L(1)}, 'selector': {'id': 'default'}}],
                'shapeCustomRectangle': [{'properties': {'tileShape': L('rectangleRounded'), 'rectangleRoundedCurve': L(8)}, 'selector': {'id': 'default'}}],

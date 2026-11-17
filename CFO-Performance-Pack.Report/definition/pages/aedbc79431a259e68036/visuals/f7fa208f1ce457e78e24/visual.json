@@ -798,7 +798,7 @@
             "cellPadding": {
               "expr": {
                 "Literal": {
-                  "Value": "6D"
+                  "Value": "4D"
                 }
               }
             },
@@ -826,7 +826,7 @@
             "calloutSize": {
               "expr": {
                 "Literal": {
-                  "Value": "45D"
+                  "Value": "62D"
                 }
               }
             }
