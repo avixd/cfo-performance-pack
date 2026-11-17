@@ -842,8 +842,8 @@ def page_income():
              ('Salary Cost per Head', 'Salary cost per head', 'Salary per Head Text', 'Salary per Head Color'),
              ('Net Income Attributable to Group', 'Net income attributable to the group', 'NCI Text', None)]
     for i, (m, lab, sub, col) in enumerate(tiles):
-        p.kpi(f'k{i}', 926, 74 + i * 94, 338, 86, m, lab, sub, col)
-    p.insights('ins', 926, 544, 338, 160, [2, 4])
+        p.kpi(f'k{i}', 926, 74 + i * 110, 338, 104, m, lab, sub, col)
+    p.insights('ins', 926, 626, 338, 78, [2, 4])
     return p
 
 
@@ -860,11 +860,11 @@ def page_balance():
              ('DQ Balance Sheet Difference', 'Balance check', 'Balance Check Text', 'Balance Check Color')]
     w = (648 - 3 * 10) / 4
     for i, (m, lab, sub, col) in enumerate(tiles):
-        p.kpi(f'k{i}', 626 + (i % 4) * (w + 10), 74 + (i // 4) * 98, w, 90, m, lab, sub, col)
+        p.kpi(f'k{i}', 626 + (i % 4) * (w + 10), 74 + (i // 4) * 118, w, 110, m, lab, sub, col)
     # cash bridge: green = source of cash, red = use of cash; the total is the change in cash since the year end
     wf = p.axes({'sentimentColors': [{'properties': {'increaseFill': T('Good'), 'decreaseFill': T('Bad'), 'totalFill': solid(SERIES['total'])}}],
                  'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1), 'fontSize': L(8.5), 'color': T('Text')}}]}, value_axis=False, legend=False)
-    p.add('cash_bridge', 'waterfallChart', 626, 272, 638, 212, roles={'Category': ['Cash Bridge[Step]'], 'Y': [('Cash Bridge Value', 'Cash effect')]},
+    p.add('cash_bridge', 'waterfallChart', 626, 312, 638, 174, roles={'Category': ['Cash Bridge[Step]'], 'Y': [('Cash Bridge Value', 'Cash effect')]},
           objects=wf, title='=VT Cash Bridge', subtitle='Sub Cash Bridge', sort=[('Cash Bridge[Step]', 'Ascending')])
     obj = p.axes({'dataPoint': [{'properties': {'fill': solid(SERIES['actual'])}, 'selector': {'metadata': '_Measures.Cash Balance (month)'}},
                                 {'properties': {'fill': solid(SERIES['outlook'])}, 'selector': {'metadata': '_Measures.Working Capital (month)'}}],
@@ -887,19 +887,19 @@ def page_dq():
              ('DQ Accounts Missing From Chart', 'Unknown accounts', 'Chart Check Text', 'Chart Check Color'), ('DQ Synthetic Budget Share', 'Synthetic budget', None, None)]
     w = (1248 - 7 * 10) / 8
     for i, (m, lab, sub, col) in enumerate(tiles):
-        p.kpi(f'k{i}', 16 + i * (w + 10), 74, w, 88, m, lab, sub, col)
+        p.kpi(f'k{i}', 16 + i * (w + 10), 74, w, 110, m, lab, sub, col)
     f1 = ['DQ Injection Log[Month]', 'DQ Injection Log[Issue]', 'DQ Injection Log[RowsAffected]', 'DQ Injection Log[Treatment]']
     o1 = p.table_objects(f1, wrap=True)
     o1['columnWidth'] = [{'properties': {'value': L(62)}, 'selector': {'metadata': 'DQ Injection Log.Month'}},
                          {'properties': {'value': L(126)}, 'selector': {'metadata': 'DQ Injection Log.Issue'}},
                          {'properties': {'value': L(40)}, 'selector': {'metadata': 'DQ Injection Log.RowsAffected'}},
                          {'properties': {'value': L(280)}, 'selector': {'metadata': 'DQ Injection Log.Treatment'}}]
-    p.add('inj', 'tableEx', 16, 172, 620, 232,
+    p.add('inj', 'tableEx', 16, 194, 620, 210,
           roles={'Values': [('DQ Injection Log[Month]', 'Month'), ('DQ Injection Log[Issue]', 'Issue injected'), ('DQ Injection Log[RowsAffected]', 'Rows'),
                             ('DQ Injection Log[Treatment]', 'How the model handles it')]},
           objects=o1, title='=VT DQ Injected', subtitle='Sub DQ Injected')
     f2 = ['DQ File Log[Folder]', 'DQ File Log[Name]', 'DQ File Log[RawRows]', 'DQ File Log[DuplicateRows]', 'DQ File Log[MissingDepartmentRows]', 'DQ File Log[SchemaDrift]']
-    p.add('files', 'tableEx', 646, 172, 618, 532,
+    p.add('files', 'tableEx', 646, 194, 618, 510,
           roles={'Values': [('DQ File Log[Folder]', 'Folder'), ('DQ File Log[Name]', 'File'), ('DQ File Log[RawRows]', 'Rows'),
                             ('DQ File Log[DuplicateRows]', 'Duplicates'), ('DQ File Log[MissingDepartmentRows]', 'Blank dept'),
                             ('DQ File Log[SchemaDrift]', 'Schema drift')]},
@@ -969,13 +969,13 @@ def page_sankey():
     """Hidden H1: income-statement Sankey drawn by one DAX measure (SVG), so no custom visual has to be installed."""
     p = Page(hexid('page', 'sankey'), 'H1 · Revenue Flow (Sankey)', 'Sankey', hidden=True)
     p.chrome('PT Sankey', 'PS Sankey')
-    p.add('sankey', 'image', 16, 74, 1248, 516, title='=VT Sankey', subtitle='Sub Sankey', header=False,
+    p.add('sankey', 'image', 16, 74, 1248, 510, title='=VT Sankey', subtitle='Sub Sankey', header=False,
           objects={'image': [{'properties': {'sourceType': L('imageData'), 'sourceField': {'expr': mfield('SVG Sankey')}}}],
                    'imageScaling': [{'properties': {'imageScalingType': L('Fit')}}]})
     w = (1248 - 3 * 10) / 4
     for i, (m, lab, sub, col) in enumerate([('Revenue', 'Net revenue', 'Revenue vs Budget Text', 'Revenue Var Color'), ('Gross Profit Margin %', 'Gross margin', 'Gross Margin Text', 'Gross Margin Var Color'),
                                             ('EBITDA', 'EBITDA', 'EBITDA vs Budget Text', 'EBITDA Var Color'), ('Net Income', 'Net income', 'Net Income vs Budget Text', 'Net Income Var Color')]):
-        p.kpi(f'k{i}', 16 + i * (w + 10), 600, w, 104, m, lab, sub, col)
+        p.kpi(f'k{i}', 16 + i * (w + 10), 594, w, 110, m, lab, sub, col)
     return p
 
 
@@ -1043,10 +1043,10 @@ def page_rf():
                                             ('RF Target', 'Target', 'RF Target Text', None),
                                             ('RF Required per Month', 'Required per remaining month', 'RF Required Text', 'RF Required Color'),
                                             ('RF Run-Rate Total', 'Average-month projection (cross-check)', 'RF Run-Rate Text', 'RF Run-Rate Color')]):
-        p.kpi(f'k{i}', 16 + i * (w + 10), 144, w, 92, m, lab, sub, col)
+        p.kpi(f'k{i}', 16 + i * (w + 10), 144, w, 110, m, lab, sub, col)
     obj = matrix_objects(p, ['RF Value'], size=8, back={'_Measures.RF Value': 'RF Cell Color'})
     obj['grid'][0]['properties']['rowPadding'] = L(1)
-    p.add('matrix', 'pivotTable', 16, 242, 1248, 228, roles={'Rows': [('Entity[EntityName]', 'Entity')], 'Columns': ['Date[Month Name]'], 'Values': [('RF Value', 'Value')]},
+    p.add('matrix', 'pivotTable', 16, 260, 1248, 210, roles={'Rows': [('Entity[EntityName]', 'Entity')], 'Columns': ['Date[Month Name]'], 'Values': [('RF Value', 'Value')]},
           objects=obj, title='=VT RF Matrix', subtitle='Sub RF Matrix')
     fields = ['Entity[EntityName]', 'RF Actual to Date', 'RF Remaining Budget', 'RF Total', 'RF Target', 'RF Gap', 'RF Attainment %', 'RF Required per Month',
               'RF Average per Month', 'RF Status']
