@@ -610,8 +610,9 @@ class Page:
             if im:
                 tx = x + i * (tw + 10)
                 bar_only = im.startswith('SVG Bar ')        # a pacing bar alone is drawn thin, level with the value
-                self.image(f'{key}_img{i}', CX + (tx + tw * 0.50 - 16) * SX, CY + (y + (28 if bar_only else 10) - 74) * SY, tw * 0.44 * SX,
-                           (12 if bar_only else 40) * SY, im)
+                iw = tw * 0.42                              # right-aligned beside the value, below the label row
+                self.image(f'{key}_img{i}', CX + (tx + tw - iw - 10) * SX, CY + (y + (30 if bar_only else 22) - 74) * SY, iw * SX,
+                           (12 if bar_only else 30) * SY, im)
         return vid
 
     def kpi(self, key, x, y, w, h, measure, label, sub=None, sub_colour=None):
