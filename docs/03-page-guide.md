@@ -21,6 +21,29 @@ Every page shares one frame: sidebar (numbered page navigation, filters, Reset a
 
 ---
 
+## Filters on each page (reviewed 16 Nov 2026)
+
+A sidebar slicer appears only where it changes the answer correctly. Synced slicers carry one selection across the pages that have them; a page without a slicer is not filtered by it.
+
+| Page | Fiscal year | Month | Period | Currency | Region | Entity | Department | Own slicers |
+|---|---|---|---|---|---|---|---|---|
+| 1 Overview, 2 Executive, 4 P&L, H1, H2 | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | | H2: focus line, Thousand / Absolute |
+| 3 Budget vs Actual | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | Metric |
+| 5 Balance Sheet | ✓ | ✓ | | ✓ | ✓ | ✓ | | |
+| H3 Rolling Forecast | ✓ | | | ✓ | ✓ | ✓ | | Actuals until, Metric |
+| 6 Data Quality, 8 Notes | | | | | | | | |
+| 7 Data Dictionary | | | | | | | | Object type, table, folder, name, free text |
+
+Why:
+- **Department** only on Budget vs Actual: the ledger books all revenue in one department and cash in another, so a department filter blanks revenue, margins and the balance sheet on every other page. It is valid for operating expenses and headcount, which page 3 shows by department.
+- **Period** (YTD / QTD / MTD) is not offered where it cannot change anything: a balance sheet is a point in time, and the rolling forecast is always full year.
+- **Month** is not offered on the rolling forecast: its own *Actuals until* slicer sets the cut-off month.
+- **Data Quality, Data Dictionary, Notes** describe the load and the model, not the business.
+
+What responds to what (tested over the model, 16 Nov): Entity, Region and Fiscal year change every KPI card, sparkline, pacing bar, matrix and the Sankey. Currency changes all money values; percentages and ratios stay the same by definition. Period changes the KPI values and the Sankey; sparklines always show the months of the fiscal year and pacing bars show full-year progress, by design. Clicking a bar or row cross-filters the other visuals on the page, including the KPI cards and sparklines.
+
+The **Light / Dark** toggle (top right) is a button slicer synced across all pages: the lit icon shows the active mode.
+
 ## 1 · Overview
 **Purpose.** Context before numbers: the company, its history, and the four questions the pack answers.
 **On the page.** Story table (who we are, FY2025 to FY2027, the four questions, disclosure); four KPI cards (net revenue, organic growth, new-entity revenue, entities reporting); revenue by fiscal year and region; group perimeter table with ownership and budget status; "What the numbers say".
