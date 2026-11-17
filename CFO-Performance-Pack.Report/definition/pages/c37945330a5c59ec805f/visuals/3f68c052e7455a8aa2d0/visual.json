@@ -240,7 +240,7 @@
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "85D"
+                  "Value": "90D"
                 }
               }
             }
@@ -272,7 +272,7 @@
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "72D"
+                  "Value": "84D"
                 }
               }
             }
@@ -320,7 +320,7 @@
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "15D"
+                  "Value": "35D"
                 }
               }
             },
@@ -451,7 +451,7 @@
             "transparency": {
               "expr": {
                 "Literal": {
-                  "Value": "30D"
+                  "Value": "55D"
                 }
               }
             },

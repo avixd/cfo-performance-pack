@@ -381,12 +381,12 @@ class Page:
                'value': [st('default', show=False)], 'label': [st('default', show=False)],
                'selectionIcon': [st('default', show=False)], 'accentBar': [st('default', show=False)],
                'image': [st('default', show=False)],
-               'fillCustom': [st('default', show=True, fillColor=white, transparency=100), st('interaction:hover', show=True, fillColor=white, transparency=85),
-                              st('selection:selected', show=True, fillColor=white, transparency=72)],
-               'outline': [st('default', show=False), st('selection:selected', show=True, lineColor=white, transparency=15, weight=1)],
+               'fillCustom': [st('default', show=True, fillColor=white, transparency=100), st('interaction:hover', show=True, fillColor=white, transparency=90),
+                              st('selection:selected', show=True, fillColor=white, transparency=84)],
+               'outline': [st('default', show=False), st('selection:selected', show=True, lineColor=white, transparency=35, weight=1)],
                'shadowCustom': [st('default', show=False),
                                 st('selection:selected', show=True, color=black, transparency=70, shadowBlur=6, shadowDistance=1, angle=90, position='Outer')],
-               'glowCustom': [st('default', show=False), st('selection:selected', show=True, color=white, transparency=30, shadowBlur=4, position='Inner')]}
+               'glowCustom': [st('default', show=False), st('selection:selected', show=True, color=white, transparency=55, shadowBlur=4, position='Inner')]}
         vid = self.add(key, 'advancedSlicerVisual', x, y, w, h, roles={'Values': [spec]}, objects=obj, background=False, content=False, header=False,
                        container={'padding': NO_PAD})
         self.visuals[-1]['visual']['syncGroup'] = {'groupName': sync, 'fieldChanges': True, 'filterChanges': True}

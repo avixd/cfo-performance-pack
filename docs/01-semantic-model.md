@@ -3180,7 +3180,7 @@ Sun and moon of the theme toggle as one SVG image: the active mode is lit (amber
 // Theme pattern: colours come from the [Col ...] measures, which switch with the Light/Dark toggle.
 VAR dark = [Is Dark]
 VAR cs = IF ( dark, [Col Muted], "#E8A013" )
-VAR cm = IF ( dark, "#9AA8FF", [Col Muted] )
+VAR cm = IF ( dark, "#B4C0FF", [Col Muted] )
 RETURN "data:image/svg+xml;utf8," & SUBSTITUTE ( "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 70 26'><g fill='none' stroke='" & cs & "' stroke-width='1.8' stroke-linecap='round' transform='translate(8.5 4) scale(0.75)'><circle cx='12' cy='12' r='4.2' fill='" & cs & "'/><path d='M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5.3 5.3l1.7 1.7M17 17l1.7 1.7M5.3 18.7l1.7-1.7M17 7l1.7-1.7'/></g><path transform='translate(43.5 4) scale(0.75)' d='M20.5 14.2A8.5 8.5 0 1 1 9.8 3.5a6.6 6.6 0 0 0 10.7 10.7z' fill='" & cm & "'/></svg>", "#", "%23" )
 ```
 
