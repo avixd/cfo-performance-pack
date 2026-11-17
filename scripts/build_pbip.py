@@ -589,8 +589,8 @@ class Page:
                 vp = {'valueFontSize': L(7), 'valueDisplayUnits': L(1)}
                 vp['valueFontColor'] = mcolor(t['sub_colour']) if (n == 0 and t.get('sub_colour')) else T('Muted')
                 refval.append({'properties': vp, 'selector': {'metadata': md, 'id': rid(t['measure'], n)}})
-            val.append({'properties': {'fontSize': L(15), 'bold': L(True), 'fontColor': T('Title'), 'labelDisplayUnits': L(1), 'horizontalAlignment': L('left')}, 'selector': {'metadata': md}})
-            lab.append({'properties': {'fontSize': L(8), 'fontColor': T('Muted'), 'position': L('aboveValue'), 'horizontalAlignment': L('left')}, 'selector': {'metadata': md}})
+            val.append({'properties': {'fontSize': L(15 if h >= 120 else 12), 'bold': L(True), 'fontColor': T('Title'), 'labelDisplayUnits': L(1), 'horizontalAlignment': L('left')}, 'selector': {'metadata': md}})
+            lab.append({'properties': {'fontSize': L(8 if h >= 120 else 7), 'fontColor': T('Muted'), 'position': L('aboveValue'), 'horizontalAlignment': L('left')}, 'selector': {'metadata': md}})
             img_measures.append(t.get('spark'))
         obj = {'value': val, 'label': lab, 'referenceLabel': ref, 'referenceLabelValue': refval,
                'referenceLabelTitle': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}],
