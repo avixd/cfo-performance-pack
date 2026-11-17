@@ -563,6 +563,42 @@ class Page:
         return self.add(key, 'card', x, y, w, h, roles={'Values': [measure]}, objects=obj, content=False, background=False, header=False,
                         container={'padding': NO_PAD})
 
+    def kpi_row(self, key, x, y, w, h, tiles):
+        """A row of KPI tiles as ONE new card visual (cardVisual) instead of ~8 visuals per tile (faster pages).
+        tiles: dicts with measure, label, sub, sub_colour, spark, prog_text. Per tile: the value (the measure itself, dynamic format), the label
+        (display name), reference label 1 = comparison text coloured by sub_colour, reference label 2 = progress text, image = sparkline."""
+        def rid(m, n):
+            return 'field-' + str(uuid.uuid5(NS, f'{self.pid}/{key}/{m}/{n}'))
+        roles = {'Data': [(t['measure'], t['label']) for t in tiles]}
+        meta = lambda t: '_Measures.' + t['measure']
+        ref, refval, img, val, lab = [], [], [], [], []
+        for t in tiles:
+            md = meta(t)
+            for n, rm in enumerate([t.get('sub'), t.get('prog_text')]):
+                if not rm:
+                    continue
+                sel = {'data': [{'dataViewWildcard': {'matchingOption': 0}}], 'metadata': md, 'id': rid(t['measure'], n), 'order': n}
+                ref.append({'properties': {'value': {'expr': mfield(rm)}}, 'selector': sel})
+                vp = {'valueFontSize': L(7.5), 'valueDisplayUnits': L(1)}
+                vp['valueFontColor'] = mcolor(t['sub_colour']) if (n == 0 and t.get('sub_colour')) else T('Muted')
+                refval.append({'properties': vp, 'selector': {'metadata': md, 'id': rid(t['measure'], n)}})
+            val.append({'properties': {'fontSize': L(15), 'bold': L(True), 'fontColor': T('Title'), 'labelDisplayUnits': L(1)}, 'selector': {'metadata': md}})
+            lab.append({'properties': {'fontSize': L(8), 'fontColor': T('Muted')}, 'selector': {'metadata': md}})
+            if t.get('spark'):
+                img.append({'properties': {'show': L(True), 'imageType': L('imageData'), 'imageData': {'expr': mfield(t['spark'])},
+                                           'position': L('Right'), 'imageAreaSize': L(40)}, 'selector': {'metadata': md}})
+        obj = {'value': val, 'label': lab, 'referenceLabel': ref, 'referenceLabelValue': refval,
+               'referenceLabelTitle': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}],
+               'referenceLabelLayout': [{'properties': {'horizontalAlignment': L('left'), 'position': L('below')}, 'selector': {'id': 'default'}}],
+               'layout': [{'properties': {'orientation': L(2), 'cellPadding': L(10), 'maxTiles': L(len(tiles)), 'backgroundShow': L(False)}}],
+               'fillCustom': [{'properties': {'show': L(True), 'fillColor': T('Panel'), 'transparency': L(0)}, 'selector': {'id': 'default'}}],
+               'outline': [{'properties': {'show': L(True), 'lineColor': T('Line'), 'weight': L(1)}, 'selector': {'id': 'default'}}],
+               'shapeCustomRectangle': [{'properties': {'tileShape': L('rectangleRounded'), 'rectangleRoundedCurve': L(8)}, 'selector': {'id': 'default'}}],
+               'accentBar': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}]}
+        if img:
+            obj['image'] = img
+        return self.add(key, 'cardVisual', x, y, w, h, roles=roles, objects=obj, background=False, header=False)
+
     def kpi(self, key, x, y, w, h, measure, label, sub=None, sub_colour=None):
         """Compact KPI tile (no icon, sparkline or pacing bar): same blocks, alignment and number format as kpi_full."""
         self.kpi_full(key, x, y, w, h, measure, label, None, sub, sub_colour, doc_anchor=ANCHOR(FOLDER[measure]), desc=DESC.get(measure) or label)
@@ -712,8 +748,8 @@ def page_executive():
              ('Net Income', 'Net income', '\u25c6', 'Net Income vs Budget Text', 'Net Income Var Color', 'SVG Spark Net Income', 'Net Income Progress Text', 'SVG Bar Net Income'),
              ('Net Income Outlook FY', 'FY net income outlook', '\u2197', 'Net Income Outlook Gap Text', 'Net Income Outlook Gap Color', None, 'Net Income Outlook Progress Text', 'SVG Bar Net Income Outlook'),
              ('Cash', 'Cash at month end', '\u00a4', 'Cash Change Text', 'Cash Change Color', 'SVG Spark Cash', 'Cash Progress Text', None)]
-    for i, t in enumerate(tiles):
-        full(p, f'k{i}', 16 + i * (w + 10), 120, w, 136, *t)
+    # faster pages, prototype (17 Nov 2026): the six tiles are one new card visual
+    p.kpi_row('kpis', 16, 120, 1248, 136, [dict(measure=t[0], label=t[1], sub=t[3], sub_colour=t[4], spark=t[5], prog_text=t[6]) for t in tiles])
     wf = p.axes({'sentimentColors': [{'properties': {'increaseFill': T('Good'), 'decreaseFill': T('Bad'), 'totalFill': solid(SERIES['total'])}}],
                  'labels': [{'properties': {'show': L(True), 'labelDisplayUnits': L(1), 'fontSize': L(8.5), 'color': T('Text')}}]}, value_axis=False)
     p.add('wf_rev', 'waterfallChart', 16, 266, 404, 190, roles={'Category': ['Revenue Bridge[Step]'], 'Y': [('Revenue Bridge Value', 'Revenue growth')]},
