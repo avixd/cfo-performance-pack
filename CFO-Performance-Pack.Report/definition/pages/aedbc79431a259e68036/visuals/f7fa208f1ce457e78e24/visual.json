@@ -584,7 +584,7 @@
             "valueFontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7.5D"
+                  "Value": "7D"
                 }
               }
             },
@@ -622,7 +622,7 @@
             "valueFontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7.5D"
+                  "Value": "7D"
                 }
               }
             },
@@ -660,7 +660,7 @@
             "valueFontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7.5D"
+                  "Value": "7D"
                 }
               }
             },
@@ -698,7 +698,7 @@
             "valueFontSize": {
               "expr": {
                 "Literal": {
-                  "Value": "7.5D"
+                  "Value": "7D"
                 }
               }
             },
@@ -762,6 +762,20 @@
               "expr": {
                 "Literal": {
                   "Value": "'below'"
+                }
+              }
+            },
+            "verticalAlignment": {
+              "expr": {
+                "Literal": {
+                  "Value": "'top'"
+                }
+              }
+            },
+            "arrangement": {
+              "expr": {
+                "Literal": {
+                  "Value": "'rows'"
                 }
               }
             }

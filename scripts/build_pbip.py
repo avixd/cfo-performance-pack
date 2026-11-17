@@ -586,7 +586,7 @@ class Page:
                     continue
                 sel = {'data': [{'dataViewWildcard': {'matchingOption': 0}}], 'metadata': md, 'id': rid(t['measure'], n), 'order': n}
                 ref.append({'properties': {'value': {'expr': mfield(rm)}}, 'selector': sel})
-                vp = {'valueFontSize': L(7.5), 'valueDisplayUnits': L(1)}
+                vp = {'valueFontSize': L(7), 'valueDisplayUnits': L(1)}
                 vp['valueFontColor'] = mcolor(t['sub_colour']) if (n == 0 and t.get('sub_colour')) else T('Muted')
                 refval.append({'properties': vp, 'selector': {'metadata': md, 'id': rid(t['measure'], n)}})
             val.append({'properties': {'fontSize': L(15), 'bold': L(True), 'fontColor': T('Title'), 'labelDisplayUnits': L(1), 'horizontalAlignment': L('left')}, 'selector': {'metadata': md}})
@@ -594,7 +594,8 @@ class Page:
             img_measures.append(t.get('spark'))
         obj = {'value': val, 'label': lab, 'referenceLabel': ref, 'referenceLabelValue': refval,
                'referenceLabelTitle': [{'properties': {'show': L(False)}, 'selector': {'id': 'default'}}],
-               'referenceLabelLayout': [{'properties': {'horizontalAlignment': L('left'), 'position': L('below')}, 'selector': {'id': 'default'}}],
+               'referenceLabelLayout': [{'properties': {'horizontalAlignment': L('left'), 'position': L('below'), 'verticalAlignment': L('top'),
+                                                         'arrangement': L('rows')}, 'selector': {'id': 'default'}}],
                'layout': [{'properties': {'orientation': L(2), 'cellPadding': L(10), 'maxTiles': L(len(tiles)), 'backgroundShow': L(False),
                                           'alignment': L('left')}}],
                'fillCustom': [{'properties': {'show': L(True), 'fillColor': T('Panel'), 'transparency': L(0)}, 'selector': {'id': 'default'}}],
