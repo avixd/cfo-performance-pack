@@ -610,7 +610,7 @@ class Page:
             if im:
                 tx = x + i * (tw + 10)
                 bar_only = im.startswith('SVG Bar ')        # a pacing bar alone is drawn thin, level with the value
-                iw = tw * 0.42                              # right-aligned beside the value, below the label row
+                iw = tw * (0.36 if bar_only else 0.42)                             # right-aligned beside the value, below the label row
                 self.image(f'{key}_img{i}', CX + (tx + tw - iw - 10) * SX, CY + (y + (44 if bar_only else 36) - 74) * SY, iw * SX,
                            (12 if bar_only else 28) * SY, im)
         return vid
@@ -773,7 +773,7 @@ def page_executive():
     p.chrome('PT Executive', 'PS Executive')
     p.card('headline', 16, 74, 1248, 40, 'Headline', None, size=12, colour='Accent')
     w = (1248 - 5 * 10) / 6
-    tiles = [('Revenue', 'Net revenue', '$', 'Revenue vs Budget Text', 'Revenue Var Color', 'SVG Spark Revenue', 'Revenue Progress Text', 'SVG Bar Revenue'),
+    tiles = [('Revenue', 'Net revenue', '$', 'Revenue vs Budget Text Short', 'Revenue Var Color', 'SVG Spark Revenue', 'Revenue Progress Text', 'SVG Bar Revenue'),
              ('Gross Profit Margin %', 'Gross margin', '%', 'Gross Margin Text', 'Gross Margin Var Color', 'SVG Spark Gross Margin', 'Gross Margin Progress Text', None),
              ('EBITDA', 'EBITDA', '\u03a3', 'EBITDA vs Budget Text', 'EBITDA Var Color', 'SVG Spark EBITDA', 'EBITDA Progress Text', 'SVG Bar EBITDA'),
              ('Net Income', 'Net income', '\u25c6', 'Net Income vs Budget Text', 'Net Income Var Color', 'SVG Spark Net Income', 'Net Income Progress Text', 'SVG Bar Net Income'),

@@ -1467,6 +1467,10 @@ RETURN IF ( NOT ISBLANK ( spark ) || NOT ISBLANK ( bar ),
 
 redefine('Footer Note 1', '"1  Definitions: Notes page and docs/01-semantic-model.md. KPI cards: target = budget for the selected period; bar = share of target (line = 100%)."')
 
+# ======================================================================== v10i: short comparison text for 6-card rows
+add('Revenue vs Budget Text Short', 'FORMAT ( [Revenue Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " Bud  ·  " & FORMAT ( [Revenue Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " PY"',
+    '11 KPI Cards', None, 'Card text for narrow tiles (Executive page): revenue variance % vs budget and growth % vs prior year.')
+
 # ======================================================================== v5: documentation pass (TOM descriptions, DAX and M comments, query groups, diagram)
 # ---- 5.1 remove presentation leftovers that no visual or measure uses (analytical KPI measures are kept as reusable building blocks)
 DROP = [r' Spark$', r' Progress Bar$', r'^Title (Overview|Executive|Income Statement|Balance Sheet|Overview Revenue|DQ)$', r'^Lbl Current View$',

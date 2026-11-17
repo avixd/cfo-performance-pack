@@ -4039,6 +4039,11 @@ table _Measures
 		displayFolder: 11 KPI Cards
 		lineageTag: bcf30192-3eec-5539-a796-aadcc3f4ceab
 
+	/// Card text for narrow tiles (Executive page): revenue variance % vs budget and growth % vs prior year.
+	measure 'Revenue vs Budget Text Short' = FORMAT ( [Revenue Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " Bud  ·  " & FORMAT ( [Revenue Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " PY"
+		displayFolder: 11 KPI Cards
+		lineageTag: 3629e53d-7892-5d4d-b8fd-4f736f99a96c
+
 	/// Empty column: a table needs one column to exist.
 	column Placeholder
 		dataType: string
