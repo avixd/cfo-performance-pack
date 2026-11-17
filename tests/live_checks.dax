@@ -1,0 +1,21 @@
+// Live checks against the open model (Power BI Desktop: DAX query view, or any XMLA client). Every row must show Pass = TRUE.
+// Tolerance: one dollar, because bridges add up many currency-converted rows.
+EVALUATE
+VAR tol = 1
+RETURN UNION (
+    ROW ( "Check", "Balance sheet balances (assets = liabilities + equity)", "Difference", [DQ Balance Sheet Difference], "Pass", ABS ( [DQ Balance Sheet Difference] ) < tol ),
+    ROW ( "Check", "Cash bridge steps add up to the change in cash since year end", "Difference",
+          SUMX ( VALUES ( 'Cash Bridge'[Step] ), [Cash Bridge Value] ) - ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ) ),
+          "Pass", ABS ( SUMX ( VALUES ( 'Cash Bridge'[Step] ), [Cash Bridge Value] ) - ( CALCULATE ( [Closing Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ) - CALCULATE ( [Prior Year-End Balance], TREATAS ( CALCULATETABLE ( VALUES ( 'Report Line Map'[AccountKey] ), 'Report Line Map'[LineKey] = 101 ), Account[AccountKey] ) ) ) ) < tol ),
+    ROW ( "Check", "Revenue bridge = revenue growth vs prior year", "Difference",
+          SUMX ( VALUES ( 'Revenue Bridge'[Step] ), [Revenue Bridge Value] ) - ( [Revenue] - [Revenue PY] ),
+          "Pass", ABS ( SUMX ( VALUES ( 'Revenue Bridge'[Step] ), [Revenue Bridge Value] ) - ( [Revenue] - [Revenue PY] ) ) < tol ),
+    ROW ( "Check", "EBITDA bridge = EBITDA variance to budget", "Difference",
+          SUMX ( VALUES ( 'EBITDA Bridge'[Step] ), [EBITDA Bridge Value] ) - [EBITDA Var vs Budget],
+          "Pass", ABS ( SUMX ( VALUES ( 'EBITDA Bridge'[Step] ), [EBITDA Bridge Value] ) - [EBITDA Var vs Budget] ) < tol ),
+    ROW ( "Check", "Rolling forecast = metric outlook (revenue)", "Difference",
+          CALCULATE ( [RF Total], Metric[Metric] = "Revenue" ) - CALCULATE ( [Metric Outlook FY], Metric[Metric] = "Revenue" ),
+          "Pass", ABS ( CALCULATE ( [RF Total], Metric[Metric] = "Revenue" ) - CALCULATE ( [Metric Outlook FY], Metric[Metric] = "Revenue" ) ) < tol ),
+    ROW ( "Check", "Every ledger row has an FX rate", "Difference", [DQ Rows Missing FX Rate], "Pass", [DQ Rows Missing FX Rate] = 0 ),
+    ROW ( "Check", "Every ledger account is in the chart of accounts", "Difference", [DQ Accounts Missing From Chart], "Pass", [DQ Accounts Missing From Chart] = 0 )
+)

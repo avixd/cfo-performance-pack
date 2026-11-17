@@ -1,0 +1,5 @@
+role 'North America'
+	modelPermission: read
+
+	tablePermission Entity = Entity[Region] = "North America"
+

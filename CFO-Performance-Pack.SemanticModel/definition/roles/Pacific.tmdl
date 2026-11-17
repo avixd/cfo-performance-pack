@@ -1,0 +1,5 @@
+role Pacific
+	modelPermission: read
+
+	tablePermission Entity = Entity[Region] = "Pacific"
+

@@ -47,7 +47,7 @@
                       "Entity": "_Measures"
                     }
                   },
-                  "Property": "DSO Change Text"
+                  "Property": "DSO Target Text"
                 }
               }
             },
@@ -61,7 +61,7 @@
                           "Entity": "_Measures"
                         }
                       },
-                      "Property": "DSO Change Color"
+                      "Property": "DSO Target Color"
                     }
                   }
                 }

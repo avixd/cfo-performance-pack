@@ -192,6 +192,12 @@ def build_model(data_root):
     write(os.path.join(SM, 'relationships.tmdl'), render_relationships())
     for t in M.TABLES:
         write(os.path.join(SM, 'tables', f"{t['name']}.tmdl"), render_table(t))
+    # row-level security: one file per role (definition/roles/<role>.tmdl); a role with a region filters Entity, which filters the ledger
+    for name, region in getattr(M, 'ROLES', []):
+        L = [f'role {q(name)}', '\tmodelPermission: read', '']
+        if region:
+            L += [f'\ttablePermission Entity = Entity[Region] = "{region}"', '']
+        write(os.path.join(SM, 'roles', f'{name}.tmdl'), '\n'.join(L) + '\n')
     # model-view layout: fact in the middle, dimensions around it, helper tables in rows below (positions in model_def.DIAGRAM)
     nodes = [{'location': {'x': x, 'y': y}, 'nodeIndex': name, 'nodeLineageTag': tag(name), 'size': {'height': h, 'width': w}, 'zIndex': i}
              for i, (name, (x, y, w, h)) in enumerate(M.DIAGRAM.items())]
@@ -490,7 +496,8 @@ class Page:
         for k, wdt in [('Period', 132), ('Currency', 92), ('Region', 128), ('Entity', 128), ('Department', 150)]:
             if CHIP_OF[k] not in keep:      # a chip only for a filter this page actually has
                 continue
-            self.button(f'chip_{k}', x, 58, wdt, 24, '', measure=f'Ctx Line {k}', fill='Accent Soft', text='Accent', outline=None, size=7.5, round_=12, inset=True)
+            cm = 'Ctx Line As At' if (k == 'Period' and self.key == 'BS') else f'Ctx Line {k}'
+            self.button(f'chip_{k}', x, 58, wdt, 24, '', measure=cm, fill='Accent Soft', text='Accent', outline=None, size=7.5, round_=12, inset=True)
             x += wdt + 6
         ux = 744
         self.textline('hello', ux, 6, 112, 28, 'Greeting', 9, 'Muted', align='right')
@@ -782,7 +789,7 @@ def page_balance():
     tiles = [('Cash', 'Cash', 'Cash Change Text', 'Cash Change Color'), ('Current Ratio', 'Current ratio', 'Current Ratio Change Text', 'Current Ratio Change Color'),
              ('Debt to Equity', 'Debt to equity', 'Debt to Equity Change Text', 'Debt to Equity Change Color'),
              ('Cash Conversion Cycle (days)', 'Cash cycle (days)', 'CCC Change Text', 'CCC Change Color'),
-             ('DSO (days)', 'Receivable days', 'DSO Change Text', 'DSO Change Color'), ('DIO (days)', 'Inventory days', 'DIO Change Text', 'DIO Change Color'),
+             ('DSO (days)', 'Receivable days', 'DSO Target Text', 'DSO Target Color'), ('DIO (days)', 'Inventory days', 'DIO Change Text', 'DIO Change Color'),
              ('DPO (days)', 'Payable days', 'DPO Change Text', 'DPO Change Color'),
              ('DQ Balance Sheet Difference', 'Balance check', 'Balance Check Text', 'Balance Check Color')]
     w = (648 - 3 * 10) / 4
@@ -881,7 +888,12 @@ def page_dictionary():
     cslicer(p, 'f_table', 506, 156, 170, 66, 'Data Dictionary[Table]', 'Table (search)', search=True)
     cslicer(p, 'f_folder', 686, 156, 190, 66, 'Data Dictionary[Folder]', 'Folder (search)', search=True)
     cslicer(p, 'f_name', 886, 156, 160, 66, 'Data Dictionary[Name]', 'Name (search)', search=True)
-    p.add('f_text', 'textSlicer', 1056, 156, 208, 66, roles={'Values': ['Data Dictionary[Name]']}, title='Name contains (free text)', header=False)
+    # free-text slicer: input box themed like the other slicers (its default dark accent bar showed as a black square)
+    p.add('f_text', 'textSlicer', 1056, 156, 208, 66, roles={'Values': ['Data Dictionary[Name]']}, title='Name contains (free text)', header=False,
+          objects={'inputTextBox': [{'properties': {'accentBarShow': L(False), 'backShow': L(True), 'backColor': T('Panel'), 'borderShow': L(True),
+                                                     'borderColor': T('Line'), 'borderWidth': L(1)}}],
+                   'inputText': [{'properties': {'fontColor': T('Text'), 'placeholder': L('Type part of a name'), 'fontSize': L(9)}}],
+                   'applyButton': [{'properties': {'backShow': L(False), 'iconColor': T('Muted')}}]})
     fields = ['Data Dictionary[Object Type]', 'Data Dictionary[Table]', 'Data Dictionary[Name]', 'Data Dictionary[Description]', 'Data Dictionary[Expression]',
               'Data Dictionary[Folder]']
     obj = p.table_objects(fields, size=8.5, wrap=True)

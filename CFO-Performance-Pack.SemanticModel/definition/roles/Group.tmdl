@@ -1,0 +1,3 @@
+role Group
+	modelPermission: read
+

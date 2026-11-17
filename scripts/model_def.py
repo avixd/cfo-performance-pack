@@ -1365,6 +1365,75 @@ RETURN "data:image/svg+xml;utf8," & SUBSTITUTE ( "<svg xmlns='http://www.w3.org/
     '10 Theme', None, 'Sun and moon of the theme toggle as one SVG image: the active mode is lit (amber sun or indigo moon), the other is muted.')
 MEAS[-1]['cat'] = 'ImageUrl'
 
+# ======================================================================== v9: review fixes and CFO / CTO recommendations
+# ---- 9.1 theme toggle icons in outline style (ring sun with eight rays, crescent moon): the active mode is drawn in the title
+#          colour, the other muted; both are line icons so they read on the glass knob in either theme
+_SUN = ("<g fill='none' stroke='\" & cs & \"' stroke-width='2' stroke-linecap='round' transform='translate(8.5 4) scale(0.75)'>"
+        "<circle cx='12' cy='12' r='4.6'/><path d='M12 1.8v2.6M12 19.6v2.6M1.8 12h2.6M19.6 12h2.6M4.8 4.8l1.8 1.8M17.4 17.4l1.8 1.8M4.8 19.2l1.8-1.8M17.4 6.6l1.8-1.8'/></g>")
+_MOON = ("<path transform='translate(43.5 4) scale(0.75)' d='M20.6 14.6A8.8 8.8 0 1 1 9.4 3.4a7 7 0 0 0 11.2 11.2z' fill='none' stroke='\" & cm & \"' "
+         "stroke-width='2' stroke-linejoin='round'/>")
+redefine('Theme Toggle Icons', 'VAR dark = [Is Dark]\nVAR cs = IF ( dark, [Col Muted], [Col Title] )\nVAR cm = IF ( dark, [Col Title], [Col Muted] )\n'
+         'RETURN "data:image/svg+xml;utf8," & SUBSTITUTE ( "<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 70 26\'>' + _SUN + _MOON + '</svg>", "#", "%23" )',
+         desc='Sun (light) and moon (dark) line icons of the theme toggle as one SVG: the active mode in the title colour, the other muted.')
+
+# ---- 9.2 pacing bars show overshoot: beyond 100% the scale extends (up to 300%), the budget line is marked and the excess is drawn
+#          in the favourable colour, so 106% and 546% no longer look the same
+for _m in MEAS:
+    if _m['name'].startswith('SVG Bar '):
+        _p = _re.search(r'VAR p = (.+?) VAR e = \[Year Elapsed %\]', _m['expr']).group(1)
+        _m['expr'] = f"""VAR p = {_p} VAR e = [Year Elapsed %]
+VAR s = MAX ( 1, MIN ( p, 3 ) )                       -- scale: 100% of the bar = s x budget
+VAR w = MIN ( MAX ( p, 0 ), 3 ) / s * 300             -- filled width
+VAR b = 300 / s                                       -- where 100% of budget sits
+RETURN IF ( NOT ISBLANK ( p ), SUBSTITUTE ( "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 12' preserveAspectRatio='none'>"
+    & "<rect x='0' y='3' width='300' height='6' rx='3' fill='" & [Col Track] & "'/>"
+    & "<rect x='0' y='3' width='" & FORMAT ( MIN ( w, b ), "0" ) & "' height='6' rx='3' fill='" & [Col Accent] & "'/>"
+    & IF ( w > b, "<rect x='" & FORMAT ( b, "0" ) & "' y='3' width='" & FORMAT ( w - b, "0" ) & "' height='6' rx='3' fill='" & [Col Good] & "'/>"
+        & "<rect x='" & FORMAT ( b - 1, "0" ) & "' y='0' width='2' height='12' fill='" & [Col Title] & "'/>", "" )
+    & "<rect x='" & FORMAT ( MIN ( e, 1 ) * b - 1, "0" ) & "' y='0' width='2' height='12' fill='" & [Col Muted] & "'/></svg>", "#", "%23" ) )"""
+        _m['desc'] = ('SVG pacing bar: progress to the full-year budget; the thin tick marks how much of the year has elapsed. Above 100% the scale '
+                      'extends (to 300% at most), a dark line marks the budget and the excess is drawn green.')
+
+# ---- 9.3 headline leads with the entities that have a credible budget (core region), then the reported total
+redefine('Headline', '''VAR core = [Core Region] VAR rv = [Revenue Var vs Budget] VAR rc = [Revenue Var Core] VAR share = DIVIDE ( rv - rc, rv ) VAR ec = [EBITDA Var Core]
+VAR pc = [Revenue Var % Core] VAR pt = [Revenue Var % vs Budget] VAR pe = [EBITDA Var % vs Budget]
+RETURN [Currency Label] & " " & ''' + MU('[Revenue]') + ''' & " revenue. "
+    & IF ( ISBLANK ( rc ), "",
+        "Against credible budgets (" & core & ") " & IF ( ABS ( pc ) > 9.99, "n.m.", FORMAT ( pc, "+0.0%;-0.0%" ) ) & "; " )
+    & "reported " & IF ( ISBLANK ( pt ), "budget comparison not meaningful", IF ( ABS ( pt ) > 9.99, "n.m.", FORMAT ( pt, "+0.0%;-0.0%" ) ) & " vs budget" )
+    & IF ( rv > 0 && share > 0.5, ", " & FORMAT ( share, "0%" ) & " of it from newer regions", "" ) & ". "
+    & "EBITDA " & IF ( ISBLANK ( pe ), "budget comparison not meaningful", IF ( ABS ( pe ) > 9.99, "n.m.", FORMAT ( pe, "+0.0%;-0.0%" ) ) & " vs budget" )
+    & IF ( ISBLANK ( ec ), ".", ", " & core & " " & ''' + MT('ec') + ''' & "." )''',
+          desc='Executive headline: first the variance against credible budgets (the core region), then the reported total and how much of it newer, unbudgeted entities contribute.')
+
+# ---- 9.4 collections target: receivable days against a 45-day target and the cash a return to target would release
+add('DSO Target (days)', '45', BSF, '0', 'Receivable-days target (assumption agreed 17 Nov 2026: B2B net-30 terms plus collection slippage). Change here.')
+add('Cash to Release at DSO Target', 'VAR d = [DSO (days)] - [DSO Target (days)] RETURN IF ( d > 0, d / 365 * [Revenue TTM] )', BSF, F,
+    'Receivables above the target: (receivable days - target days) / 365 x trailing-twelve-month revenue. Blank when at or below target.')
+add('DSO Target Text', 'VAR c = [Cash to Release at DSO Target] RETURN "Target " & [DSO Target (days)] & " days" & IF ( NOT ISBLANK ( c ), " · " & ' + MU('c') + ' & " to collect", " · on target" )',
+    BSF, None, 'Card text: receivable-days target and the cash that reaching it would release.')
+tone('DSO Target Color', '[DSO (days)] <= [DSO Target (days)]', 'Green when receivable days are at or below the target.')
+
+# ---- 9.5 balance-sheet header shows a point in time ("As at"), not a period
+add('Ctx Line As At', '"As at: " & FORMAT ( [Selected Month], "mmm yyyy" )', '10 Layout', None, 'Header chip on the balance-sheet page: the month end the balances are taken at.')
+
+# ---- 9.6 department view is cost-centre only: say so where it is shown
+redefine('Sub Department', '''VAR t = ADDCOLUMNS ( VALUES ( Department[DepartmentName] ), "@v", [Operating Expenses Var vs Budget] )
+VAR worst2 = TOPN ( 2, FILTER ( t, [@v] < 0 ), [@v], ASC )
+VAR o = [Operating Expenses Var vs Budget]
+RETURN IF ( o < 0, CONCATENATEX ( worst2, Department[DepartmentName], " and " ) & " account for " & FORMAT ( DIVIDE ( SUMX ( worst2, [@v] ), o ), "0%" ) & " of the overrun.", "Operating expenses are within budget." )
+    & " Departments are cost centres: revenue and cash are not allocated to them."''')
+
+STORY_ROWS.append(('Notes', 16, 'Collections target', 'Receivable days are measured against a 45-day target (B2B net-30 terms plus slippage); the balance sheet shows the cash a return to target would release.'))
+STORY_ROWS.append(('Notes', 17, 'Departments', 'Departments are cost centres: operating expenses and headcount are booked to them, revenue and cash are not. The department filter is offered only on Budget vs Actual.'))
+STORY_ROWS.append(('Notes', 18, 'Access (RLS)', 'Row-level security roles restrict the data to one region (North America, Europe, Pacific) or show the whole Group. People are assigned to roles in the Power BI service.'))
+
+# ---- 9.7 row-level security: static roles by region (CTO recommendation, decision 17 Nov 2026)
+ROLES = [('Group', None), ('North America', 'North America'), ('Europe', 'Europe'), ('Pacific', 'Pacific')]
+for _t in TABLES:
+    if _t['name'] == 'Story':
+        _t['m'] = m_table([('Page', 'text'), ('Sort', 'Int64.Type'), ('Section', 'text'), ('Text', 'text')], STORY_ROWS)
+
 # ======================================================================== v5: documentation pass (TOM descriptions, DAX and M comments, query groups, diagram)
 # ---- 5.1 remove presentation leftovers that no visual or measure uses (analytical KPI measures are kept as reusable building blocks)
 DROP = [r' Spark$', r' Progress Bar$', r'^Title (Overview|Executive|Income Statement|Balance Sheet|Overview Revenue|DQ)$', r'^Lbl Current View$',

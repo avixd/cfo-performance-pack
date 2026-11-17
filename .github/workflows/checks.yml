@@ -1,0 +1,17 @@
+# Runs on every push and pull request: free on public repositories (GitHub-hosted runner, a few seconds).
+name: model checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Privacy check (no user paths or e-mail addresses in the repo)
+        run: bash scripts/privacy_check.sh
+      - name: Static model and report checks; generated files in sync with the scripts
+        run: python tests/test_model.py

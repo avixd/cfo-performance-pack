@@ -88,7 +88,10 @@ table Story
 				        {"RF Method", 4, "Strengths", "Simple, auditable and replayable: move the slicer to see what the forecast said at any month end. No statistical model to explain or maintain."},
 				        {"RF Method", 5, "Limits", "It carries the year-to-date variance forward but assumes it stops growing. Seasonality lives only in the budget. Entities without a budget have no target and show blank."},
 				        {"RF Method", 6, "Cross-check", "The average-month projection assumes the average month so far repeats (tab 3 uses a different run-rate: remaining budget scaled by the year-to-date beat). When the two methods disagree, the truth is usually between them: read Required per month against the average so far."},
-				        {"RF Method", 7, "If grains differ", "If budget were yearly or by region only, allocate it to months with a seasonality key (prior-year share) before using this page; never compare a monthly actual with an unallocated annual budget."}
+				        {"RF Method", 7, "If grains differ", "If budget were yearly or by region only, allocate it to months with a seasonality key (prior-year share) before using this page; never compare a monthly actual with an unallocated annual budget."},
+				        {"Notes", 16, "Collections target", "Receivable days are measured against a 45-day target (B2B net-30 terms plus slippage); the balance sheet shows the cash a return to target would release."},
+				        {"Notes", 17, "Departments", "Departments are cost centres: operating expenses and headcount are booked to them, revenue and cash are not. The department filter is offered only on Budget vs Actual."},
+				        {"Notes", 18, "Access (RLS)", "Row-level security roles restrict the data to one region (North America, Europe, Pacific) or show the whole Group. People are assigned to roles in the Power BI service."}
 				    })
 				in
 				    Source
