@@ -4054,6 +4054,66 @@ table _Measures
 		displayFolder: 10 Layout
 		lineageTag: 991df384-a916-5dcf-be03-e3b3d97f967d
 
+	/// H2 card line 1: % and $ change of Revenue vs the same period last year.
+	measure 'IS Revenue Card Chg' = VAR p = [IS Revenue Pct Text] VAR c = [IS Revenue Chg Text] RETURN IF ( ISBLANK ( [Revenue PY] ), "No prior year", SUBSTITUTE ( p, "% Change   ", "" ) & "  ·  " & SUBSTITUTE ( c, "Change ($)   ", "" ) & " vs PY" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 4ea3ca90-476f-5766-8434-d9bc79f0953f
+
+	/// H2 card line 2: Revenue in the same period last year.
+	measure 'IS Revenue Card PY' = SUBSTITUTE ( [IS Revenue PY Text], "PY   ", "Prior year " )
+		displayFolder: 11 KPI Cards
+		lineageTag: 4ecbe03e-95c7-5860-bbd5-4f273b054153
+
+	/// H2 card line 1: % and $ change of Cost of Sales vs the same period last year.
+	measure 'IS Cost of Sales Card Chg' = VAR p = [IS Cost of Sales Pct Text] VAR c = [IS Cost of Sales Chg Text] RETURN IF ( ISBLANK ( [Cost of Sales PY] ), "No prior year", SUBSTITUTE ( p, "% Change   ", "" ) & "  ·  " & SUBSTITUTE ( c, "Change ($)   ", "" ) & " vs PY" )
+		displayFolder: 11 KPI Cards
+		lineageTag: b8704130-cda0-5a99-a5bf-6b211c6e0c68
+
+	/// H2 card line 2: Cost of Sales in the same period last year.
+	measure 'IS Cost of Sales Card PY' = SUBSTITUTE ( [IS Cost of Sales PY Text], "PY   ", "Prior year " )
+		displayFolder: 11 KPI Cards
+		lineageTag: fce85de1-acea-54c5-9c1c-63c31f0a8e06
+
+	/// H2 card line 1: % and $ change of Gross Profit vs the same period last year.
+	measure 'IS Gross Profit Card Chg' = VAR p = [IS Gross Profit Pct Text] VAR c = [IS Gross Profit Chg Text] RETURN IF ( ISBLANK ( [Gross Profit PY] ), "No prior year", SUBSTITUTE ( p, "% Change   ", "" ) & "  ·  " & SUBSTITUTE ( c, "Change ($)   ", "" ) & " vs PY" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 341439ea-2070-5ffc-b07f-65190f385717
+
+	/// H2 card line 2: Gross Profit in the same period last year.
+	measure 'IS Gross Profit Card PY' = SUBSTITUTE ( [IS Gross Profit PY Text], "PY   ", "Prior year " )
+		displayFolder: 11 KPI Cards
+		lineageTag: e8df9d8f-2c3b-5842-99ff-57e524978fb8
+
+	/// H2 card line 1: % and $ change of EBITDA vs the same period last year.
+	measure 'IS EBITDA Card Chg' = VAR p = [IS EBITDA Pct Text] VAR c = [IS EBITDA Chg Text] RETURN IF ( ISBLANK ( [EBITDA PY] ), "No prior year", SUBSTITUTE ( p, "% Change   ", "" ) & "  ·  " & SUBSTITUTE ( c, "Change ($)   ", "" ) & " vs PY" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 15abfdbc-2e6f-508a-a72a-0ca79e7d1cb4
+
+	/// H2 card line 2: EBITDA in the same period last year.
+	measure 'IS EBITDA Card PY' = SUBSTITUTE ( [IS EBITDA PY Text], "PY   ", "Prior year " )
+		displayFolder: 11 KPI Cards
+		lineageTag: b18ec51b-e4d4-5e82-abde-8c4ae2c93ac5
+
+	/// H2 card line 1: % and $ change of EBIT vs the same period last year.
+	measure 'IS EBIT Card Chg' = VAR p = [IS EBIT Pct Text] VAR c = [IS EBIT Chg Text] RETURN IF ( ISBLANK ( [EBIT PY] ), "No prior year", SUBSTITUTE ( p, "% Change   ", "" ) & "  ·  " & SUBSTITUTE ( c, "Change ($)   ", "" ) & " vs PY" )
+		displayFolder: 11 KPI Cards
+		lineageTag: 90bb9162-8379-5ced-a68d-45ccfde58278
+
+	/// H2 card line 2: EBIT in the same period last year.
+	measure 'IS EBIT Card PY' = SUBSTITUTE ( [IS EBIT PY Text], "PY   ", "Prior year " )
+		displayFolder: 11 KPI Cards
+		lineageTag: da58e130-947e-5483-81ea-b3b712b4639c
+
+	/// H2 card line 1: % and $ change of Net Income vs the same period last year.
+	measure 'IS Net Income Card Chg' = VAR p = [IS Net Income Pct Text] VAR c = [IS Net Income Chg Text] RETURN IF ( ISBLANK ( [Net Income PY] ), "No prior year", SUBSTITUTE ( p, "% Change   ", "" ) & "  ·  " & SUBSTITUTE ( c, "Change ($)   ", "" ) & " vs PY" )
+		displayFolder: 11 KPI Cards
+		lineageTag: ba3cb061-95b2-5ef8-b76b-7d7553434850
+
+	/// H2 card line 2: Net Income in the same period last year.
+	measure 'IS Net Income Card PY' = SUBSTITUTE ( [IS Net Income PY Text], "PY   ", "Prior year " )
+		displayFolder: 11 KPI Cards
+		lineageTag: 30494bbe-9868-5484-ba8b-6b5625df50ac
+
 	/// Empty column: a table needs one column to exist.
 	column Placeholder
 		dataType: string

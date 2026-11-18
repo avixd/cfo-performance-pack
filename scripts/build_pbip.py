@@ -582,7 +582,7 @@ class Page:
         ref, refval, val, lab, acc, img_measures = [], [], [], [], [], []
         for t in tiles:
             md = meta(t)
-            tgt = getattr(M, 'KPI_TARGET', {}).get(t['measure'])
+            tgt = getattr(M, 'KPI_TARGET', {}).get(t['measure']) if t.get('target', True) else None
             if tgt:   # actual vs target for the selected period: target line + attainment bar under the sparkline
                 t = dict(t, prog_text=f"KPI Target Text {t['measure']}", spark=f"SVG Tile {t['measure']}")
             elif not t.get('spark') and t.get('prog_bar'):
@@ -627,10 +627,12 @@ class Page:
         """Compact KPI tile (no icon, sparkline or pacing bar): same blocks, alignment and number format as kpi_full."""
         self.kpi_full(key, x, y, w, h, measure, label, None, sub, sub_colour, doc_anchor=ANCHOR(FOLDER[measure]), desc=DESC.get(measure) or label)
 
-    def kpi_full(self, key, x, y, w, h, value, label, glyph, sub=None, sub_colour=None, spark=None, prog_text=None, prog_bar=None, doc_anchor=None, desc=None):
-        """Since v10 a tile is collected and drawn with the other tiles of its row as ONE new card visual (flush_tiles, called by write)."""
+    def kpi_full(self, key, x, y, w, h, value, label, glyph, sub=None, sub_colour=None, spark=None, prog_text=None, prog_bar=None, doc_anchor=None, desc=None,
+                 target=True):
+        """Since v10 a tile is collected and drawn with the other tiles of its row as ONE new card visual (flush_tiles, called by write).
+        target=False keeps the tile's own second line (no automatic 'Target … · % of target' line)."""
         self.__dict__.setdefault('tiles', []).append(dict(key=key, x=x, y=y, w=w, h=h, measure=value, label=label, sub=sub, sub_colour=sub_colour,
-                                                          spark=spark, prog_text=prog_text, prog_bar=prog_bar))
+                                                          spark=spark, prog_text=prog_text, prog_bar=prog_bar, target=target))
 
     def flush_tiles(self):
         rows = {}
@@ -997,16 +999,11 @@ def page_isx():
     Y = lambda v: CY + (v - 74) * SY
     cslicer(p, 'f_focus', 16, 74, 700, 64, 'PL Focus[Focus]', 'Focus (drives the summary and the trend)', mode='Basic', single=True, horizontal=True)
     cards = [('Revenue', 'Revenue ($)'), ('Cost of Sales', 'COGS ($)'), ('Gross Profit', 'Gross Profit ($)'), ('EBITDA', 'EBITDA ($)'), ('EBIT', 'EBIT ($)'), ('Net Income', 'Net Profit ($)')]
-    cw = (470 - 2 * 8) / 3
+    # six cards as two rows of the standard KPI card (one card visual per row instead of six visuals per card)
+    cw = (470 - 2 * 10) / 3
     for i, (n, lab) in enumerate(cards):
-        x0, y0, w0, h0 = X(16 + (i % 3) * (cw + 8)), Y(144 + (i // 3) * 124), cw * SX, 118 * SY
-        p.add(f'c{i}_bg', 'textbox', x0, y0, w0, h0, content=False, header=False, objects={'general': [{'properties': {'paragraphs': [{'textRuns': [{'value': ''}]}]}}]})
-        p.button(f'c{i}_l', x0 + 4, y0 + 3, w0 - 8, 18, lab, fill=None, text='Muted', outline=None, size=8.5, align='center', valign='middle')
-        p.value_card(f'c{i}_v', x0 + 4, y0 + 20, w0 - 8, 26, n)
-        p.button(f'c{i}_p', x0 + 4, y0 + 48, w0 - 8, 18, '', measure=f'IS {n} PY Text', fill=None, text='Muted', outline=None, size=7.5, align='left', valign='middle')
-        p.button(f'c{i}_c', x0 + 4, y0 + 66, w0 - 8, 18, '', measure=f'IS {n} Chg Text', fill=None, text='Muted', outline=None, size=7.5, align='left', valign='middle')
-        p.button(f'c{i}_g', x0 + 4, y0 + 84, w0 - 8, 18, '', measure=f'IS {n} Pct Text', fill=None, text='Muted', outline=None, size=7.5, align='left', valign='middle')
-        p.visuals[-1]['visual']['objects']['text'][1]['properties']['fontColor'] = mcolor(f'IS {n} PY Color')
+        p.kpi_full(f'c{i}', 16 + (i % 3) * (cw + 10), 144 + (i // 3) * 124, cw, 120, n, lab.replace(' ($)', ''), None,
+                   sub=f'IS {n} Card Chg', sub_colour=f'IS {n} PY Color', prog_text=f'IS {n} Card PY', target=False)
     # rule-based summary for the focus line
     sx, sy, sw, sh = X(16), Y(398), 470 * SX, 126 * SY
     p.add('sum_bg', 'textbox', sx, sy, sw, sh, content=False, header=False, title='=VT Focus Summary',

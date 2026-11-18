@@ -1512,6 +1512,13 @@ redefine('VT Story', '[Brand Sub] & " at a glance · " & [Selected Fiscal Year]'
 redefine('Footer Note 1', '"1  Definitions: Notes page and docs/01-semantic-model.md. KPI cards: target = budget for the selected period; bar = share of '
          'target (line = 100%)." & IF ( [Data Masked], "  ·  " & [Mask Notice], "" )')
 
+# ======================================================================== v11c: H2 cards as standard KPI cards (one card visual per row)
+for _n in ('Revenue', 'Cost of Sales', 'Gross Profit', 'EBITDA', 'EBIT', 'Net Income'):
+    add(f'IS {_n} Card Chg', f'VAR p = [IS {_n} Pct Text] VAR c = [IS {_n} Chg Text] RETURN IF ( ISBLANK ( [{_n} PY] ), "No prior year", '
+        f'SUBSTITUTE ( p, "% Change   ", "" ) & "  ·  " & SUBSTITUTE ( c, "Change ($)   ", "" ) & " vs PY" )', '11 KPI Cards', None,
+        f'H2 card line 1: % and $ change of {_n} vs the same period last year.')
+    add(f'IS {_n} Card PY', f'SUBSTITUTE ( [IS {_n} PY Text], "PY   ", "Prior year " )', '11 KPI Cards', None, f'H2 card line 2: {_n} in the same period last year.')
+
 # ======================================================================== v5: documentation pass (TOM descriptions, DAX and M comments, query groups, diagram)
 # ---- 5.1 remove presentation leftovers that no visual or measure uses (analytical KPI measures are kept as reusable building blocks)
 DROP = [r' Spark$', r' Progress Bar$', r'^Title (Overview|Executive|Income Statement|Balance Sheet|Overview Revenue|DQ)$', r'^Lbl Current View$',
