@@ -3417,7 +3417,7 @@ Header chip on the balance-sheet page: the month end the balances are taken at.
 **Data Masked**  
 TRUE when the model was refreshed with MaskData = true (names pseudonymised, amounts scaled).
 ```dax
-COALESCE ( MAX ( 'Privacy Mode'[Masked] ), FALSE () )
+COALESCE ( SELECTEDVALUE ( 'Privacy Mode'[Masked] ), FALSE () )
 ```
 
 **Mask Notice**  
@@ -3510,7 +3510,7 @@ VAR g = DIVIDE ( [Salary Cost per Head], [Salary Cost per Head PY] ) - 1 RETURN 
 **VT Story**  
 Dynamic visual title: updates with the period, currency and selection.
 ```dax
-"Adventure Works Group at a glance · " & [Selected Fiscal Year]
+[Brand Sub] & " at a glance · " & [Selected Fiscal Year]
 ```
 
 **VT Revenue by FY**  

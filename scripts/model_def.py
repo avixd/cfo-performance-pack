@@ -1499,7 +1499,7 @@ TABLES.insert(len(TABLES) - 1, dict(name='Privacy Mode', hidden=1,
                                     m='let\n    Source = #table(type table [Masked = logical, Scale = number], {{MaskData, MaskScale}})\nin\n    Source',
                                     cols=[('Masked', 'boolean', {'desc': 'Value of the MaskData parameter at the last refresh.'}),
                                           ('Scale', 'double', {'desc': 'Value of the MaskScale parameter at the last refresh.'})]))
-add('Data Masked', "COALESCE ( MAX ( 'Privacy Mode'[Masked] ), FALSE () )", '10 Layout', None,
+add('Data Masked', "COALESCE ( SELECTEDVALUE ( 'Privacy Mode'[Masked] ), FALSE () )", '10 Layout', None,
     'TRUE when the model was refreshed with MaskData = true (names pseudonymised, amounts scaled).')
 add('Mask Notice', 'IF ( [Data Masked], "MASKED DATA: entity and department names are pseudonyms; amounts are scaled. Ratios, % and trends are unchanged.", "" )',
     '10 Layout', None, 'Banner text shown in the footer while privacy mode is on.')
@@ -1508,6 +1508,7 @@ for _t in TABLES:
     if _t['name'] == 'Story':
         _t['m'] = m_table([('Page', 'text'), ('Sort', 'Int64.Type'), ('Section', 'text'), ('Text', 'text')], STORY_ROWS)
 redefine('Brand Sub', 'IF ( [Data Masked], "Masked group", "Adventure Works Group" )')
+redefine('VT Story', '[Brand Sub] & " at a glance · " & [Selected Fiscal Year]')
 redefine('Footer Note 1', '"1  Definitions: Notes page and docs/01-semantic-model.md. KPI cards: target = budget for the selected period; bar = share of '
          'target (line = 100%)." & IF ( [Data Masked], "  ·  " & [Mask Notice], "" )')
 

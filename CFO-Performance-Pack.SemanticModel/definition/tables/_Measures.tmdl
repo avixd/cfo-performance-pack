@@ -1917,7 +1917,7 @@ table _Measures
 		formatStringDefinition = VAR _x = ABS ( SELECTEDMEASURE () ) RETURN SWITCH ( TRUE (), _x >= 1e6, "$#,0,,.0\M;($#,0,,.0\M);-", _x >= 1e3, "$#,0,.\K;($#,0,.\K);-", "$#,0;($#,0);-" )
 
 	/// Dynamic visual title: updates with the period, currency and selection.
-	measure 'VT Story' = "Adventure Works Group at a glance · " & [Selected Fiscal Year]
+	measure 'VT Story' = [Brand Sub] & " at a glance · " & [Selected Fiscal Year]
 		displayFolder: 6 Narrative\Visual titles
 		lineageTag: 14528c37-9717-5874-b1c0-136e4dadf941
 
@@ -4045,7 +4045,7 @@ table _Measures
 		lineageTag: 3629e53d-7892-5d4d-b8fd-4f736f99a96c
 
 	/// TRUE when the model was refreshed with MaskData = true (names pseudonymised, amounts scaled).
-	measure 'Data Masked' = COALESCE ( MAX ( 'Privacy Mode'[Masked] ), FALSE () )
+	measure 'Data Masked' = COALESCE ( SELECTEDVALUE ( 'Privacy Mode'[Masked] ), FALSE () )
 		displayFolder: 10 Layout
 		lineageTag: 13a00919-8190-52ba-acc2-9c37251a5208
 
