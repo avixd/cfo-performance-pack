@@ -14,20 +14,18 @@ All company data in the project is **fictitious** (Microsoft's AdventureWorksDW 
 
 Python is **not** needed to use the report. It is only needed to regenerate the model or the data (see the end of this guide).
 
-## 1. Download the right branch
+## 1. Download the ZIP
 
-The latest report lives on the branch **`feature/standard-layout-theme`** until it is merged into `main` (`main` currently holds the first verified version).
-
-1. Open the repository on GitHub, click the branch selector (it shows `main`) and choose `feature/standard-layout-theme`.
+1. Open the repository on GitHub with the branch selector on **`main`** (the default; it always holds the latest checked version).
 2. Click **Code → Download ZIP**.
 
-Direct link to the same file: `https://github.com/avixd/cfo-performance-pack/archive/refs/heads/feature/standard-layout-theme.zip`
+Direct link: `https://github.com/avixd/cfo-performance-pack/archive/refs/heads/main.zip`
 
 ## 2. Unblock and extract to a short local path
 
 1. Right-click the ZIP → **Properties** → tick **Unblock** (if shown) → OK. Files extracted from a blocked ZIP keep the "downloaded from the internet" mark, which can trigger security warnings in Desktop.
 2. Extract to a **short folder on a local drive**, for example `C:\PBI\`. Avoid `Downloads` and avoid OneDrive or other synced folders:
-   - **Path length:** the deepest file in the project is 106 characters long and the ZIP adds a 51-character top folder. Windows' default extract path (`C:\Users\<you>\Downloads\<zip name>\<zip name>\…`) gets close to the 260-character Windows limit, and Desktop fails with "path too long" or missing-file errors when it is crossed.
+   - **Path length:** the deepest file in the project is 106 characters long and the ZIP adds its own top folder (`cfo-performance-pack-main`). Windows' default extract path (`C:\Users\<you>\Downloads\<zip name>\<zip name>\…`) gets close to the 260-character Windows limit, and Desktop fails with "path too long" or missing-file errors when it is crossed.
    - **Sync clients** (OneDrive, Dropbox) can lock files while Desktop writes them.
 3. Optional: rename the extracted folder to something short, e.g. `C:\PBI\cfo-pack\`.
 
@@ -77,7 +75,7 @@ When you save, Desktop writes your local data path into `CFO-Performance-Pack.Se
 
 - Set **DataRoot** back to the placeholder `<YOUR-LOCAL-PATH>\data\` (or edit that line in `expressions.tmdl`) so your user name and folder structure are not shared.
 - Do not share the `.pbi` folders (`localSettings.json`, `cache.abf`); the repo's `.gitignore` already excludes them.
-- The greeting at the top of each page ("Hello, …") is built from the signed-in user of whoever opens the report. **Sign out of Power BI Desktop** (top-right account menu) before taking screenshots or exporting a PDF you intend to share.
+- The greeting at the top of each page ("Hello, …") shows the name of whoever opens the report: the Power BI sign-in name, or **the Windows user name when signed out**, so signing out does not hide it. Before sharing a screenshot or PDF, crop the greeting out, or temporarily set the `Greeting` measure to `"Hello"` for the export and undo the change (Ctrl+Z) before you save.
 - To show or share figures from a different (real) source, turn on privacy mode first: **Edit parameters → MaskData = true** and a private **MaskScale**, then Refresh. Names become pseudonyms, amounts are scaled and every page footer says so. See [06-ai-safe-workflow.md](06-ai-safe-workflow.md).
 - If you use Git, run `bash scripts/privacy_check.sh` before committing; it blocks real Windows user paths, OneDrive folder paths, tenant domains and e-mail addresses.
 
@@ -94,12 +92,14 @@ When you save, Desktop writes your local data path into `CFO-Performance-Pack.Se
 
 ## Optional: regenerate from Python
 
-Only needed if you want to change measures, pages or the data. Requires Python 3.10+ with `pandas`, `numpy`, `scipy` and `matplotlib`.
+Only needed if you want to change measures, pages or the data. Requires Python 3.10+ (standard library only; the optional `scripts/eda.py` also needs `pandas`, `numpy`, `scipy` and `matplotlib`). On Windows, use `py` instead of `python`.
 
 ```bash
-python scripts/build_pbip.py .            # rewrite the TMDL model and PBIR report from scripts/model_def.py
-python scripts/document_model.py .        # rewrite docs/01-semantic-model.md
+python scripts/build_pbip.py .            # rewrite the TMDL model and PBIR report from scripts/model_def.py (keeps your DataRoot)
+python scripts/document_model.py          # rewrite docs/01-semantic-model.md
 python tests/test_model.py                # model and report consistency checks
 ```
+
+Edit `scripts/model_def.py` or `scripts/build_pbip.py`, not the generated TMDL/PBIR files: the next build overwrites them.
 
 Then click **Apply external changes** in Desktop. `scripts/build_data.py` rebuilds the `data` folder from the public AdventureWorksDW CSVs (see the README).

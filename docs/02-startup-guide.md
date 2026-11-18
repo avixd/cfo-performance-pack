@@ -2,7 +2,7 @@
 
 This is the setup used to host this project, written for someone publishing their first shareable Power BI report. It covers the tenant, its security, the Power BI admin settings, and Publish to web, with the cost and risk implications of each step.
 
-> **Status:** tenant and security steps are done and tested; the Publish to web steps will be confirmed when this report is published. Microsoft's licence terms and prices change, so check every cost against Microsoft's current pages before you rely on it.
+> **Status: optional reference.** You do not need a tenant to open, review or share this project; see [07-review-and-share.md](07-review-and-share.md) for the recommended, free route. The tenant and security steps below were done and tested. Publish to web (sections 3 and 4) was **not** used: it makes the report public to anyone with the link and may need a paid licence. Keep it for fictitious data only, if at all. Microsoft's licence terms and prices change, so check every cost against Microsoft's current pages before you rely on it.
 
 ## 0. Why a tenant at all
 
@@ -18,7 +18,7 @@ Power BI service sign-in needs a **work or school (Microsoft Entra ID) account**
 1. **Admin account with MFA.** Sign in to the Microsoft 365 admin centre with the account that created the tenant and register an authenticator app. Add a **second MFA method** (a second device or a FIDO2 key) so a lost phone does not lock you out of your own tenant.
 2. **Emergency access ("break-glass") account.** Create a second cloud-only Global Administrator with a long random password stored offline (password manager plus paper copy), used only if the main admin is locked out. Microsoft's guidance: exclude it from Conditional Access policies that could block it, monitor its sign-ins, and test it periodically.
 3. **Least privilege for daily work.** Do day-to-day Power BI work as a normal user where possible; use admin roles only for admin tasks.
-4. **Never put secrets in the repo.** This repo runs `scripts/privacy_check.sh` before every push; it rejects local Windows paths, tenant domains and e-mail addresses. The model's `DataRoot` parameter is committed as a placeholder.
+4. **Never put secrets in the repo.** This repo runs `scripts/privacy_check.sh` in CI on every push (run it yourself before committing); it rejects local Windows user paths, OneDrive folder paths, tenant domains and personal e-mail addresses. The model's `DataRoot` parameter is committed as a placeholder.
 
 ## 2. Power BI licence and admin settings
 

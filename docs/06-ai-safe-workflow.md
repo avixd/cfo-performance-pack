@@ -116,7 +116,7 @@ The project is saved as a **Power BI Project (PBIP)**, a folder of text files:
 | `*.SemanticModel/definition/` TMDL: tables, columns, relationships, 539 measures, Power Query, roles | `**/.pbi/cache.abf`: the imported data rows |
 | `*.Report/definition/` PBIR: pages, visuals, theme | `**/.pbi/localSettings.json`: local settings |
 | `scripts/`, `tests/`, `docs/` | Your real `DataRoot` path (it names your user folder) |
-| | Screenshots or PDFs showing the "Hello, …" greeting (it shows the signed-in user) |
+| | Screenshots or PDFs showing the "Hello, …" greeting (it shows the sign-in name, or the Windows user name when signed out) |
 
 `.gitignore` excludes the cache and local settings. `scripts/privacy_check.sh` (also run in CI) blocks real Windows user paths, OneDrive folder paths, tenant domains and personal e-mail addresses. `scripts/build_pbip.py` always writes the `DataRoot` placeholder unless a local path is already in place, and the copy on GitHub is generated with the placeholder.
 
@@ -129,7 +129,7 @@ So an assistant can read and change every measure, query and visual from the TMD
 - [ ] Data is the fictitious sample, a masked copy (step 1), or `MaskData = true` with a private `MaskScale`
 - [ ] `DataRoot` set back to `<YOUR-LOCAL-PATH>\data\` before committing or zipping
 - [ ] No `.pbi` folders, `.pbix` files or exports in what you share
-- [ ] Signed out of Power BI Desktop (or a neutral account) before screenshots or PDF exports
+- [ ] Greeting cropped out of screenshots, or `Greeting` temporarily set to `"Hello"` for PDF exports (signing out is not enough: it falls back to the Windows user name)
 - [ ] `bash scripts/privacy_check.sh` and `python tests/test_model.py` pass
 
 ## Limits: pseudonymisation, not anonymity

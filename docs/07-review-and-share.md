@@ -42,7 +42,7 @@ Option 4 is not used here because the project rule is no recurring cost; a free 
 3. **Home → Transform data → Edit parameters**: set `DataRoot` to the full path of the `data` folder, ending with `\`. Click **Refresh**.
 4. Review the pages against [03-page-guide.md](03-page-guide.md); open the Notes and Data Dictionary pages for definitions.
 5. Optional checks in **DAX query view**: paste `tests/live_checks.dax` and run it; every row must show `Pass = TRUE`.
-6. Leave feedback as GitHub Issues or pull-request comments. If you take screenshots, sign out of Desktop first or crop the greeting, because it shows your Windows or sign-in name.
+6. Leave feedback as GitHub Issues or pull-request comments. If you take screenshots, crop the greeting: it shows your sign-in name, or your Windows user name when signed out.
 
 ## If the reviewer cannot run Python
 

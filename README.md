@@ -6,7 +6,20 @@ The whole Power BI project (semantic model **and** report pages) is generated fr
 
 > **All company data in this repository is fictitious.** It is Microsoft's AdventureWorksDW sample (a fictional bicycle company, MIT licence), re-dated, with seeded synthetic budgets and seeded data-quality issues. Anyone can rebuild `data/` byte for byte from the public sample (`scripts/build_data.py`, seed 20261111) and check it against `data/MANIFEST.sha256` (`scripts/verify_data.py`); CI does this on every push. Exchange rates are real public Bank of Canada rates. Details and the AI-safe workflow (anonymise, fake data, swap source, schema only): [docs/06-ai-safe-workflow.md](docs/06-ai-safe-workflow.md).
 
-> **Report preview:** [PDF of the eight main pages](docs/CFO-Performance-Pack.pdf) · page images below · page-by-page guide: [docs/03-page-guide.md](docs/03-page-guide.md). A public Publish-to-web link is not provided; see [docs/02-startup-guide.md](docs/02-startup-guide.md) for why (licensing).
+> **Report preview:** [PDF of the eight main pages](docs/CFO-Performance-Pack.pdf) · page images below · page-by-page guide: [docs/03-page-guide.md](docs/03-page-guide.md). There is deliberately no public Publish-to-web link: anyone with such a link can see the report, and it needs a licence the project does not pay for ([docs/07-review-and-share.md](docs/07-review-and-share.md)).
+
+## Start here
+
+| I want to… | Read | Needs |
+|---|---|---|
+| See the report without installing anything | [PDF](docs/CFO-Performance-Pack.pdf) and the images below | A PDF reader |
+| Open and explore it in Power BI | [docs/05-download-zip-guide.md](docs/05-download-zip-guide.md) (about 10 minutes) | Windows, free Power BI Desktop |
+| Understand each page | [docs/03-page-guide.md](docs/03-page-guide.md), then [docs/00-company-and-thesis.md](docs/00-company-and-thesis.md) | |
+| Review, collaborate or share it securely | [docs/07-review-and-share.md](docs/07-review-and-share.md) | A GitHub account to comment |
+| Use an AI assistant or a real data source safely | [docs/06-ai-safe-workflow.md](docs/06-ai-safe-workflow.md) | |
+| Change measures, pages or data | [Rebuild everything from source](#rebuild-everything-from-source) below | Python 3.10+ |
+
+New to the project? Open the report first (row 2), then read the page guide with the report open beside it.
 
 ![Executive Summary](docs/images/02-executive-summary.png)
 
@@ -59,7 +72,9 @@ CFO-Performance-Pack.Report/            PBIR report pages + theme (generated)
 data/                                   reference, actuals, budget, fx, inbox (demo files)
 docs/00-company-and-thesis.md           company story and reporting thesis
 docs/01-semantic-model.md               model reference (generated: tables, relationships, every measure with DAX)
-docs/02-startup-guide.md                free tenant, security and Publish to web, step by step
+docs/02-startup-guide.md                optional: free-to-start tenant and its security (reference only; not used to share)
+docs/03-page-guide.md                   what each page shows and what to click
+docs/04-methodology.md                  method, assumptions and limits of the three deep-dive pages
 docs/05-download-zip-guide.md           open and refresh the report from a GitHub ZIP download (no Git or Python)
 docs/06-ai-safe-workflow.md             fictitious-data proof; anonymise, fake data, swap source, schema-only sharing
 docs/07-review-and-share.md             how to review and share securely (GitHub, ZIP, PDF; no Python needed)
@@ -73,7 +88,9 @@ scripts/eda.py                          data-quality checks and EDA -> docs/eda/
 scripts/model_def.py                    the semantic model: Power Query, tables, 539 measures
 scripts/build_pbip.py                   writes the TMDL model and PBIR report from model_def.py
 scripts/document_model.py               writes docs/01-semantic-model.md
-scripts/privacy_check.sh                blocks commits containing local paths or e-mail addresses
+scripts/privacy_check.sh                blocks commits containing local paths, tenant domains or personal e-mail addresses
+tests/test_model.py                     model, report, privacy and data checks (also run by CI)
+tests/live_checks.dax                   reconciliation checks to paste into Desktop's DAX query view
 ```
 
 ## How it was built
@@ -88,7 +105,7 @@ That loop caught real defects that a screenshot-only review would have missed. T
 
 ## Run it
 
-> Downloaded the ZIP instead of cloning? Follow **[docs/05-download-zip-guide.md](docs/05-download-zip-guide.md)** (branch, short extract path, DataRoot, sharing safely).
+> Downloaded the ZIP instead of cloning? Follow **[docs/05-download-zip-guide.md](docs/05-download-zip-guide.md)** (short extract path, DataRoot, troubleshooting, sharing safely).
 
 1. Clone the repo and open `CFO-Performance-Pack.pbip` in a recent Power BI Desktop. If it will not open, enable *Options → Preview features → Power BI Project (.pbip) save option* and restart.
 2. **Transform data → Edit parameters → DataRoot**: set it to the full path of this repo's `data\` folder, ending with a backslash, e.g. `C:\src\cfo-performance-pack\data\`.
@@ -106,9 +123,10 @@ python -I scripts/build_data.py <adventureworksdw_csv_dir> data      # source fi
 python -I scripts/eda.py data docs/eda                                # data-quality + EDA report
 python scripts/build_pbip.py . --data-root "C:\path\to\repo\data\\"   # TMDL model + PBIR report
 python scripts/document_model.py                                      # model reference doc
+python tests/test_model.py                                            # checks (run after committing: one check compares with Git)
 ```
 
-`build_data.py` expects the pipe-delimited AdventureWorksDW CSVs from the [microsoft/sql-server-samples](https://github.com/microsoft/sql-server-samples) "adventureworks" release.
+Omit `--data-root` to keep the DataRoot already in the model; never commit your real path (the privacy check and a test block it). Only `eda.py` needs extra packages (`pandas`, `numpy`, `scipy`, `matplotlib`); the other scripts use the Python standard library. `build_data.py` expects the pipe-delimited AdventureWorksDW CSVs from the [microsoft/sql-server-samples](https://github.com/microsoft/sql-server-samples) "adventureworks" release.
 
 ## Data quality and EDA
 
