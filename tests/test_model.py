@@ -78,6 +78,7 @@ if '--no-build' not in sys.argv:
 
 # 8 privacy mode: parameters exist and every masked query reads them
 EXPR = open(os.path.join(SM, 'expressions.tmdl'), encoding='utf-8').read()
+check('expression DataRoot = "<YOUR-LOCAL-PATH>\\data\\"' in EXPR, 'DataRoot is not the placeholder: a local path would be published (reset it before committing)')
 check('expression MaskData = false' in EXPR and 'expression MaskScale = 1' in EXPR, 'privacy parameters missing or not defaulted off')
 for _tn in ('Entity', 'Department', 'GL', 'Privacy Mode'):
     check('MaskData' in open(os.path.join(SM, 'tables', f'{_tn}.tmdl'), encoding='utf-8').read(), f'{_tn} query ignores MaskData')
