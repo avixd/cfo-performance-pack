@@ -1,12 +1,12 @@
 # CFO Performance Pack · Power BI financial reporting built as code
 
-An executive reporting pack for a fictional multi-currency group, built end to end in Power BI: reproducible source data with realistic data-quality problems, a documented star-schema model with 525 DAX measures, and eight report pages plus three deep-dive pages that answer the questions a CFO actually asks at month end.
+An executive reporting pack for a fictional multi-currency group, built end to end in Power BI: reproducible source data with realistic data-quality problems, a documented star-schema model with 539 DAX measures, and eight report pages plus three deep-dive pages that answer the questions a CFO actually asks at month end.
 
 The whole Power BI project (semantic model **and** report pages) is generated from Python (`scripts/build_pbip.py`) in the open PBIP format (TMDL + PBIR), so every measure, visual and colour is reviewable in a diff.
 
 > **All company data in this repository is fictitious.** It is Microsoft's AdventureWorksDW sample (a fictional bicycle company, MIT licence), re-dated, with seeded synthetic budgets and seeded data-quality issues. Anyone can rebuild `data/` byte for byte from the public sample (`scripts/build_data.py`, seed 20261111) and check it against `data/MANIFEST.sha256` (`scripts/verify_data.py`); CI does this on every push. Exchange rates are real public Bank of Canada rates. Details and the AI-safe workflow (anonymise, fake data, swap source, schema only): [docs/06-ai-safe-workflow.md](docs/06-ai-safe-workflow.md).
 
-> **Report preview:** [PDF of the first six pages](docs/CFO-Performance-Pack.pdf) (first published layout) · page images below · current layout per page: [docs/03-page-guide.md](docs/03-page-guide.md). A public Publish-to-web link is not provided; see [docs/02-startup-guide.md](docs/02-startup-guide.md) for why (licensing).
+> **Report preview:** [PDF of the eight main pages](docs/CFO-Performance-Pack.pdf) · page images below · page-by-page guide: [docs/03-page-guide.md](docs/03-page-guide.md). A public Publish-to-web link is not provided; see [docs/02-startup-guide.md](docs/02-startup-guide.md) for why (licensing).
 
 ![Executive Summary](docs/images/02-executive-summary.png)
 
@@ -45,9 +45,10 @@ Every page responds to **fiscal year, month, MTD/QTD/YTD and CAD/USD** selectors
 |---|---|
 | ![Company Overview](docs/images/01-company-overview.png) **Company Overview** | ![Budget vs Actual](docs/images/03-budget-vs-actual.png) **Budget vs Actual** |
 | ![Income Statement](docs/images/04-income-statement.png) **Income Statement** | ![Balance Sheet & Cash](docs/images/05-balance-sheet-cash.png) **Balance Sheet & Cash** |
-| ![Data Quality](docs/images/06-data-quality.png) **Data Quality** | ![Executive Summary](docs/images/02-executive-summary.png) **Executive Summary** |
+| ![Data Quality](docs/images/06-data-quality.png) **Data Quality** | ![Data Dictionary](docs/images/07-data-dictionary.png) **Data Dictionary** |
+| ![Notes](docs/images/08-notes.png) **Notes** | ![Executive Summary](docs/images/02-executive-summary.png) **Executive Summary** |
 
-Images are rendered from the PDF export at the October 2026 close (YTD, CAD) and show the first published layout; the current layout (KPI cards, light/dark toggle, sidebar slicers) is described in [docs/03-page-guide.md](docs/03-page-guide.md).
+Images are rendered from the PDF export of the current report at the October 2026 close (YTD, CAD, light mode); the viewer greeting is anonymised to "Hello".
 
 ## What is in the repo
 
@@ -61,14 +62,15 @@ docs/01-semantic-model.md               model reference (generated: tables, rela
 docs/02-startup-guide.md                free tenant, security and Publish to web, step by step
 docs/05-download-zip-guide.md           open and refresh the report from a GitHub ZIP download (no Git or Python)
 docs/06-ai-safe-workflow.md             fictitious-data proof; anonymise, fake data, swap source, schema-only sharing
-docs/CFO-Performance-Pack.pdf           PDF export of the first six pages (first published layout)
+docs/07-review-and-share.md             how to review and share securely (GitHub, ZIP, PDF; no Python needed)
+docs/CFO-Performance-Pack.pdf           PDF export of the eight main pages
 docs/images/                            page images used in this README
 docs/eda/                               data-quality and exploratory analysis report + charts
 scripts/build_data.py                   builds data/ from AdventureWorksDW (seeded, deterministic)
 scripts/verify_data.py                  proves data/ (or a rebuild) matches the seeded build: data/MANIFEST.sha256
 scripts/anonymise_data.py               masked copy of any source folder (pseudonyms, scaled amounts) + validation report
 scripts/eda.py                          data-quality checks and EDA -> docs/eda/
-scripts/model_def.py                    the semantic model: Power Query, tables, 525 measures
+scripts/model_def.py                    the semantic model: Power Query, tables, 539 measures
 scripts/build_pbip.py                   writes the TMDL model and PBIR report from model_def.py
 scripts/document_model.py               writes docs/01-semantic-model.md
 scripts/privacy_check.sh                blocks commits containing local paths or e-mail addresses
@@ -78,7 +80,7 @@ scripts/privacy_check.sh                blocks commits containing local paths or
 
 The model and report were never assembled by hand in the Power BI canvas. The workflow was:
 
-1. **Generate:** `scripts/model_def.py` defines the semantic model as data (Power Query, columns, 525 measures, display folders, descriptions); `scripts/build_pbip.py` renders it to TMDL and renders every page and visual to PBIR JSON (positions, fields, conditional colours, measure-driven titles, synced slicers, theme).
+1. **Generate:** `scripts/model_def.py` defines the semantic model as data (Power Query, columns, 539 measures, display folders, descriptions); `scripts/build_pbip.py` renders it to TMDL and renders every page and visual to PBIR JSON (positions, fields, conditional colours, measure-driven titles, synced slicers, theme).
 2. **Apply:** Power BI Desktop picks up the regenerated files with *Apply external changes* (or a reopen) and refreshes.
 3. **Validate:** DAX queries run against the live model through the Power BI Modeling MCP bridge reconcile every headline number to the independent pandas EDA, and the rendered pages are reviewed visually before each commit.
 

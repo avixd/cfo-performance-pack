@@ -113,7 +113,7 @@ The project is saved as a **Power BI Project (PBIP)**, a folder of text files:
 
 | Shareable (schema, logic, layout) | Never share (data or personal) |
 |---|---|
-| `*.SemanticModel/definition/` TMDL: tables, columns, relationships, 527 measures, Power Query, roles | `**/.pbi/cache.abf`: the imported data rows |
+| `*.SemanticModel/definition/` TMDL: tables, columns, relationships, 539 measures, Power Query, roles | `**/.pbi/cache.abf`: the imported data rows |
 | `*.Report/definition/` PBIR: pages, visuals, theme | `**/.pbi/localSettings.json`: local settings |
 | `scripts/`, `tests/`, `docs/` | Your real `DataRoot` path (it names your user folder) |
 | | Screenshots or PDFs showing the "Hello, …" greeting (it shows the signed-in user) |
