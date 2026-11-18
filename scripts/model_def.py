@@ -1773,3 +1773,27 @@ for _t in TABLES:
                    '    Scaled = if MaskData then Table.TransformColumns(Typed, {{"AmountLC", each if _ = null then null else _ * MaskScale, type number}}) '
                    'else Typed\nin\n    Scaled')
 
+
+# ---- v11d: performance. Measures that look up theme colours many times evaluate each [Col ...] once into a variable.
+# Theme colours depend only on the Theme Mode slicer, so the value is identical everywhere inside the measure; measured on the
+# live model: 40 colour look-ups cost ~330 ms, which is about a quarter of the Sankey's 1.4 s.
+def _hoist_colours(expr, min_refs=6):
+    cols = sorted(set(_re.findall(r'\[(Col [A-Za-z ]+)\]', expr)))
+    if sum(expr.count(f'[{c}]') for c in cols) < min_refs:
+        return expr
+    lines = expr.split('\n')
+    i = 0
+    while i < len(lines) and (lines[i].lstrip().startswith(('//', '--')) or not lines[i].strip()):
+        i += 1
+    body = '\n'.join(lines[i:])
+    for c in cols:
+        body = body.replace(f'[{c}]', '__' + c.replace(' ', ''))
+    decl = 'VAR ' + ' VAR '.join(f"__{c.replace(' ', '')} = [{c}]" for c in cols)
+    if not body.lstrip().upper().startswith('VAR '):
+        body = 'RETURN ' + body
+    return '\n'.join(lines[:i] + ['-- theme colours evaluated once (performance)', decl, body])
+
+
+for _m in MEAS:
+    _m['expr'] = _hoist_colours(_m['expr'])
+
