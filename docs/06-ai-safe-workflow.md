@@ -96,6 +96,15 @@ A typical sequence:
 2. **Try a real source safely:** run step 1 into `…\masked\` and point `DataRoot` there, or point `DataRoot` at the real export and set `MaskData = true` with a private `MaskScale`. Refresh. The footer of every page then reads *"MASKED DATA: entity and department names are pseudonyms; amounts are scaled…"* and the brand line says *Masked group*, so nobody mistakes a masked screenshot for real figures.
 3. **Go live:** set `MaskData = false`, point `DataRoot` at the real source, refresh, and stop sharing screenshots or AI sessions from that file.
 
+**Tested end to end (17 Nov 2026, live model):**
+
+| Test | Revenue (CAD) | Gross margin | Revenue vs budget | Names |
+|---|---|---|---|---|
+| Sample data, `MaskData = false` | 36,185,471 | 69.32% | +22.2% | Sample names |
+| Sample data, `MaskData = true`, `MaskScale = 0.5` | 18,092,735 | 69.32% | +22.2% | `Group`, `Entity NN`, `Department NN`; footer notice on |
+| `DataRoot` swapped to a step-1 masked copy (seed 3, scale 0.738) | 26,703,597 | 69.32% | +22.2% | `Entity NN`, `Department NN` |
+| `DataRoot` and `MaskData` back to defaults | 36,185,471 | 69.32% | +22.2% | Sample names |
+
 Masking happens inside Power Query, before rows reach the model. An assistant that queries the model (for example through the Power BI Modeling MCP server) then only ever receives masked names and scaled amounts. Power Query itself still reads the real files on your machine, so for the strictest setting use step 1 and never give the real folder to the AI at all.
 
 ## Step 4: Give the AI the real schema, not the rows
