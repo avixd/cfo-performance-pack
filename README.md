@@ -1,6 +1,6 @@
 # CFO Performance Pack · Power BI financial reporting built as code
 
-An executive reporting pack for a fictional multi-currency group, built end to end in Power BI: reproducible source data with realistic data-quality problems, a documented star-schema model with 221 DAX measures, and six report pages that answer the questions a CFO actually asks at month end.
+An executive reporting pack for a fictional multi-currency group, built end to end in Power BI: reproducible source data with realistic data-quality problems, a documented star-schema model with 525 DAX measures, and eight report pages plus three deep-dive pages that answer the questions a CFO actually asks at month end.
 
 The whole Power BI project (semantic model **and** report pages) is generated from Python (`scripts/build_pbip.py`) in the open PBIP format (TMDL + PBIR), so every measure, visual and colour is reviewable in a diff.
 
@@ -42,7 +42,7 @@ Every page responds to **fiscal year, month, MTD/QTD/YTD and CAD/USD** selectors
 | ![Income Statement](docs/images/04-income-statement.png) **Income Statement** | ![Balance Sheet & Cash](docs/images/05-balance-sheet-cash.png) **Balance Sheet & Cash** |
 | ![Data Quality](docs/images/06-data-quality.png) **Data Quality** | ![Executive Summary](docs/images/02-executive-summary.png) **Executive Summary** |
 
-Images are rendered from the PDF export at the October 2026 close (YTD, CAD).
+Images are rendered from the PDF export at the October 2026 close (YTD, CAD) and show the first published layout; the current layout (KPI cards, light/dark toggle, sidebar slicers) is described in [docs/03-page-guide.md](docs/03-page-guide.md).
 
 ## What is in the repo
 
@@ -54,12 +54,13 @@ data/                                   reference, actuals, budget, fx, inbox (d
 docs/00-company-and-thesis.md           company story and reporting thesis
 docs/01-semantic-model.md               model reference (generated: tables, relationships, every measure with DAX)
 docs/02-startup-guide.md                free tenant, security and Publish to web, step by step
+docs/05-download-zip-guide.md           open and refresh the report from a GitHub ZIP download (no Git or Python)
 docs/CFO-Performance-Pack.pdf           PDF export of all six pages
 docs/images/                            page images used in this README
 docs/eda/                               data-quality and exploratory analysis report + charts
 scripts/build_data.py                   builds data/ from AdventureWorksDW (seeded, deterministic)
 scripts/eda.py                          data-quality checks and EDA -> docs/eda/
-scripts/model_def.py                    the semantic model: Power Query, tables, 503 measures
+scripts/model_def.py                    the semantic model: Power Query, tables, 525 measures
 scripts/build_pbip.py                   writes the TMDL model and PBIR report from model_def.py
 scripts/document_model.py               writes docs/01-semantic-model.md
 scripts/privacy_check.sh                blocks commits containing local paths or e-mail addresses
@@ -69,13 +70,15 @@ scripts/privacy_check.sh                blocks commits containing local paths or
 
 The model and report were never assembled by hand in the Power BI canvas. The workflow was:
 
-1. **Generate:** `scripts/model_def.py` defines the semantic model as data (Power Query, columns, 503 measures, display folders, descriptions); `scripts/build_pbip.py` renders it to TMDL and renders every page and visual to PBIR JSON (positions, fields, conditional colours, measure-driven titles, synced slicers, theme).
+1. **Generate:** `scripts/model_def.py` defines the semantic model as data (Power Query, columns, 525 measures, display folders, descriptions); `scripts/build_pbip.py` renders it to TMDL and renders every page and visual to PBIR JSON (positions, fields, conditional colours, measure-driven titles, synced slicers, theme).
 2. **Apply:** Power BI Desktop picks up the regenerated files with *Apply external changes* (or a reopen) and refreshes.
 3. **Validate:** DAX queries run against the live model through the Power BI Modeling MCP bridge reconcile every headline number to the independent pandas EDA, and the rendered pages are reviewed visually before each commit.
 
 That loop caught real defects that a screenshot-only review would have missed. The EDA was adding returns to budgeted revenue instead of netting them (CAD 33.5M vs the correct 29.6M). A function-built folder path made Power BI demand a gateway. A slicer property name was silently ignored. A department chart was meaningless because the source ledger posts all revenue to one department.
 
 ## Run it
+
+> Downloaded the ZIP instead of cloning? Follow **[docs/05-download-zip-guide.md](docs/05-download-zip-guide.md)** (branch, short extract path, DataRoot, sharing safely).
 
 1. Clone the repo and open `CFO-Performance-Pack.pbip` in a recent Power BI Desktop. If it will not open, enable *Options → Preview features → Power BI Project (.pbip) save option* and restart.
 2. **Transform data → Edit parameters → DataRoot**: set it to the full path of this repo's `data\` folder, ending with a backslash, e.g. `C:\src\cfo-performance-pack\data\`.
