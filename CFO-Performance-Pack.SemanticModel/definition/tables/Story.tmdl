@@ -62,7 +62,7 @@ table Story
 				        {"Notes", 12, "Ownership", "Entities are consolidated at 100%. Effective ownership (multiplied down the hierarchy) splits net income between the group and non-controlling interests."},
 				        {"Notes", 13, "Cash bridge", "Balance-sheet method: each step is the change in a balance since the year end, signed by cash effect, so the steps tie to the cash change. It is not a statutory cash-flow statement."},
 				        {"Notes", 14, "Known gaps", "Retained earnings do not roll forward from net income in the source data; intercompany balances are not eliminated; revenue and cost of sales post to one department."},
-				        {"Notes", 15, "Data", "Fictional company built on Microsoft AdventureWorksDW (MIT licence), re-dated. Source issues are injected on purpose and reconciled on the Data Quality page."},
+				        {"Notes", 15, "Data is fictitious", "Every company figure is fictitious: Microsoft's AdventureWorksDW sample (MIT licence), re-dated, plus seeded synthetic budgets and seeded source issues. Anyone can rebuild data/ byte for byte (scripts/build_data.py, seed 20261111; scripts/verify_data.py). FX rates are real public Bank of Canada rates."},
 				        {"Defs", 1, "Net revenue", "Gross sales less returns and discounts."},
 				        {"Defs", 2, "Gross margin", "Gross profit (net revenue less cost of sales) / net revenue."},
 				        {"Defs", 3, "EBITDA", "Gross profit less operating expenses, before depreciation, amortization, interest, other items and tax."},
@@ -91,7 +91,8 @@ table Story
 				        {"RF Method", 7, "If grains differ", "If budget were yearly or by region only, allocate it to months with a seasonality key (prior-year share) before using this page; never compare a monthly actual with an unallocated annual budget."},
 				        {"Notes", 16, "Collections target", "Receivable days are measured against a 45-day target (B2B net-30 terms plus slippage); the balance sheet shows the cash a return to target would release."},
 				        {"Notes", 17, "Departments", "Departments are cost centres: operating expenses and headcount are booked to them, revenue and cash are not. The department filter is offered only on Budget vs Actual."},
-				        {"Notes", 18, "Access (RLS)", "Row-level security roles restrict the data to one region (North America, Europe, Pacific) or show the whole Group. People are assigned to roles in the Power BI service."}
+				        {"Notes", 18, "Access (RLS)", "Row-level security roles restrict the data to one region (North America, Europe, Pacific) or show the whole Group. People are assigned to roles in the Power BI service."},
+				        {"Notes", 19, "Privacy mode", "Parameters MaskData and MaskScale pseudonymise entity and department names and scale every amount while loading; ratios, % and trends are unchanged. Use them before pointing the model at a real source, sharing screenshots or working with an AI assistant."}
 				    })
 				in
 				    Source

@@ -76,6 +76,21 @@ if '--no-build' not in sys.argv:
                           cwd=ROOT, capture_output=True, text=True).stdout.strip()
     check(not diff, 'generated files differ from the scripts; run scripts/build_pbip.py and commit:\n' + diff[:800])
 
+# 8 privacy mode: parameters exist and every masked query reads them
+EXPR = open(os.path.join(SM, 'expressions.tmdl'), encoding='utf-8').read()
+check('expression MaskData = false' in EXPR and 'expression MaskScale = 1' in EXPR, 'privacy parameters missing or not defaulted off')
+for _tn in ('Entity', 'Department', 'GL', 'Privacy Mode'):
+    check('MaskData' in open(os.path.join(SM, 'tables', f'{_tn}.tmdl'), encoding='utf-8').read(), f'{_tn} query ignores MaskData')
+
+# 9 data is the seeded fictitious build (hash manifest) and the anonymiser keeps keys/ratios and leaks no names
+import tempfile
+r = subprocess.run([sys.executable, '-I', os.path.join(ROOT, 'scripts', 'verify_data.py')], capture_output=True, text=True)
+check(r.returncode == 0, 'data/ does not match data/MANIFEST.sha256:\n' + r.stdout[-600:])
+with tempfile.TemporaryDirectory() as _tmp:
+    r = subprocess.run([sys.executable, '-I', os.path.join(ROOT, 'scripts', 'anonymise_data.py'), os.path.join(ROOT, 'data'),
+                        os.path.join(_tmp, 'masked'), '--seed', '1'], capture_output=True, text=True)
+    check(r.returncode == 0, 'anonymiser validation failed:\n' + r.stdout[-600:])
+
 FAIL = [f for f in FAIL if f]
 print(f'{len(measures)} measures, {len(M.TABLES)} tables checked')
 if FAIL:

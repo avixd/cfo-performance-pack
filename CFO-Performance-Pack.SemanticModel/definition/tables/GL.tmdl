@@ -143,9 +143,11 @@ table GL
 				    // Rows from the source ledger have no BudgetSource: label them "Ledger" (synthetic budget rows already say "Synthetic").
 				    Source = Table.TransformColumns(Renamed, {{"BudgetSource", each if _ = null or _ = "" then "Ledger" else _}}),
 				    // Types are set with the en-US culture because the files use a point as the decimal separator.
-				    Typed = Table.TransformColumnTypes(Source, {{"Month", type date}, {"EntityKey", Int64.Type}, {"DepartmentKey", Int64.Type}, {"AccountKey", Int64.Type}, {"AmountLC", type number}, {"BudgetSource", type text}, {"SourceFile", type text}}, "en-US")
+				    Typed = Table.TransformColumnTypes(Source, {{"Month", type date}, {"EntityKey", Int64.Type}, {"DepartmentKey", Int64.Type}, {"AccountKey", Int64.Type}, {"AmountLC", type number}, {"BudgetSource", type text}, {"SourceFile", type text}}, "en-US"),
+				    // Privacy mode: every amount x MaskScale (ratios, % and trends unchanged).
+				    Scaled = if MaskData then Table.TransformColumns(Typed, {{"AmountLC", each if _ = null then null else _ * MaskScale, type number}}) else Typed
 				in
-				    Typed
+				    Scaled
 
 	annotation PBI_ResultType = Table
 

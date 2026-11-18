@@ -968,7 +968,7 @@ NOTES = [
     ('Notes', 12, 'Ownership', 'Entities are consolidated at 100%. Effective ownership (multiplied down the hierarchy) splits net income between the group and non-controlling interests.'),
     ('Notes', 13, 'Cash bridge', 'Balance-sheet method: each step is the change in a balance since the year end, signed by cash effect, so the steps tie to the cash change. It is not a statutory cash-flow statement.'),
     ('Notes', 14, 'Known gaps', 'Retained earnings do not roll forward from net income in the source data; intercompany balances are not eliminated; revenue and cost of sales post to one department.'),
-    ('Notes', 15, 'Data', 'Fictional company built on Microsoft AdventureWorksDW (MIT licence), re-dated. Source issues are injected on purpose and reconciled on the Data Quality page.'),
+    ('Notes', 15, 'Data is fictitious', 'Every company figure is fictitious: Microsoft\'s AdventureWorksDW sample (MIT licence), re-dated, plus seeded synthetic budgets and seeded source issues. Anyone can rebuild data/ byte for byte (scripts/build_data.py, seed 20261111; scripts/verify_data.py). FX rates are real public Bank of Canada rates.'),
     ('Defs', 1, 'Net revenue', 'Gross sales less returns and discounts.'),
     ('Defs', 2, 'Gross margin', 'Gross profit (net revenue less cost of sales) / net revenue.'),
     ('Defs', 3, 'EBITDA', 'Gross profit less operating expenses, before depreciation, amortization, interest, other items and tax.'),
@@ -1471,6 +1471,46 @@ redefine('Footer Note 1', '"1  Definitions: Notes page and docs/01-semantic-mode
 add('Revenue vs Budget Text Short', 'FORMAT ( [Revenue Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " Bud  ·  " & FORMAT ( [Revenue Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " PY"',
     '11 KPI Cards', None, 'Card text for narrow tiles (Executive page): revenue variance % vs budget and growth % vs prior year.')
 
+# ======================================================================== v11: privacy mode (anonymise on load, swap source safely)
+# Two Power Query parameters (written by build_pbip.py): MaskData (true/false) and MaskScale (number).
+# MaskData = true: the group and every operating entity get pseudonyms (regions keep their generic names so row-level security
+# and the region logic still work), departments become "Department NN", and every ledger amount is multiplied by MaskScale.
+# Keys, hierarchy, dates, accounts and FX are untouched, so every relationship, ratio, % and day-count stays exactly the same.
+def _swap_name(col, rule):
+    return ('    Named = Table.AddColumn(Typed, "__n", each ' + rule + ', type text),\n'
+            '    Swapped = Table.ReorderColumns(Table.RenameColumns(Table.RemoveColumns(Named, {"' + col + '"}), {{"__n", "' + col + '"}}), '
+            'Table.ColumnNames(Typed)),\n'
+            '    Masked = if MaskData then Swapped else Typed')
+
+
+_ENTITY_RULE = ('if [ParentEntityKey] = null then "Group" else if [ParentEntityKey] = Root then [EntityName] '
+                'else "Entity " & Text.PadStart(Text.From([EntityKey]), 2, "0")')
+_DEPT_RULE = 'if [ParentDepartmentKey] = null then [DepartmentName] else "Department " & Text.PadStart(Text.From([DepartmentKey]), 2, "0")'
+for _t in TABLES:
+    if _t['name'] == 'Entity':
+        _t['m'] = _t['m'].replace('\nin\n    Typed', ',\n    Root = List.First(Table.SelectRows(Typed, each [ParentEntityKey] = null)[EntityKey]),\n'
+                                  + _swap_name('EntityName', _ENTITY_RULE) + '\nin\n    Masked')
+    if _t['name'] == 'Department':
+        _t['m'] = _t['m'].replace('    WithUnassigned = Table.Combine({Typed,', _swap_name('DepartmentName', _DEPT_RULE) + ',\n    WithUnassigned = Table.Combine({Masked,')
+for _n in ('Entity', 'Department'):
+    assert 'MaskData' in [t for t in TABLES if t['name'] == _n][0]['m'], _n
+TABLES.insert(len(TABLES) - 1, dict(name='Privacy Mode', hidden=1,
+                                    desc='One row echoing the MaskData and MaskScale parameters so the report can say when it shows masked data.',
+                                    m='let\n    Source = #table(type table [Masked = logical, Scale = number], {{MaskData, MaskScale}})\nin\n    Source',
+                                    cols=[('Masked', 'boolean', {'desc': 'Value of the MaskData parameter at the last refresh.'}),
+                                          ('Scale', 'double', {'desc': 'Value of the MaskScale parameter at the last refresh.'})]))
+add('Data Masked', "COALESCE ( MAX ( 'Privacy Mode'[Masked] ), FALSE () )", '10 Layout', None,
+    'TRUE when the model was refreshed with MaskData = true (names pseudonymised, amounts scaled).')
+add('Mask Notice', 'IF ( [Data Masked], "MASKED DATA: entity and department names are pseudonyms; amounts are scaled. Ratios, % and trends are unchanged.", "" )',
+    '10 Layout', None, 'Banner text shown in the footer while privacy mode is on.')
+STORY_ROWS.append(('Notes', 19, 'Privacy mode', 'Parameters MaskData and MaskScale pseudonymise entity and department names and scale every amount while loading; ratios, % and trends are unchanged. Use them before pointing the model at a real source, sharing screenshots or working with an AI assistant.'))
+for _t in TABLES:
+    if _t['name'] == 'Story':
+        _t['m'] = m_table([('Page', 'text'), ('Sort', 'Int64.Type'), ('Section', 'text'), ('Text', 'text')], STORY_ROWS)
+redefine('Brand Sub', 'IF ( [Data Masked], "Masked group", "Adventure Works Group" )')
+redefine('Footer Note 1', '"1  Definitions: Notes page and docs/01-semantic-model.md. KPI cards: target = budget for the selected period; bar = share of '
+         'target (line = 100%)." & IF ( [Data Masked], "  ·  " & [Mask Notice], "" )')
+
 # ======================================================================== v5: documentation pass (TOM descriptions, DAX and M comments, query groups, diagram)
 # ---- 5.1 remove presentation leftovers that no visual or measure uses (analytical KPI measures are kept as reusable building blocks)
 DROP = [r' Spark$', r' Progress Bar$', r'^Title (Overview|Executive|Income Statement|Balance Sheet|Overview Revenue|DQ)$', r'^Lbl Current View$',
@@ -1712,5 +1752,16 @@ DIAGRAM = {  # table: (x, y, width, height)
     'Insight': (0, 1040, 200, 110), 'Story': (220, 1040, 200, 150), 'Refresh Info': (440, 1040, 200, 100),
     'DQ File Log': (880, 1040, 220, 210), 'DQ Injection Log': (1120, 1040, 220, 170),
     'PL Focus': (660, 1040, 200, 130), 'Display Unit': (0, 1200, 200, 130), 'Actuals Until': (220, 1220, 200, 130), 'Data Dictionary': (1360, 1040, 240, 260),
+    'Privacy Mode': (440, 1220, 200, 100),
 }
 assert set(DIAGRAM) == {t['name'] for t in TABLES}, set(DIAGRAM) ^ {t['name'] for t in TABLES}
+
+
+# ---- v11 (continued): GL amounts scaled in privacy mode. Applied last because the documentation pass rewrites the GL query.
+for _t in TABLES:
+    if _t['name'] == 'GL':
+        assert _t['m'].rstrip().endswith('in\n    Typed'), 'GL query tail changed'
+        _t['m'] = (_t['m'].rstrip()[:-len('\nin\n    Typed')] + ',\n    // Privacy mode: every amount x MaskScale (ratios, % and trends unchanged).\n'
+                   '    Scaled = if MaskData then Table.TransformColumns(Typed, {{"AmountLC", each if _ = null then null else _ * MaskScale, type number}}) '
+                   'else Typed\nin\n    Scaled')
+

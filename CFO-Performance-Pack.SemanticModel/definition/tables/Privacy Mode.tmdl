@@ -1,0 +1,30 @@
+/// One row echoing the MaskData and MaskScale parameters so the report can say when it shows masked data.
+table 'Privacy Mode'
+	lineageTag: 4eea3f6d-373a-5e4b-ad20-55b952a385c0
+	isHidden
+
+	/// Value of the MaskData parameter at the last refresh.
+	column Masked
+		dataType: boolean
+		lineageTag: 715a35c1-8209-5fe0-a20a-143be3b6ab6a
+		sourceColumn: Masked
+
+	/// Value of the MaskScale parameter at the last refresh.
+	column Scale
+		dataType: double
+		lineageTag: 95f123d3-d16f-5d83-a967-0cca7b3eff43
+		summarizeBy: none
+		sourceColumn: Scale
+
+	partition 'Privacy Mode' = m
+		mode: import
+		queryGroup: 'Report helpers'
+		source =
+				// One row echoing the MaskData and MaskScale parameters so the report can say when it shows masked data.
+				let
+				    Source = #table(type table [Masked = logical, Scale = number], {{MaskData, MaskScale}})
+				in
+				    Source
+
+	annotation PBI_ResultType = Table
+

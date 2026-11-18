@@ -31,7 +31,10 @@ table Department
 				let
 				    Src = fnReadCsv("reference", "Department.csv"),
 				    Typed = Table.TransformColumnTypes(Src, {{"DepartmentKey", Int64.Type}, {"ParentDepartmentKey", Int64.Type}, {"DepartmentName", type text}}, "en-US"),
-				    WithUnassigned = Table.Combine({Typed, #table(type table [DepartmentKey = Int64.Type, ParentDepartmentKey = Int64.Type, DepartmentName = text], {{0, 1, "Unassigned"}})})
+				    Named = Table.AddColumn(Typed, "__n", each if [ParentDepartmentKey] = null then [DepartmentName] else "Department " & Text.PadStart(Text.From([DepartmentKey]), 2, "0"), type text),
+				    Swapped = Table.ReorderColumns(Table.RenameColumns(Table.RemoveColumns(Named, {"DepartmentName"}), {{"__n", "DepartmentName"}}), Table.ColumnNames(Typed)),
+				    Masked = if MaskData then Swapped else Typed,
+				    WithUnassigned = Table.Combine({Masked, #table(type table [DepartmentKey = Int64.Type, ParentDepartmentKey = Int64.Type, DepartmentName = text], {{0, 1, "Unassigned"}})})
 				in
 				    WithUnassigned
 

@@ -4,6 +4,8 @@ An executive reporting pack for a fictional multi-currency group, built end to e
 
 The whole Power BI project (semantic model **and** report pages) is generated from Python (`scripts/build_pbip.py`) in the open PBIP format (TMDL + PBIR), so every measure, visual and colour is reviewable in a diff.
 
+> **All company data in this repository is fictitious.** It is Microsoft's AdventureWorksDW sample (a fictional bicycle company, MIT licence), re-dated, with seeded synthetic budgets and seeded data-quality issues. Anyone can rebuild `data/` byte for byte from the public sample (`scripts/build_data.py`, seed 20261111) and check it against `data/MANIFEST.sha256` (`scripts/verify_data.py`); CI does this on every push. Exchange rates are real public Bank of Canada rates. Details and the AI-safe workflow (anonymise, fake data, swap source, schema only): [docs/06-ai-safe-workflow.md](docs/06-ai-safe-workflow.md).
+
 > **Report preview:** [PDF of all six pages](docs/CFO-Performance-Pack.pdf) · page images below. A public Publish-to-web link is not provided; see [docs/02-startup-guide.md](docs/02-startup-guide.md) for why (licensing).
 
 ![Executive Summary](docs/images/02-executive-summary.png)
@@ -55,10 +57,13 @@ docs/00-company-and-thesis.md           company story and reporting thesis
 docs/01-semantic-model.md               model reference (generated: tables, relationships, every measure with DAX)
 docs/02-startup-guide.md                free tenant, security and Publish to web, step by step
 docs/05-download-zip-guide.md           open and refresh the report from a GitHub ZIP download (no Git or Python)
+docs/06-ai-safe-workflow.md             fictitious-data proof; anonymise, fake data, swap source, schema-only sharing
 docs/CFO-Performance-Pack.pdf           PDF export of all six pages
 docs/images/                            page images used in this README
 docs/eda/                               data-quality and exploratory analysis report + charts
 scripts/build_data.py                   builds data/ from AdventureWorksDW (seeded, deterministic)
+scripts/verify_data.py                  proves data/ (or a rebuild) matches the seeded build: data/MANIFEST.sha256
+scripts/anonymise_data.py               masked copy of any source folder (pseudonyms, scaled amounts) + validation report
 scripts/eda.py                          data-quality checks and EDA -> docs/eda/
 scripts/model_def.py                    the semantic model: Power Query, tables, 525 measures
 scripts/build_pbip.py                   writes the TMDL model and PBIR report from model_def.py
@@ -83,6 +88,7 @@ That loop caught real defects that a screenshot-only review would have missed. T
 1. Clone the repo and open `CFO-Performance-Pack.pbip` in a recent Power BI Desktop. If it will not open, enable *Options → Preview features → Power BI Project (.pbip) save option* and restart.
 2. **Transform data → Edit parameters → DataRoot**: set it to the full path of this repo's `data\` folder, ending with a backslash, e.g. `C:\src\cfo-performance-pack\data\`.
 3. Click **Refresh**. Every query reads through one folder source, so there are no privacy prompts.
+4. Optional, before pointing the model at a real source or sharing screenshots: set **MaskData** = `true` and a private **MaskScale** (same dialog) to pseudonymise names and scale amounts while loading. See [docs/06-ai-safe-workflow.md](docs/06-ai-safe-workflow.md).
 
 ### Live demo: close the next month
 

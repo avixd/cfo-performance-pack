@@ -10,6 +10,8 @@ This guide is for someone who downloads the repository as a ZIP (no Git, no Pyth
 | About 50 MB of free disk space | The project itself is small; Desktop adds a local data cache after the first refresh. |
 | No Power BI account or licence | Everything runs locally. Signing in to Desktop is optional (see *Sharing safely* below). |
 
+All company data in the project is **fictitious** (Microsoft's AdventureWorksDW sample plus seeded synthetic budgets); [06-ai-safe-workflow.md](06-ai-safe-workflow.md) shows how to verify that.
+
 Python is **not** needed to use the report. It is only needed to regenerate the model or the data (see the end of this guide).
 
 ## 1. Download the right branch
@@ -76,7 +78,8 @@ When you save, Desktop writes your local data path into `CFO-Performance-Pack.Se
 - Set **DataRoot** back to the placeholder `<YOUR-LOCAL-PATH>\data\` (or edit that line in `expressions.tmdl`) so your user name and folder structure are not shared.
 - Do not share the `.pbi` folders (`localSettings.json`, `cache.abf`); the repo's `.gitignore` already excludes them.
 - The greeting at the top of each page ("Hello, …") is built from the signed-in user of whoever opens the report. **Sign out of Power BI Desktop** (top-right account menu) before taking screenshots or exporting a PDF you intend to share.
-- If you use Git, run `bash scripts/privacy_check.sh` before committing; it blocks Windows user paths, OneDrive paths and e-mail addresses.
+- To show or share figures from a different (real) source, turn on privacy mode first: **Edit parameters → MaskData = true** and a private **MaskScale**, then Refresh. Names become pseudonyms, amounts are scaled and every page footer says so. See [06-ai-safe-workflow.md](06-ai-safe-workflow.md).
+- If you use Git, run `bash scripts/privacy_check.sh` before committing; it blocks real Windows user paths, OneDrive folder paths, tenant domains and e-mail addresses.
 
 ## Troubleshooting
 

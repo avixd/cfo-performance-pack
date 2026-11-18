@@ -332,6 +332,19 @@
             "width": 240
           },
           "zIndex": 24
+        },
+        {
+          "location": {
+            "x": 440,
+            "y": 1220
+          },
+          "nodeIndex": "Privacy Mode",
+          "nodeLineageTag": "4eea3f6d-373a-5e4b-ad20-55b952a385c0",
+          "size": {
+            "height": 100,
+            "width": 200
+          },
+          "zIndex": 25
         }
       ],
       "name": "All tables",

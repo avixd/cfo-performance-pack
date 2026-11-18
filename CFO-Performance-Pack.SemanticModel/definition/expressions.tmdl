@@ -5,6 +5,20 @@ expression DataRoot = "<YOUR-LOCAL-PATH>\data\" meta [IsParameterQuery=true, Typ
 
 	annotation PBI_ResultType = Text
 
+/// Privacy mode. true = pseudonymise entity and department names and scale every ledger amount by MaskScale while loading (keys, ratios and trends unchanged). Use it before pointing the model at a real source or sharing screenshots.
+expression MaskData = false meta [IsParameterQuery=true, Type="Logical", IsParameterQueryRequired=true]
+	lineageTag: 619a45a4-d24a-5df1-afc3-750ebf4348c4
+	queryGroup: 'Parameters and functions'
+
+	annotation PBI_ResultType = Logical
+
+/// Multiplier applied to every ledger amount when MaskData = true (for example 0.73). Choose a private value per sharing; it hides absolute size while every %, ratio and day-count stays the same.
+expression MaskScale = 1 meta [IsParameterQuery=true, Type="Number", IsParameterQueryRequired=true]
+	lineageTag: 744cb8f1-9466-5b51-8439-88e2ee7afb4c
+	queryGroup: 'Parameters and functions'
+
+	annotation PBI_ResultType = Number
+
 /// Reads one UTF-8 CSV (subfolder of DataRoot, file name) through the single Folder.Files(DataRoot) source; blank strings become null.
 expression fnReadCsv =
 		(subfolder as text, fileName as text) as table =>

@@ -63,9 +63,13 @@ table Entity
 				// Reporting entities with local currency and ownership %.
 				let
 				    Src = fnReadCsv("reference", "Entity.csv"),
-				    Typed = Table.TransformColumnTypes(Src, {{"EntityKey", Int64.Type}, {"ParentEntityKey", Int64.Type}, {"EntityName", type text}, {"OwnershipPct", type number}, {"CurrencyCode", type text}}, "en-US")
+				    Typed = Table.TransformColumnTypes(Src, {{"EntityKey", Int64.Type}, {"ParentEntityKey", Int64.Type}, {"EntityName", type text}, {"OwnershipPct", type number}, {"CurrencyCode", type text}}, "en-US"),
+				    Root = List.First(Table.SelectRows(Typed, each [ParentEntityKey] = null)[EntityKey]),
+				    Named = Table.AddColumn(Typed, "__n", each if [ParentEntityKey] = null then "Group" else if [ParentEntityKey] = Root then [EntityName] else "Entity " & Text.PadStart(Text.From([EntityKey]), 2, "0"), type text),
+				    Swapped = Table.ReorderColumns(Table.RenameColumns(Table.RemoveColumns(Named, {"EntityName"}), {{"__n", "EntityName"}}), Table.ColumnNames(Typed)),
+				    Masked = if MaskData then Swapped else Typed
 				in
-				    Typed
+				    Masked
 
 	annotation PBI_ResultType = Table
 

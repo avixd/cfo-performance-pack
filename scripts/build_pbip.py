@@ -160,13 +160,21 @@ def render_expressions(data_root):
     L = ['/// Root folder holding reference/, actuals/, budget/, fx/ and inbox/. Change this one value to run the model on another machine.',
          f'expression DataRoot = "{data_root}" meta [IsParameterQuery=true, Type="Text", IsParameterQueryRequired=true]',
          f'\tlineageTag: {tag("expr", "DataRoot")}', f"\tqueryGroup: {q(M.QUERY_GROUPS[0])}", '', '\tannotation PBI_ResultType = Text', '']
+    L += ['/// Privacy mode. true = pseudonymise entity and department names and scale every ledger amount by MaskScale while loading '
+          '(keys, ratios and trends unchanged). Use it before pointing the model at a real source or sharing screenshots.',
+          'expression MaskData = false meta [IsParameterQuery=true, Type="Logical", IsParameterQueryRequired=true]',
+          f'\tlineageTag: {tag("expr", "MaskData")}', f"\tqueryGroup: {q(M.QUERY_GROUPS[0])}", '', '\tannotation PBI_ResultType = Logical', '',
+          '/// Multiplier applied to every ledger amount when MaskData = true (for example 0.73). Choose a private value per sharing; '
+          'it hides absolute size while every %, ratio and day-count stays the same.',
+          'expression MaskScale = 1 meta [IsParameterQuery=true, Type="Number", IsParameterQueryRequired=true]',
+          f'\tlineageTag: {tag("expr", "MaskScale")}', f"\tqueryGroup: {q(M.QUERY_GROUPS[0])}", '', '\tannotation PBI_ResultType = Number', '']
     L += fn('fnReadCsv', 'Reads one UTF-8 CSV (subfolder of DataRoot, file name) through the single Folder.Files(DataRoot) source; blank strings become null.', M.FN_READ_CSV)
     L += fn('fnLoadLedgerFolder', 'Combines every GL_*.csv in a subfolder of DataRoot: columns matched by name (order and extra columns ignored), exact duplicate rows removed, blank department mapped to 0 "Unassigned". Adding or removing a file adds or removes a period.', M.FN_LOAD_LEDGER)
     return '\n'.join(L) + '\n'
 
 
 def render_model():
-    order = ['DataRoot', 'fnReadCsv', 'fnLoadLedgerFolder'] + [t['name'] for t in M.TABLES if 'm' in t]
+    order = ['DataRoot', 'MaskData', 'MaskScale', 'fnReadCsv', 'fnLoadLedgerFolder'] + [t['name'] for t in M.TABLES if 'm' in t]
     L = ['model Model', '\tculture: en-CA', '\tdefaultPowerBIDataSourceVersion: powerBI_V3', '\tsourceQueryCulture: en-CA',
          '\tvalueFilterBehavior: independent', '\tdiscourageImplicitMeasures', '\tdataAccessOptions', '\t\tlegacyRedirects', '\t\treturnErrorValuesAsNull', '',
          'annotation __PBI_TimeIntelligenceEnabled = 0', '',

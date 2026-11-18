@@ -2239,7 +2239,7 @@ table _Measures
 		lineageTag: bb21370a-3a5c-5c68-a1ad-aac5c3eb8502
 
 	/// Company name shown under the report name.
-	measure 'Brand Sub' = "Adventure Works Group"
+	measure 'Brand Sub' = IF ( [Data Masked], "Masked group", "Adventure Works Group" )
 		displayFolder: 10 Layout
 		lineageTag: 03c0a743-47bc-5417-b07a-6c793012e39d
 
@@ -2260,7 +2260,7 @@ table _Measures
 		lineageTag: ad003aeb-4671-57a8-b0ec-5336cc8441fe
 
 	/// Numbered footer note 1 (same on every page).
-	measure 'Footer Note 1' = "1  Definitions: Notes page and docs/01-semantic-model.md. KPI cards: target = budget for the selected period; bar = share of target (line = 100%)."
+	measure 'Footer Note 1' = "1  Definitions: Notes page and docs/01-semantic-model.md. KPI cards: target = budget for the selected period; bar = share of target (line = 100%)." & IF ( [Data Masked], "  ·  " & [Mask Notice], "" )
 		displayFolder: 10 Layout
 		lineageTag: f013e149-4b6a-520c-8144-3610d8e2304c
 
@@ -4043,6 +4043,16 @@ table _Measures
 	measure 'Revenue vs Budget Text Short' = FORMAT ( [Revenue Var % vs Budget], "▲ 0.0%;▼ 0.0%;0.0%" ) & " Bud  ·  " & FORMAT ( [Revenue Growth %], "▲ 0.0%;▼ 0.0%;0.0%" ) & " PY"
 		displayFolder: 11 KPI Cards
 		lineageTag: 3629e53d-7892-5d4d-b8fd-4f736f99a96c
+
+	/// TRUE when the model was refreshed with MaskData = true (names pseudonymised, amounts scaled).
+	measure 'Data Masked' = COALESCE ( MAX ( 'Privacy Mode'[Masked] ), FALSE () )
+		displayFolder: 10 Layout
+		lineageTag: 13a00919-8190-52ba-acc2-9c37251a5208
+
+	/// Banner text shown in the footer while privacy mode is on.
+	measure 'Mask Notice' = IF ( [Data Masked], "MASKED DATA: entity and department names are pseudonyms; amounts are scaled. Ratios, % and trends are unchanged.", "" )
+		displayFolder: 10 Layout
+		lineageTag: 991df384-a916-5dcf-be03-e3b3d97f967d
 
 	/// Empty column: a table needs one column to exist.
 	column Placeholder
