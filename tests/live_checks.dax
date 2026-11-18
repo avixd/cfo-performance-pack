@@ -17,5 +17,14 @@ RETURN UNION (
           CALCULATE ( [RF Total], Metric[Metric] = "Revenue" ) - CALCULATE ( [Metric Outlook FY], Metric[Metric] = "Revenue" ),
           "Pass", ABS ( CALCULATE ( [RF Total], Metric[Metric] = "Revenue" ) - CALCULATE ( [Metric Outlook FY], Metric[Metric] = "Revenue" ) ) < tol ),
     ROW ( "Check", "Every ledger row has an FX rate", "Difference", [DQ Rows Missing FX Rate], "Pass", [DQ Rows Missing FX Rate] = 0 ),
-    ROW ( "Check", "Every ledger account is in the chart of accounts", "Difference", [DQ Accounts Missing From Chart], "Pass", [DQ Accounts Missing From Chart] = 0 )
+    ROW ( "Check", "Every ledger account is in the chart of accounts", "Difference", [DQ Accounts Missing From Chart], "Pass", [DQ Accounts Missing From Chart] = 0 ),
+    ROW ( "Check", "Required per month x months left = target - actual to date (rolling forecast)", "Difference",
+          [RF Required per Month] * [RF Months Left] - ( [RF Target] - [RF Actual to Date] ),
+          "Pass", ABS ( [RF Required per Month] * [RF Months Left] - ( [RF Target] - [RF Actual to Date] ) ) < tol ),
+    ROW ( "Check", "KPI attainment = revenue / revenue budget, YTD and MTD", "Difference",
+          ( [KPI Attainment Revenue] - DIVIDE ( [Revenue], [Revenue Budget] ) )
+            + CALCULATE ( [KPI Attainment Revenue] - DIVIDE ( [Revenue], [Revenue Budget] ), TREATAS ( { "MTD" }, 'Period View'[View] ) ),
+          "Pass", ABS ( [KPI Attainment Revenue] - DIVIDE ( [Revenue], [Revenue Budget] ) ) < 1e-9
+            && ABS ( CALCULATE ( [KPI Attainment Revenue] - DIVIDE ( [Revenue], [Revenue Budget] ), TREATAS ( { "MTD" }, 'Period View'[View] ) ) ) < 1e-9 ),
+    ROW ( "Check", "Privacy mode is off in the shared file (MaskData = false)", "Difference", IF ( [Data Masked], 1, 0 ), "Pass", NOT [Data Masked] )
 )
