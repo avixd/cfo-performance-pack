@@ -7,8 +7,8 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Privacy check (no user paths or e-mail addresses in the repo)
@@ -21,8 +21,8 @@ jobs:
     # with the seeded generator and compare every file to data/MANIFEST.sha256 (free on public repositories, about a minute).
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
       - name: Download the public AdventureWorksDW sample (microsoft/sql-server-samples, MIT)
