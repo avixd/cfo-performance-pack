@@ -958,17 +958,17 @@ def page_dictionary():
     for i, (m, lab) in enumerate([('DD Tables', 'Tables'), ('DD Columns', 'Columns'), ('DD Measures', 'Measures'), ('DD Relationships', 'Relationships')]):
         p.kpi(f'k{i}', 16 + i * (w + 10), 74, w, 74, m, lab)
     # page-specific slicers: tiles, searchable dropdowns and a free-text "contains" search
-    cslicer(p, 'f_type', 16, 156, 480, 66, 'Data Dictionary[Object Type]', 'Object type', mode='Basic', horizontal=True)
-    cslicer(p, 'f_table', 506, 156, 170, 66, 'Data Dictionary[Table]', 'Table (search)', search=True)
-    cslicer(p, 'f_folder', 686, 156, 190, 66, 'Data Dictionary[Folder]', 'Folder (search)', search=True)
-    cslicer(p, 'f_name', 886, 156, 378, 66, 'Data Dictionary[Name]', 'Name (type to search)', search=True)
+    cslicer(p, 'f_type', 16, 156, 480, 78, 'Data Dictionary[Object Type]', 'Object type', mode='Basic', horizontal=True)
+    cslicer(p, 'f_table', 506, 156, 170, 78, 'Data Dictionary[Table]', 'Table (search)', search=True)
+    cslicer(p, 'f_folder', 686, 156, 190, 78, 'Data Dictionary[Folder]', 'Folder (search)', search=True)
+    cslicer(p, 'f_name', 886, 156, 378, 78, 'Data Dictionary[Name]', 'Name (type to search)', search=True)
     # (a free-text slicer stood here until 17 Nov 2026; it ignored all formatting, and the Name slicer's search box does the same job)
     fields = ['Data Dictionary[Object Type]', 'Data Dictionary[Table]', 'Data Dictionary[Name]', 'Data Dictionary[Description]', 'Data Dictionary[Expression]',
               'Data Dictionary[Folder]']
     obj = p.table_objects(fields, size=8.5, wrap=True)
     obj['columnWidth'] = [{'properties': {'value': L(wd)}, 'selector': {'metadata': 'Data Dictionary.' + c}}
                           for c, wd in (('Object Type', 76), ('Table', 96), ('Name', 170), ('Description', 250), ('Expression', 330), ('Folder', 110))]
-    p.add('dict', 'tableEx', 16, 230, 1248, 474, roles={'Values': [(f, f.split('[')[1][:-1]) for f in fields]}, objects=obj, title='=VT DD', subtitle='Sub DD',
+    p.add('dict', 'tableEx', 16, 242, 1248, 462, roles={'Values': [(f, f.split('[')[1][:-1]) for f in fields]}, objects=obj, title='=VT DD', subtitle='Sub DD',
           sort=[('Data Dictionary[Object Type]', 'Ascending')])
     return p
 

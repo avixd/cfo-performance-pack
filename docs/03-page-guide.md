@@ -32,7 +32,7 @@ A sidebar slicer appears only where it changes the answer correctly. Synced slic
 | 5 Balance Sheet | ✓ | ✓ | | ✓ | ✓ | ✓ | | |
 | H3 Rolling Forecast | ✓ | | | ✓ | ✓ | ✓ | | Actuals until, Metric |
 | 6 Data Quality, 8 Notes | | | | | | | | |
-| 7 Data Dictionary | | | | | | | | Object type, table, folder, name, free text |
+| 7 Data Dictionary | | | | | | | | Object type, table, folder, name (type to search) |
 
 Why:
 - **Department** only on Budget vs Actual: the ledger books all revenue in one department and cash in another, so a department filter blanks revenue, margins and the balance sheet on every other page. It is valid for operating expenses and headcount, which page 3 shows by department.
@@ -43,6 +43,25 @@ Why:
 What responds to what (tested over the model, 16 Nov): Entity, Region and Fiscal year change every KPI card, sparkline, pacing bar, matrix and the Sankey. Currency changes all money values; percentages and ratios stay the same by definition. Period changes the KPI values and the Sankey; sparklines always show the months of the fiscal year and pacing bars show full-year progress, by design. Clicking a bar or row cross-filters the other visuals on the page, including the KPI cards and sparklines.
 
 The **Light / Dark** toggle (top right) is a button slicer synced across all pages: the lit icon shows the active mode.
+
+## KPI cards (reviewed 17 Nov 2026)
+
+Every page uses one card style (Power BI's new card visual, one visual per row of cards, so pages load faster):
+
+| Part | What it shows |
+|---|---|
+| Label (top) | What the number is |
+| Value | The measure, with the report's number format ($ one decimal M, whole K, brackets for negatives) |
+| Accent bar (left edge) | Green favourable, red unfavourable, grey neutral |
+| Line 1 | Comparison: vs budget and/or prior year, in the accent colour |
+| Line 2 (headline cards) | **Target** for the selected period (= budget) and **% of target** reached, e.g. "Target $29.6M · 122% of target" |
+| Image (right of the value) | Sparkline of the fiscal year; on headline cards also an attainment bar (line = 100% of target); outlook cards show a pacing bar |
+
+Actual vs target is period-aware: switch Period to MTD or QTD and both the target and the % follow. Cards under 120px tall use a smaller value font so all three lines fit.
+
+## Privacy mode and fictitious data
+
+All company data is fictitious (Microsoft's AdventureWorksDW sample, seeded synthetic budgets); see [06-ai-safe-workflow.md](06-ai-safe-workflow.md) for the proof. When the model is pointed at another source, the **MaskData** and **MaskScale** parameters pseudonymise entity and department names and scale amounts while loading; every page footer then says *MASKED DATA* and the brand line reads *Masked group*.
 
 ## 1 · Overview
 **Purpose.** Context before numbers: the company, its history, and the four questions the pack answers.
@@ -60,7 +79,7 @@ The **Light / Dark** toggle (top right) is a button slicer synced across all pag
 
 ## 3 · Budget vs Actual
 **Purpose.** Locate the variance and project the year.
-**On the page.** Metric selector (Revenue, Gross Profit, Operating Expenses, EBITDA, Net Income); four cards (actual, budget, prior year, full-year outlook); monthly actual / outlook / budget / prior year; cumulative outlook vs budget; variance by entity; operating-expense variance by department.
+**On the page.** Metric selector (Revenue, Gross Profit, Operating Expenses, EBITDA, Net Income); three cards (actual with its target and % of target, prior year, full-year outlook with a pacing bar; budget is the target line, so it has no card of its own); monthly actual / outlook / budget / prior year; cumulative outlook vs budget; variance by entity; operating-expense variance by department.
 **How to read it.** Outlook = actual to the close + budget for the remaining months. The subtitle also gives the run-rate landing.
 **Walkthrough.** 1) Pick EBITDA in the selector and watch every visual change. 2) Read the entity chart subtitle: entities without a credible budget are named. 3) Show the department overrun.
 **Key measures.** `Metric Actual`, `Metric Outlook FY`, `Metric Outlook Run-Rate`, `Sub Entity Variance`.
@@ -87,14 +106,14 @@ The **Light / Dark** toggle (top right) is a button slicer synced across all pag
 
 ## 7 · Data Dictionary
 **Purpose.** Explore the model without downloading it.
-**On the page.** Counts of tables, columns, measures and relationships; five slicers (object type tiles, searchable Table, Folder and Name dropdowns, and a free-text "contains" search); one table with type, table, name, description, expression and folder.
+**On the page.** Counts of tables, columns, measures and relationships; four slicers (object type tiles and searchable Table, Folder and Name dropdowns; type in a dropdown to search); one table with type, table, name, description, expression and folder.
 **How it works.** The calculated table `Data Dictionary` unions `INFO.VIEW.TABLES`, `COLUMNS`, `MEASURES` and `RELATIONSHIPS` (one variable per object type, as in the INFO.VIEW documentation technique), so it is rebuilt from the model on every refresh and cannot drift. Hidden objects are left out, and the table leaves itself out.
-**Walkthrough.** 1) Click *Measure*. 2) Type "cash" in the name search. 3) Read the description and the DAX of `Cash Bridge Value`. 4) Click *Relationship* to see the star schema as rows.
+**Walkthrough.** 1) Click *Measure*. 2) Open *Name (type to search)* and type "cash". 3) Read the description and the DAX of `Cash Bridge Value`. 4) Click *Relationship* to see the star schema as rows.
 **Key measures.** `DD Objects`, `DD Documented %`.
 
 ## 8 · Notes
 **Purpose.** Assumptions, policies and definitions in one place.
-**On the page.** Fifteen assumptions and policies (calendar, sign convention, colour, number format, currency, budget, outlook, ownership, known gaps) and thirteen metric definitions.
+**On the page.** Nineteen assumptions and policies (calendar, sign convention, colour, number format, currency, budget, outlook, ownership, known gaps, collections target, departments, access (RLS), *data is fictitious*, *privacy mode*) and the metric definitions.
 **Walkthrough.** Use it as the reference when a viewer asks "how is that calculated?".
 
 ## H1 · Revenue Flow (Sankey) (hidden)
